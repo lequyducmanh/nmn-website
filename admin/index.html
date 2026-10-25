@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f4f0e9">
+<title>Quản trị nội dung · NMN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Noto+Serif+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- ============================ ĐĂNG NHẬP ============================ -->
+<section id="login" class="login">
+  <div class="login-card">
+    <div class="brand"><span class="dot"></span><span>NMN <small>QUẢN TRỊ NỘI DUNG</small></span></div>
+    <h1>Đăng nhập</h1>
+    <p class="muted">Nội dung website được lưu trong repo GitHub. Nhập <b>mã truy cập GitHub</b> có quyền ghi vào repo để bắt đầu.</p>
+    <form id="login-form" autocomplete="off">
+      <label class="fl">Mã truy cập (token)
+        <input id="tk" type="password" required spellcheck="false" autocomplete="off" placeholder="github_pat_…">
+      </label>
+      <label class="chk"><input type="checkbox" id="remember"> Ghi nhớ trên máy này</label>
+      <details class="adv">
+        <summary>Nâng cao</summary>
+        <div class="grid3">
+          <label class="fl">Chủ repo<input id="cfg-owner" spellcheck="false"></label>
+          <label class="fl">Tên repo<input id="cfg-repo" spellcheck="false"></label>
+          <label class="fl">Nhánh<input id="cfg-branch" spellcheck="false"></label>
+        </div>
+      </details>
+      <button class="btn btn-ink wide" id="login-btn" type="submit">Đăng nhập</button>
+      <p class="err" id="login-err" role="alert"></p>
+    </form>
+    <details class="howto" open>
+      <summary>Cách tạo mã truy cập (làm một lần)</summary>
+      <ol>
+        <li>Mở <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained token mới</a> (đăng nhập tài khoản sở hữu repo).</li>
+        <li><b>Token name</b>: ví dụ <code>NMN CMS</code>. <b>Expiration</b>: chọn thời hạn (ví dụ 90 ngày).</li>
+        <li><b>Repository access</b>: chọn <i>Only select repositories</i> → chọn repo <code id="howto-repo">nmn-website</code>.</li>
+        <li><b>Permissions → Repository permissions → Contents</b>: chọn <i>Read and write</i>.</li>
+        <li>Bấm <b>Generate token</b>, sao chép mã và dán vào ô phía trên.</li>
+      </ol>
+      <p class="muted small">Mã chỉ được lưu trên trình duyệt của bạn và chỉ gửi tới GitHub. Không chia sẻ mã cho người khác; nếu lộ mã, hãy xoá nó trong GitHub Settings.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ============================ ỨNG DỤNG ============================ -->
+<div id="app" class="app" hidden>
+  <aside class="side" id="side">
+    <div class="brand"><span class="dot"></span><span>NMN <small>QUẢN TRỊ</small></span></div>
+    <nav id="nav" aria-label="Mục quản trị">
+      <button data-view="overview"><i>◎</i>Tổng quan</button>
+      <button data-view="settings"><i>⚙</i>Cài đặt chung</button>
+      <button data-view="home"><i>⌂</i>Trang chủ</button>
+      <button data-view="products"><i>▣</i>Sản phẩm</button>
+      <button data-view="posts"><i>✎</i>Bài viết</button>
+      <button data-view="events"><i>◷</i>Sự kiện</button>
+      <button data-view="media"><i>▤</i>Thư viện ảnh</button>
+    </nav>
+    <div class="side-foot">
+      <a id="site-link" href="../" target="_blank" rel="noopener">Xem website ↗</a>
+      <div class="who" id="who"></div>
+      <button class="link" id="logout">Đăng xuất</button>
+    </div>
+  </aside>
+  <div class="side-ov" id="side-ov"></div>
+
+  <div class="main">
+    <header class="bar">
+      <button class="icon menu-btn" id="menu-btn" aria-label="Mở menu">☰</button>
+      <h1 id="title">Tổng quan</h1>
+      <div class="bar-actions">
+        <span class="dirty" id="dirty" hidden></span>
+        <button class="btn btn-line" id="preview-btn">Xem trước</button>
+        <button class="btn btn-ink" id="publish-btn" disabled>Xuất bản</button>
+      </div>
+    </header>
+    <main id="view" class="view" tabindex="-1"></main>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden><div class="modal-card" role="dialog" aria-modal="true" id="modal-card"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="busy" id="busy" hidden><div class="spin"></div><span id="busy-text">Đang xử lý…</span></div>
+<input type="file" id="file-pick" accept="image/*" hidden>
+
+<script src="admin.js"></script>
+</body>
+</html>

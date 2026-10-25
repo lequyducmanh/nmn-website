@@ -1,0 +1,44 @@
+[
+  {
+    "slug": "hoi-thao-nad",
+    "published": true,
+    "sample": true,
+    "title": "Hội thảo: Khoa học về NAD+ và lão hóa khỏe mạnh",
+    "date": "2026-11-21",
+    "time": "09:00 – 11:30",
+    "place": "[Tên địa điểm]",
+    "city": "TP. Hồ Chí Minh",
+    "seats": "50 chỗ",
+    "image": "",
+    "registerUrl": "",
+    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay ngày giờ, địa điểm và diễn giả bằng thông tin thực tế.</p>\n<p>Buổi hội thảo giúp bạn hiểu NAD+ là gì, vì sao nó suy giảm theo tuổi và các nghiên cứu khoa học mới nhất về NMN.</p>\n<h3>Nội dung chính</h3>\n<ul><li>NAD+ và vai trò trong tế bào</li><li>Đọc hiểu nghiên cứu lâm sàng về NMN</li><li>Hỏi đáp cùng diễn giả</li></ul>\n<h3>Diễn giả</h3><p>[Tên, chức danh diễn giả]</p>"
+  },
+  {
+    "slug": "workshop-nghi-thuc",
+    "published": true,
+    "sample": true,
+    "title": "Workshop: Nghi thức chăm sóc bản thân mỗi ngày",
+    "date": "2026-12-05",
+    "time": "14:00 – 16:00",
+    "place": "[Tên địa điểm]",
+    "city": "Hà Nội",
+    "seats": "30 chỗ",
+    "image": "",
+    "registerUrl": "",
+    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay bằng thông tin thực tế.</p>\n<p>Workshop thực hành xây dựng thói quen ngủ, vận động và dinh dưỡng, kết hợp tư vấn sản phẩm phù hợp.</p>"
+  },
+  {
+    "slug": "tu-van-truc-tuyen",
+    "published": true,
+    "sample": true,
+    "title": "Livestream tư vấn: Hỏi đáp về NMN",
+    "date": "2026-12-18",
+    "time": "20:00 – 21:00",
+    "place": "Livestream Facebook / Zalo",
+    "city": "Trực tuyến",
+    "seats": "Không giới hạn",
+    "image": "",
+    "registerUrl": "",
+    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay bằng thông tin thực tế.</p>\n<p>Phiên hỏi đáp trực tuyến: cách dùng, bảo quản và cách chọn sản phẩm NMN phù hợp.</p>"
+  }
+]

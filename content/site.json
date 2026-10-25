@@ -1,0 +1,59 @@
+{
+  "brand": "NMN",
+  "brandTagline": "JAPAN WELLNESS",
+  "shopName": "Tên cửa hàng của bạn",
+  "phone": "0900000000",
+  "zalo": "0900000000",
+  "email": "",
+  "address": "",
+  "priceNote": "Giá có thể thay đổi theo thời điểm",
+  "postsPerPage": 6,
+  "shippingFee": null,
+  "freeShippingFrom": null,
+  "orderEndpoint": "",
+  "bank": {
+    "code": "",
+    "account": "",
+    "owner": "",
+    "name": ""
+  },
+  "perks": [
+    "Xuất xứ Nhật Bản",
+    "Tư vấn miễn phí qua Zalo",
+    "Thanh toán khi nhận hàng (COD)"
+  ],
+  "seo": {
+    "title": "NMN · Năng lượng tế bào",
+    "description": "PURE NMN 12000MG+ và NMN Regene — câu chuyện về NAD+ và sức khỏe tế bào, cửa hàng trực tuyến, tin tức và lịch sự kiện."
+  },
+  "home": {
+    "heroEyebrow": "Khoa học về sức khỏe tế bào · Nhật Bản",
+    "heroTitle": "Sức khỏe bền vững bắt đầu từ *từng tế bào*",
+    "heroLead": "NMN là tiền chất trực tiếp của NAD+ — phân tử mà mọi tế bào trong cơ thể cần để tạo ra năng lượng. Bộ đôi PURE NMN 12000MG+ và NMN Regene giúp bạn bổ sung NMN mỗi ngày.",
+    "heroMeta": [
+      [
+        "β-NMN",
+        "Hoạt chất chính"
+      ],
+      [
+        "Nhật Bản",
+        "Xuất xứ"
+      ],
+      [
+        "2 dòng",
+        "Sức khỏe & sắc đẹp"
+      ]
+    ],
+    "marquee": [
+      "Năng lượng tế bào",
+      "NAD+",
+      "Made in Japan",
+      "Lão hóa khỏe mạnh",
+      "β-Nicotinamide Mononucleotide",
+      "Nghi thức mỗi ngày"
+    ],
+    "contactEyebrow": "Đồng hành cùng bạn",
+    "contactTitle": "Bắt đầu hành trình *khỏe từ bên trong*",
+    "contactLead": "Đội ngũ tư vấn sẽ giúp bạn chọn sản phẩm phù hợp và giải đáp mọi câu hỏi về NMN."
+  }
+}

@@ -1,0 +1,190 @@
+[
+  {
+    "slug": "pure-nmn",
+    "visible": true,
+    "name": "PURE NMN 12000MG+",
+    "tag": "Sức khỏe toàn diện",
+    "short": "Lọ 60 viên · tổng 12.000mg NMN",
+    "price": 4950000,
+    "compareAt": null,
+    "theme": "pearl",
+    "image": "",
+    "gallery": [],
+    "desc": "Viên uống bổ sung NMN xuất xứ Nhật Bản. Mỗi lọ 60 viên chứa tổng cộng 12.000mg NMN, kết hợp các thành phần hướng tới chăm sóc làn da từ bên trong.",
+    "highlights": [
+      "Tổng 12.000mg NMN mỗi lọ",
+      "Kết hợp collagen peptide, glutathione, hyaluronic acid",
+      "Dùng 2 viên mỗi ngày — một lọ dùng được khoảng 30 ngày"
+    ],
+    "specs": [
+      [
+        "Tổng NMN mỗi lọ",
+        "12.000mg"
+      ],
+      [
+        "Quy cách",
+        "Lọ 60 viên"
+      ],
+      [
+        "Thành phần kèm",
+        "Collagen peptide, glutathione, hyaluronic acid, nhau thai ngựa"
+      ],
+      [
+        "Xuất xứ",
+        "Nhật Bản"
+      ],
+      [
+        "Thương hiệu",
+        "Clastive"
+      ]
+    ],
+    "usage": [
+      "Uống 2 viên mỗi ngày, sau bữa ăn.",
+      "Uống cùng nước lọc hoặc nước ấm."
+    ],
+    "homeSlot": 1,
+    "homeTag": "Sản phẩm 01 · Sức khỏe toàn diện",
+    "homeTitle": "PURE NMN *12000MG+*",
+    "homeLead": "Lọ 60 viên chứa tổng cộng 12.000mg NMN, kết hợp các thành phần hướng tới chăm sóc làn da từ bên trong.",
+    "forWho": "Phù hợp với người trưởng thành muốn bổ sung NMN hằng ngày, đồng thời quan tâm đến làn da.",
+    "homeSpecs": [
+      [
+        "Tổng NMN mỗi lọ",
+        "12.000mg"
+      ],
+      [
+        "Quy cách",
+        "Lọ 60 viên"
+      ],
+      [
+        "Cách dùng",
+        "2 viên mỗi ngày, sau bữa ăn"
+      ],
+      [
+        "Thành phần kèm",
+        "Collagen peptide, glutathione, hyaluronic acid, nhau thai ngựa"
+      ],
+      [
+        "Xuất xứ",
+        "Nhật Bản"
+      ]
+    ]
+  },
+  {
+    "slug": "nmn-regene",
+    "visible": true,
+    "name": "NMN Regene",
+    "tag": "Dòng sắc đẹp",
+    "short": "320mg β-NMN mỗi khẩu phần",
+    "price": 6950000,
+    "compareAt": null,
+    "theme": "rose",
+    "image": "",
+    "gallery": [],
+    "desc": "Viên uống bổ sung β-NMN xuất xứ Nhật Bản, mỗi khẩu phần chứa 320mg β-NMN, được định vị cho nhu cầu chăm sóc sắc đẹp và làn da.",
+    "highlights": [
+      "320mg β-NMN mỗi khẩu phần",
+      "Chỉ 2,11 kcal mỗi khẩu phần",
+      "Xuất xứ Nhật Bản"
+    ],
+    "specs": [
+      [
+        "β-NMN",
+        "320mg / khẩu phần"
+      ],
+      [
+        "Năng lượng",
+        "2,11 kcal"
+      ],
+      [
+        "Carbohydrate",
+        "0,49 g"
+      ],
+      [
+        "Lipid · Protein",
+        "0,018 g · 0 g"
+      ],
+      [
+        "Xuất xứ",
+        "Nhật Bản"
+      ],
+      [
+        "Thương hiệu",
+        "Clastive"
+      ]
+    ],
+    "usage": [
+      "Dùng theo liều ghi trên nhãn sản phẩm.",
+      "Uống cùng nước lọc hoặc nước ấm."
+    ],
+    "homeSlot": 2,
+    "homeTag": "Sản phẩm 02 · Dòng sắc đẹp",
+    "homeTitle": "NMN *Regene*",
+    "homeLead": "Mỗi khẩu phần chứa 320mg β-NMN, được định vị cho nhu cầu chăm sóc sắc đẹp và làn da.",
+    "forWho": "Phù hợp với người muốn kết hợp bổ sung NMN vào thói quen chăm sóc sắc đẹp hằng ngày.",
+    "homeSpecs": [
+      [
+        "β-NMN",
+        "320mg / khẩu phần"
+      ],
+      [
+        "Năng lượng",
+        "2,11 kcal"
+      ],
+      [
+        "Carbohydrate",
+        "0,49 g"
+      ],
+      [
+        "Lipid · Protein",
+        "0,018 g · 0 g"
+      ],
+      [
+        "Xuất xứ",
+        "Nhật Bản"
+      ]
+    ]
+  },
+  {
+    "slug": "bo-doi",
+    "visible": true,
+    "name": "Bộ đôi PURE NMN + NMN Regene",
+    "tag": "Bộ đôi",
+    "short": "Gồm 1 PURE NMN 12000MG+ và 1 NMN Regene",
+    "price": 11900000,
+    "compareAt": null,
+    "theme": "duo",
+    "image": "",
+    "gallery": [],
+    "desc": "Kết hợp hai dòng NMN: PURE NMN 12000MG+ cho nhu cầu bổ sung hằng ngày và NMN Regene cho nhu cầu chăm sóc sắc đẹp.",
+    "highlights": [
+      "1 lọ PURE NMN 12000MG+ (60 viên)",
+      "1 sản phẩm NMN Regene",
+      "Đặt một lần cho cả hai sản phẩm"
+    ],
+    "specs": [
+      [
+        "Gồm",
+        "1 PURE NMN 12000MG+ · 1 NMN Regene"
+      ],
+      [
+        "Xuất xứ",
+        "Nhật Bản"
+      ],
+      [
+        "Thương hiệu",
+        "Clastive"
+      ]
+    ],
+    "usage": [
+      "Dùng từng sản phẩm theo hướng dẫn trên nhãn.",
+      "Không dùng quá liều khuyến nghị của mỗi sản phẩm."
+    ],
+    "homeSlot": 0,
+    "homeTag": "",
+    "homeTitle": "",
+    "homeLead": "",
+    "forWho": "",
+    "homeSpecs": []
+  }
+]
