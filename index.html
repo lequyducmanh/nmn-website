@@ -56,7 +56,6 @@ button{font:inherit;color:inherit}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 #scene{position:fixed;top:0;left:0;width:100%;height:100vh;z-index:0;pointer-events:none}
 @supports (height:100lvh){ #scene{height:100lvh} }
-body[data-view="news"] #scene{display:none}
 .svg-defs{position:absolute;width:0;height:0;overflow:hidden}
 
 /* typography */
@@ -133,7 +132,6 @@ body.menu-open .menu a.m{transform:none;opacity:1}
 .side a i{width:7px;height:7px;border-radius:50%;border:1px solid rgba(19,32,42,.35);transition:.4s;flex:none}
 .side a:hover span,.side a.active span{opacity:1;transform:none}
 .side a.active i{background:var(--gold);border-color:var(--gold);transform:scale(1.3)}
-body[data-view="news"] .side{display:none}
 
 /* =====================================================================
    HOME VIEW
@@ -401,6 +399,190 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
 .foot .links a{color:var(--ink-2)}
 
 /* =====================================================================
+   SHOP · CART · CHECKOUT
+   ===================================================================== */
+body:not([data-view="home"]) #scene,body:not([data-view="home"]) .side{display:none}
+body.cart-open{overflow:hidden}
+.cart-btn{position:relative;width:44px;height:44px;border-radius:50%;border:1px solid rgba(19,32,42,.2);background:rgba(255,255,255,.6);cursor:pointer;display:grid;place-items:center;flex:none;transition:background .3s}
+.cart-btn:hover{background:#fff}
+.cart-btn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.5}
+.cart-count{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--rose);color:#fff;font-size:11px;font-weight:600;line-height:20px;text-align:center}
+.cart-count.bump{animation:bump .5s}
+@keyframes bump{30%{transform:scale(1.35)}}
+.buy-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+#shop{padding-bottom:40px}
+.shero{padding:calc(var(--header-h) + 60px) 0 34px}
+.shero h1{font-size:clamp(38px,5.4vw,80px);line-height:1.16;margin:0 0 16px}
+.shero p{font-size:clamp(16px,1.25vw,18px);color:var(--ink-2);max-width:620px}
+.perks{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.perks span{display:inline-flex;align-items:center;gap:8px;font-size:13px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.6);border:1px solid var(--line);color:var(--ink-2)}
+.perks svg,.minis svg{width:15px;height:15px;stroke:var(--gold);fill:none;stroke-width:1.7;flex:none}
+
+.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.pcard{display:flex;flex-direction:column;padding:12px;min-width:0}
+.pvis{position:relative;display:block;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:var(--pv,linear-gradient(150deg,#fbf6ec,#ecdfc6))}
+.pvis svg,.pvis img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.pcard:hover .pvis svg,.pcard:hover .pvis img{transform:scale(1.04)}
+.pvis .tagx{position:absolute;left:12px;top:12px;z-index:2;font-size:11px;font-weight:500;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.9);color:var(--ink)}
+.pcard .pbody{padding:16px 8px 6px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pcard h3{font-size:clamp(21px,1.7vw,24px);line-height:1.3;margin:0}
+.pcard h3 a{text-decoration:none}
+.pcard h3 a:hover{color:var(--gold)}
+.pcard .short{font-size:14px;color:var(--muted)}
+.pprice{display:flex;align-items:baseline;gap:6px 10px;flex-wrap:wrap}
+.pprice b{font-family:var(--serif);font-size:clamp(24px,2vw,28px);font-weight:600;line-height:1.2;color:var(--ink)}
+.pprice s{font-size:14px;color:var(--muted)}
+.pprice .off{font-size:11px;font-weight:600;color:var(--rose);background:rgba(143,67,87,.1);padding:2px 8px;border-radius:999px}
+.pactions{display:flex;gap:8px;margin-top:auto;padding-top:10px}
+.pactions .btn{flex:1 1 0;min-width:0;padding-left:12px;padding-right:12px}
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:60px}
+.steps3 .glass{padding:22px}
+.steps3 b{font-family:var(--serif);font-size:15px;color:var(--gold);font-style:italic;font-weight:500}
+.steps3 h3{margin:6px 0 4px}
+.steps3 p{font-size:14px;color:var(--ink-2)}
+
+/* product detail */
+.crumbs{font-size:13px;color:var(--muted);margin:calc(var(--header-h) + 34px) 0 22px;display:flex;gap:8px;flex-wrap:wrap}
+.crumbs a{color:var(--ink-2);text-decoration:none}
+.crumbs a:hover{color:var(--gold)}
+.pdetail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:start}
+.pdetail > .pvis{border-radius:26px;box-shadow:var(--shadow);position:sticky;top:calc(var(--header-h) + 20px)}
+.pinfo h1{font-size:clamp(32px,3.6vw,52px);line-height:1.2;margin:10px 0}
+.pinfo .short{color:var(--muted);font-size:15px}
+.pinfo .pprice{margin:18px 0 2px}
+.pinfo .pprice b{font-size:clamp(28px,2.6vw,36px)}
+.pinfo .note-s{font-size:12px;color:var(--muted)}
+.pinfo .lead2{color:var(--ink-2);margin:16px 0 14px}
+.hl{list-style:none;display:grid;gap:8px}
+.hl li{position:relative;padding-left:22px;font-size:15px;color:var(--ink-2)}
+.hl li::before{content:"";position:absolute;left:0;top:13px;width:12px;height:1px;background:var(--gold)}
+.buyrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:24px 0 16px}
+.buyrow .btn{flex:1 1 150px}
+.qty{display:inline-flex;align-items:center;border:1px solid rgba(19,32,42,.22);border-radius:999px;background:#fff;height:48px;flex:none}
+.qty button{width:44px;height:100%;border:0;background:transparent;cursor:pointer;font-size:18px;line-height:1;color:var(--ink);border-radius:999px}
+.qty button:hover{background:rgba(19,32,42,.05)}
+.qty button:disabled{opacity:.3;cursor:default}
+.qty input{width:40px;height:100%;border:0;background:transparent;text-align:center;font-family:var(--sans);font-size:16px;font-weight:500;color:var(--ink);-moz-appearance:textfield;appearance:textfield;outline:0}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty.sm{height:36px}.qty.sm button{width:34px;font-size:16px}.qty.sm input{width:30px;font-size:16px}
+.minis{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--ink-2);padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.minis span{display:inline-flex;align-items:center;gap:6px}
+.acc details{border-bottom:1px solid var(--line)}
+.acc summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 0;font-family:var(--serif);font-size:20px;font-weight:600;color:var(--ink)}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";font-family:var(--sans);font-weight:300;font-size:24px;line-height:1;color:var(--gold);transition:transform .3s}
+.acc details[open] summary::after{transform:rotate(45deg)}
+.acc .ac-body{padding:0 0 20px;font-size:15px;color:var(--ink-2)}
+.acc .ac-body ul{padding-left:1.2em}
+.acc .ac-body li+li{margin-top:.35em}
+.acc table{width:100%;border-collapse:collapse;font-size:14px}
+.acc td{padding:9px 0;border-top:1px solid var(--line);vertical-align:top}
+.acc td:first-child{color:var(--muted);width:40%;padding-right:12px}
+.related{margin-top:80px}
+
+/* cart drawer */
+.cart-ov{position:fixed;inset:0;z-index:55;background:rgba(19,32,42,.4);opacity:0;visibility:hidden;transition:opacity .4s, visibility .4s}
+.cart{position:fixed;top:0;right:0;bottom:0;z-index:56;width:min(440px,100%);background:#fbf8f2;box-shadow:-30px 0 80px -30px rgba(0,0,0,.4);display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .5s cubic-bezier(.2,.8,.2,1), visibility .5s}
+body.cart-open .cart-ov{opacity:1;visibility:visible}
+body.cart-open .cart{transform:none;visibility:visible}
+.cart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(16px + env(safe-area-inset-top)) 20px 14px;border-bottom:1px solid var(--line)}
+.cart-head h2{font-size:24px;margin:0}
+.cart-head h2 small{font-family:var(--sans);font-size:13px;color:var(--muted);font-weight:400;margin-left:8px}
+.icon-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;display:grid;place-items:center;flex:none}
+.icon-btn svg{width:16px;height:16px;stroke:var(--ink);stroke-width:1.8;fill:none}
+.cart-items{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px 20px}
+.citem{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.citem .pvis{border-radius:14px}
+.citem h4{font-size:17px;line-height:1.3;margin:0 0 2px}
+.citem h4 a{text-decoration:none}
+.citem .unit{font-size:12px;color:var(--muted)}
+.citem .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}
+.citem .line{font-weight:500;color:var(--ink);font-size:15px;white-space:nowrap}
+.rm{border:0;background:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;padding:4px 0}
+.rm:hover{color:var(--rose)}
+.cart-empty{text-align:center;padding:56px 10px;color:var(--muted)}
+.cart-empty b{display:block;font-family:var(--serif);font-size:24px;color:var(--ink);margin-bottom:6px;font-weight:600}
+.cart-empty .btn{margin-top:18px}
+.cart-foot{padding:14px 20px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff}
+.sumrow{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--ink-2);padding:3px 0}
+.sumrow.total{font-size:16px;color:var(--ink);font-weight:500;padding-top:10px;margin-top:6px;border-top:1px dashed var(--line);align-items:baseline}
+.sumrow.total b{font-family:var(--serif);font-size:24px;font-weight:600}
+.sumrow .muted{color:var(--muted);text-align:right}
+.cart-foot .btn{width:100%;margin-top:12px}
+.cart-foot .btn + .btn{margin-top:8px}
+
+/* checkout */
+.co{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(20px,3vw,40px);align-items:start}
+.co-title{font-size:clamp(32px,3.6vw,52px);line-height:1.2;margin:0 0 6px}
+.co-sub{color:var(--muted);margin-bottom:26px}
+.fs{padding:clamp(20px,2.6vw,32px);margin-bottom:18px}
+.fs h3{font-size:22px;margin:0 0 16px}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label{font-size:13px;font-weight:500;color:var(--ink-2)}
+.f label i{color:var(--rose);font-style:normal}
+.f input,.f textarea{width:100%;font-family:var(--sans);font-size:16px;color:var(--ink);background:#fff;border:1px solid rgba(19,32,42,.18);border-radius:14px;padding:12px 14px;outline:0;transition:border-color .3s, box-shadow .3s;-webkit-appearance:none;appearance:none}
+.f textarea{min-height:90px;resize:vertical}
+.f input:focus,.f textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,166,111,.2)}
+.f.err input,.f.err textarea{border-color:var(--rose)}
+.f .msg{font-size:12px;color:var(--rose)}
+.f .msg:empty{display:none}
+.pay{display:grid;gap:10px}
+.pay label{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;align-items:start;padding:16px;border:1px solid rgba(19,32,42,.16);border-radius:16px;background:#fff;cursor:pointer;transition:border-color .3s, box-shadow .3s}
+.pay label.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,166,111,.18)}
+.pay input{width:18px;height:18px;margin-top:3px;accent-color:var(--ink)}
+.pay b{display:block;font-weight:500;color:var(--ink);font-size:15px}
+.pay small{font-size:13px;color:var(--muted)}
+.osum{position:sticky;top:calc(var(--header-h) + 20px);padding:clamp(20px,2.6vw,30px)}
+.osum h3{font-size:22px;margin:0 0 6px}
+.oitem{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.oitem .pvis{border-radius:12px}
+.oitem .n{font-size:14px;color:var(--ink);font-weight:500;line-height:1.35}
+.oitem .q{font-size:12px;color:var(--muted)}
+.oitem .p{font-size:14px;color:var(--ink);white-space:nowrap}
+.osum .sums{margin-top:12px}
+.osum .btn{width:100%;margin-top:16px}
+.fine{font-size:12px;color:var(--muted);margin-top:12px}
+
+/* order result */
+.done{max-width:780px;margin:calc(var(--header-h) + 50px) auto 0;text-align:center}
+.done .ok{width:72px;height:72px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#fff,#efe6d6);box-shadow:inset 0 0 0 1px rgba(163,128,76,.3)}
+.done .ok svg{width:30px;height:30px;stroke:var(--gold);fill:none;stroke-width:1.8}
+.done h1{font-size:clamp(30px,3.6vw,50px);line-height:1.22;margin-bottom:10px}
+.done > p{color:var(--ink-2);max-width:600px;margin:0 auto}
+.done .code{display:inline-block;font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:.04em;padding:6px 18px;border-radius:999px;background:#fff;border:1px solid var(--line);margin:14px 0 4px}
+.done .box{text-align:left;padding:clamp(20px,3vw,32px);margin-top:22px}
+.done .box h3{font-size:22px;margin:0 0 12px}
+.done textarea{width:100%;min-height:260px;font-family:var(--sans);font-size:14px;line-height:1.6;border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;color:var(--ink);resize:vertical}
+.done .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.done .btns .btn{flex:1 1 180px}
+.bank{display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:20px;align-items:center}
+.bank img{width:180px;height:auto;border-radius:12px;background:#fff;border:1px solid var(--line)}
+.bank dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;font-size:14px}
+.bank dt{color:var(--muted)}
+.bank dd{color:var(--ink);font-weight:500;overflow-wrap:anywhere}
+@media (max-width:980px){
+  .pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pdetail,.co{grid-template-columns:minmax(0,1fr)}
+  .pdetail > .pvis{position:relative;top:0;max-width:560px;width:100%;margin:0 auto}
+  .osum{position:relative;top:0}
+}
+@media (max-width:760px){
+  .pgrid,.steps3,.fgrid{grid-template-columns:minmax(0,1fr)}
+  .bank{grid-template-columns:minmax(0,1fr)}
+  .bank img{margin:0 auto}
+  .h-actions{gap:8px}
+  .citem{grid-template-columns:64px minmax(0,1fr)}
+}
+@media (max-height:700px){
+  .cart-foot .btn + .btn{display:none}
+  .cart-foot .btn{margin-top:10px}
+  .sumrow.total b{font-size:21px}
+}
+
+/* =====================================================================
    RESPONSIVE
    ===================================================================== */
 @media (max-width:1180px){
@@ -462,6 +644,8 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
   .specs li{flex-direction:column;gap:2px}
   .specs li span:last-child{text-align:left}
   .buy .btn,.hero-cta .btn,.cta-row .btn,.band .btns .btn{width:100%}
+  .buy-btns{width:100%}
+  .buy-btns .btn{flex:1 1 100%}
   .brand-name small{letter-spacing:.24em}
 }
 @media (hover:none){
@@ -481,6 +665,13 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
   <linearGradient id="glassG" x1="0" x2="1"><stop offset="0" stop-color="#f4efe6"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#d9d0c0"/></linearGradient>
   <linearGradient id="curveGrad" x1="0" x2="1"><stop offset="0" stop-color="#c8a66f"/><stop offset="1" stop-color="#2c6a6d"/></linearGradient>
   <linearGradient id="areaGrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c8a66f" stop-opacity=".28"/><stop offset="1" stop-color="#c8a66f" stop-opacity="0"/></linearGradient>
+  <!-- product illustrations -->
+  <linearGradient id="bW" x1="0" x2="1"><stop offset="0" stop-color="#e4ddd0"/><stop offset=".22" stop-color="#fdfbf7"/><stop offset=".55" stop-color="#f6f2ea"/><stop offset="1" stop-color="#cfc6b5"/></linearGradient>
+  <linearGradient id="bR" x1="0" x2="1"><stop offset="0" stop-color="#3a0f1d"/><stop offset=".25" stop-color="#7a2840"/><stop offset=".55" stop-color="#5c1a2c"/><stop offset="1" stop-color="#2a0912"/></linearGradient>
+  <linearGradient id="capG" x1="0" x2="1"><stop offset="0" stop-color="#8f6d3c"/><stop offset=".3" stop-color="#f1d9a6"/><stop offset=".55" stop-color="#c9a46c"/><stop offset="1" stop-color="#7d5e31"/></linearGradient>
+  <linearGradient id="capR" x1="0" x2="1"><stop offset="0" stop-color="#a77e68"/><stop offset=".3" stop-color="#f6dccb"/><stop offset=".55" stop-color="#e2bca2"/><stop offset="1" stop-color="#97705b"/></linearGradient>
+  <linearGradient id="labShade" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".25" stop-color="#000" stop-opacity="0"/><stop offset=".75" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
+  <radialGradient id="shadowG"><stop offset="0" stop-color="#3a2a18" stop-opacity=".35"/><stop offset="1" stop-color="#3a2a18" stop-opacity="0"/></radialGradient>
 </defs></svg>
 <div class="bgfx" aria-hidden="true"></div>
 <div id="loader"><div class="mark">NMN</div><div class="bar"></div></div>
@@ -493,12 +684,16 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
   <nav class="main" aria-label="Điều hướng chính">
     <a href="#nad">NAD+</a>
     <a href="#research">Nghiên cứu</a>
-    <a href="#pure">PURE NMN</a>
-    <a href="#regene">NMN Regene</a>
+    <a href="#pure">Sản phẩm</a>
+    <a href="#cua-hang">Cửa hàng</a>
     <a href="#tin-tuc">Tin tức &amp; Sự kiện</a>
   </nav>
   <div class="h-actions">
-    <a class="btn btn-ink" href="#contact">Tư vấn</a>
+    <a class="btn btn-ink" href="#cua-hang">Mua hàng</a>
+    <button class="cart-btn" id="cart-btn" data-cart-open aria-label="Mở giỏ hàng" aria-controls="cart">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+      <span class="cart-count" data-cart-count hidden>0</span>
+    </button>
     <button class="burger" id="burger" aria-label="Mở menu" aria-expanded="false" aria-controls="menu"><i></i><i></i><i></i></button>
   </div>
 </header>
@@ -511,6 +706,7 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
     <a class="m" href="#pure">PURE NMN 12000MG+</a>
     <a class="m" href="#regene">NMN Regene</a>
     <a class="m" href="#ritual">Mỗi ngày</a>
+    <a class="m" href="#cua-hang">Cửa hàng</a>
     <a class="m" href="#tin-tuc">Tin tức &amp; Sự kiện</a>
   </nav>
   <div class="m-cta">
@@ -669,9 +865,11 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
           <li><span>Xuất xứ</span><span>Nhật Bản</span></li>
         </ul>
         <div class="buy reveal d3">
-          <div class="price"><strong data-price="pure"></strong><small data-price-note></small></div>
-          <a class="btn btn-ink" href="#contact">Đặt mua
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.4"/></svg></a>
+          <div class="price"><strong data-price="pure-nmn"></strong><small data-price-note></small></div>
+          <div class="buy-btns">
+            <button class="btn btn-ink" data-add="pure-nmn">Thêm vào giỏ</button>
+            <a class="btn btn-line" href="#san-pham/pure-nmn">Chi tiết</a>
+          </div>
         </div>
         <div class="for reveal d3">Phù hợp với người trưởng thành muốn bổ sung NMN hằng ngày, đồng thời quan tâm đến làn da.</div>
       </div>
@@ -692,9 +890,11 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
           <li><span>Xuất xứ</span><span>Nhật Bản</span></li>
         </ul>
         <div class="buy reveal d3">
-          <div class="price"><strong data-price="regene"></strong><small data-price-note></small></div>
-          <a class="btn btn-ink" href="#contact">Đặt mua
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.4"/></svg></a>
+          <div class="price"><strong data-price="nmn-regene"></strong><small data-price-note></small></div>
+          <div class="buy-btns">
+            <button class="btn btn-ink" data-add="nmn-regene">Thêm vào giỏ</button>
+            <a class="btn btn-line" href="#san-pham/nmn-regene">Chi tiết</a>
+          </div>
         </div>
         <div class="for reveal d3">Phù hợp với người muốn kết hợp bổ sung NMN vào thói quen chăm sóc sắc đẹp hằng ngày.</div>
       </div>
@@ -746,7 +946,7 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
           <a class="btn btn-ink" data-link="phone" href="#">Gọi tư vấn
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.4"/></svg></a>
           <a class="btn btn-line" data-link="zalo" href="#">Nhắn Zalo</a>
-          <a class="btn btn-line" href="#tin-tuc">Tin tức &amp; Sự kiện</a>
+          <a class="btn btn-line" href="#cua-hang">Mua hàng</a>
         </div>
       </div>
     </div>
@@ -811,13 +1011,18 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
   </div>
 </main>
 
+<!-- =====================================================================
+     VIEW 3 · CỬA HÀNG  (#cua-hang, #san-pham/<slug>, #thanh-toan, #don-hang/<mã>)
+     ===================================================================== -->
+<main id="shop" hidden><div class="nwrap" id="shop-root"></div></main>
+
 <footer class="site">
   <div class="foot">
     <div>
       <h5 data-shop-name></h5>
       <p>Hình ảnh sản phẩm 3D mang tính minh họa. Thông tin thành phần theo nhà phân phối — vui lòng đối chiếu nhãn sản phẩm thực tế.</p>
       <p style="margin-top:10px">Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.</p>
-      <div class="links"><a href="#hero">Trang chủ</a><a href="#pure">Sản phẩm</a><a href="#tin-tuc">Tin tức &amp; Sự kiện</a><a href="#contact">Liên hệ</a></div>
+      <div class="links"><a href="#hero">Trang chủ</a><a href="#cua-hang">Cửa hàng</a><a href="#tin-tuc">Tin tức &amp; Sự kiện</a><a href="#contact">Liên hệ</a></div>
     </div>
     <div>
       <h5>Tài liệu tham khảo</h5>
@@ -834,6 +1039,15 @@ footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + e
   <button class="close" id="r-close" aria-label="Đóng"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
   <article class="sheet" id="sheet"></article>
 </div>
+<div class="cart-ov" id="cart-ov"></div>
+<aside class="cart" id="cart" role="dialog" aria-modal="true" aria-labelledby="cart-title" aria-hidden="true">
+  <div class="cart-head">
+    <h2 id="cart-title">Giỏ hàng<small data-cart-count-text></small></h2>
+    <button class="icon-btn" id="cart-close" aria-label="Đóng giỏ hàng"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-foot" id="cart-foot"></div>
+</aside>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -846,10 +1060,60 @@ window.CONFIG = {
   shopName: "Tên cửa hàng của bạn",
   phone: "0900000000",
   zalo:  "0900000000",
-  price: { pure: "Liên hệ", regene: "Liên hệ" },   // ví dụ: "4.950.000đ"
   priceNote: "Giá có thể thay đổi theo thời điểm",
-  postsPerPage: 6
+  postsPerPage: 6,
+
+  /* ----- Cửa hàng & đặt hàng ----- */
+  shippingFee: null,        // phí giao hàng (số, ví dụ 30000). null = báo phí khi gọi xác nhận đơn
+  freeShippingFrom: null,   // miễn phí giao hàng cho đơn từ số tiền này (ví dụ 2000000). null = không áp dụng
+  orderEndpoint: "",        // (tuỳ chọn) link nhận đơn tự động, ví dụ Google Apps Script ghi vào Google Sheets — xem README
+  bank: {                   // điền đủ để bật "Chuyển khoản ngân hàng" kèm mã QR; để trống = chỉ nhận COD
+    code: "",               // mã ngân hàng theo VietQR, ví dụ "VCB", "MB", "TCB", "ACB"
+    account: "",            // số tài khoản
+    owner: "",              // tên chủ tài khoản (không dấu, viết hoa)
+    name: ""                // tên ngân hàng hiển thị, ví dụ "Vietcombank"
+  },
+  perks: ["Xuất xứ Nhật Bản", "Tư vấn miễn phí qua Zalo", "Thanh toán khi nhận hàng (COD)"]
 };
+
+/* =====================================================================
+   4) SẢN PHẨM — trang Cửa hàng & giỏ hàng
+   price: giá bán (số, đơn vị đồng) · compareAt: giá gốc để hiện gạch ngang (null nếu không giảm)
+   image: (tuỳ chọn) link ảnh sản phẩm thật; để trống sẽ dùng hình minh họa
+   ⚠ Giá mặc định lấy theo giá niêm yết của một đại lý — hãy sửa theo giá bán của bạn.
+   ===================================================================== */
+window.PRODUCTS = [
+  {
+    slug: "pure-nmn", theme: "pearl", image: "",
+    name: "PURE NMN 12000MG+", tag: "Sức khỏe toàn diện",
+    short: "Lọ 60 viên · tổng 12.000mg NMN",
+    price: 4950000, compareAt: null,
+    desc: "Viên uống bổ sung NMN xuất xứ Nhật Bản. Mỗi lọ 60 viên chứa tổng cộng 12.000mg NMN, kết hợp các thành phần hướng tới chăm sóc làn da từ bên trong.",
+    highlights: ["Tổng 12.000mg NMN mỗi lọ", "Kết hợp collagen peptide, glutathione, hyaluronic acid", "Dùng 2 viên mỗi ngày — một lọ dùng được khoảng 30 ngày"],
+    specs: [["Tổng NMN mỗi lọ", "12.000mg"], ["Quy cách", "Lọ 60 viên"], ["Thành phần kèm", "Collagen peptide, glutathione, hyaluronic acid, nhau thai ngựa"], ["Xuất xứ", "Nhật Bản"], ["Thương hiệu", "Clastive"]],
+    usage: ["Uống 2 viên mỗi ngày, sau bữa ăn.", "Uống cùng nước lọc hoặc nước ấm."]
+  },
+  {
+    slug: "nmn-regene", theme: "rose", image: "",
+    name: "NMN Regene", tag: "Dòng sắc đẹp",
+    short: "320mg β-NMN mỗi khẩu phần",
+    price: 6950000, compareAt: null,
+    desc: "Viên uống bổ sung β-NMN xuất xứ Nhật Bản, mỗi khẩu phần chứa 320mg β-NMN, được định vị cho nhu cầu chăm sóc sắc đẹp và làn da.",
+    highlights: ["320mg β-NMN mỗi khẩu phần", "Chỉ 2,11 kcal mỗi khẩu phần", "Xuất xứ Nhật Bản"],
+    specs: [["β-NMN", "320mg / khẩu phần"], ["Năng lượng", "2,11 kcal"], ["Carbohydrate", "0,49 g"], ["Lipid · Protein", "0,018 g · 0 g"], ["Xuất xứ", "Nhật Bản"], ["Thương hiệu", "Clastive"]],
+    usage: ["Dùng theo liều ghi trên nhãn sản phẩm.", "Uống cùng nước lọc hoặc nước ấm."]
+  },
+  {
+    slug: "bo-doi", theme: "duo", image: "",
+    name: "Bộ đôi PURE NMN + NMN Regene", tag: "Bộ đôi",
+    short: "Gồm 1 PURE NMN 12000MG+ và 1 NMN Regene",
+    price: 11900000, compareAt: null,   // muốn ưu đãi: đặt compareAt = 11900000 và giảm price
+    desc: "Kết hợp hai dòng NMN: PURE NMN 12000MG+ cho nhu cầu bổ sung hằng ngày và NMN Regene cho nhu cầu chăm sóc sắc đẹp.",
+    highlights: ["1 lọ PURE NMN 12000MG+ (60 viên)", "1 sản phẩm NMN Regene", "Đặt một lần cho cả hai sản phẩm"],
+    specs: [["Gồm", "1 PURE NMN 12000MG+ · 1 NMN Regene"], ["Xuất xứ", "Nhật Bản"], ["Thương hiệu", "Clastive"]],
+    usage: ["Dùng từng sản phẩm theo hướng dẫn trên nhãn.", "Không dùng quá liều khuyến nghị của mỗi sản phẩm."]
+  }
+];
 
 /* =====================================================================
    2) BÀI VIẾT — trang Tin tức
@@ -1082,6 +1346,433 @@ window.SCENE3D = {
   }
 };
 
+/* ---------- SHOP: cart, product pages, checkout ---------- */
+window.SHOP = (function(){
+  const C = window.CONFIG, P = window.PRODUCTS;
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const fmt = n => new Intl.NumberFormat("vi-VN").format(Math.round(n)) + "đ";
+  const bySlug = s => P.find(p => p.slug === s);
+  const zaloUrl = "https://zalo.me/" + encodeURIComponent(C.zalo);
+  const hasBank = !!(C.bank && C.bank.account && C.bank.code);
+  const MAXQ = 99, KEY = "nmn_cart_v1", ORDERS = "nmn_orders_v1";
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (_) { return d; } },
+    set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }
+  };
+  const arrow = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.4"/></svg>';
+  const check = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  /* ---------- product illustration (used when no photo is set) ---------- */
+  const THEMES = {
+    pearl: "linear-gradient(150deg,#fbf6ec 0%,#efe2c8 60%,#e2cba2 100%)",
+    rose:  "linear-gradient(150deg,#f8ecee 0%,#e9c9d0 60%,#d2a2ae 100%)",
+    duo:   "linear-gradient(150deg,#f6f1e8 0%,#e8d6bc 55%,#dcb2bc 100%)"
+  };
+  function bottle(cx, base, s, k){
+    const W = 150 * s, H = 230 * s, x = cx - W / 2, y = base - H, r = 26 * s;
+    const neckW = 80 * s, neckH = 18 * s, capW = 98 * s, capH = 58 * s, capY = y - neckH - capH + 6 * s;
+    const white = k === "w";
+    const lab = white ? { bg: "#fdfbf7", ink: "#13202a", acc: "#a3804c", t: "PURE NMN", s: "12000MG+", ts: 20, ss: 17 }
+                      : { bg: "#3b1020", ink: "#fbf0ea", acc: "#e6bfa6", t: "NMN", s: "Regene", ts: 32, ss: 23 };
+    const ly = y + H * .3, lh = H * .42;
+    let ridges = "";
+    for (let i = 1; i < 9; i++) ridges += `<rect x="${(cx - capW / 2 + i * capW / 9).toFixed(1)}" y="${(capY + 8 * s).toFixed(1)}" width="${(1.3 * s).toFixed(2)}" height="${(capH - 16 * s).toFixed(1)}" fill="#000" opacity=".12"/>`;
+    return `<ellipse cx="${cx}" cy="${base + 6 * s}" rx="${W * .8}" ry="${16 * s}" fill="url(#shadowG)"/>
+      <rect x="${cx - neckW / 2}" y="${y - neckH}" width="${neckW}" height="${neckH + r}" fill="url(#${white ? "bW" : "bR"})"/>
+      <rect x="${x}" y="${y}" width="${W}" height="${H}" rx="${r}" fill="url(#${white ? "bW" : "bR"})"/>
+      <rect x="${x}" y="${ly}" width="${W}" height="${lh}" fill="${lab.bg}"/>
+      <rect x="${x}" y="${ly}" width="${W}" height="${lh}" fill="url(#labShade)"/>
+      <rect x="${x}" y="${ly + 7 * s}" width="${W}" height="${1.3 * s}" fill="${lab.acc}"/>
+      <rect x="${x}" y="${ly + lh - 8.3 * s}" width="${W}" height="${1.3 * s}" fill="${lab.acc}"/>
+      <text x="${cx}" y="${ly + lh * .5}" text-anchor="middle" font-family="Noto Serif Display, Georgia, serif" font-weight="600" font-size="${lab.ts * s}" fill="${lab.ink}">${lab.t}</text>
+      <text x="${cx}" y="${ly + lh * .78}" text-anchor="middle" font-family="Noto Serif Display, Georgia, serif" font-style="italic" font-weight="500" font-size="${lab.ss * s}" fill="${lab.acc}">${lab.s}</text>
+      <rect x="${x + 14 * s}" y="${y + 12 * s}" width="${9 * s}" height="${H - 24 * s}" rx="${4.5 * s}" fill="#fff" opacity="${white ? .6 : .2}"/>
+      <rect x="${cx - capW / 2}" y="${capY}" width="${capW}" height="${capH}" rx="${9 * s}" fill="url(#${white ? "capG" : "capR"})"/>${ridges}`;
+  }
+  function art(p){
+    let g = `<circle cx="300" cy="250" r="185" fill="url(#pearl)" opacity=".85"/>
+      <ellipse cx="300" cy="250" rx="255" ry="74" fill="none" stroke="#a3804c" stroke-opacity=".35" transform="rotate(-16 300 250)"/>
+      <circle cx="74" cy="300" r="7" fill="#c8a66f"/><circle cx="530" cy="190" r="5" fill="#2c6a6d" opacity=".7"/>`;
+    if (p.theme === "duo") g += bottle(212, 470, 1.1, "w") + bottle(392, 488, 1.1, "r");
+    else g += bottle(300, 478, 1.3, p.theme === "rose" ? "r" : "w");
+    return `<svg viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${g}</svg>`;
+  }
+  function visual(p, extra = ""){
+    const media = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" decoding="async">` : art(p);
+    return `<span class="pvis"${extra} style="--pv:${THEMES[p.theme] || THEMES.pearl}">${media}</span>`;
+  }
+  const priceHtml = p => `<div class="pprice"><b>${fmt(p.price)}</b>${p.compareAt && p.compareAt > p.price ? `<s>${fmt(p.compareAt)}</s><span class="off">-${Math.round((1 - p.price / p.compareAt) * 100)}%</span>` : ""}</div>`;
+  const perkIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const perks = cls => `<div class="${cls}">${(C.perks || []).map(t => `<span>${perkIcon}${esc(t)}</span>`).join("")}</div>`;
+
+  /* ---------- cart state (kept on this device) ---------- */
+  let cart = store.get(KEY, []).filter(i => bySlug(i.slug) && i.qty > 0).map(i => ({ slug: i.slug, qty: Math.min(MAXQ, i.qty | 0) }));
+  const count = () => cart.reduce((a, i) => a + i.qty, 0);
+  const subtotal = () => cart.reduce((a, i) => a + bySlug(i.slug).price * i.qty, 0);
+  function totals(){
+    const sub = subtotal();
+    let ship = C.shippingFee;
+    if (C.freeShippingFrom != null && sub >= C.freeShippingFrom) ship = 0;
+    return { sub, ship, total: sub + (ship || 0) };
+  }
+  const shipText = s => s == null ? "Báo khi xác nhận đơn" : s === 0 ? "Miễn phí" : fmt(s);
+  function save(){ store.set(KEY, cart); paint(); }
+  function add(slug, qty = 1){
+    if (!bySlug(slug)) return;
+    const it = cart.find(i => i.slug === slug);
+    if (it) it.qty = Math.min(MAXQ, it.qty + qty); else cart.push({ slug, qty: Math.min(MAXQ, qty) });
+    save();
+    const b = $("[data-cart-count]"); if (b){ b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump"); }
+  }
+  function setQty(slug, q){
+    q = Math.max(0, Math.min(MAXQ, parseInt(q, 10) || 0));
+    const it = cart.find(i => i.slug === slug); if (!it) return;
+    if (q === 0) cart = cart.filter(i => i !== it); else it.qty = q;
+    save();
+  }
+  const qtyCtl = (slug, q, sm) => `<div class="qty${sm ? " sm" : ""}" role="group" aria-label="Số lượng">
+      <button type="button" data-q="${esc(slug)}" data-d="-1" aria-label="Giảm số lượng">−</button>
+      <input type="number" inputmode="numeric" min="1" max="${MAXQ}" value="${q}" data-qi="${esc(slug)}" aria-label="Số lượng">
+      <button type="button" data-q="${esc(slug)}" data-d="1" aria-label="Tăng số lượng"${q >= MAXQ ? " disabled" : ""}>+</button></div>`;
+
+  /* ---------- drawer ---------- */
+  const drawer = $("#cart"), ov = $("#cart-ov");
+  let lastFocus = null;
+  function openCart(){
+    if (document.body.classList.contains("cart-open")) return;
+    lastFocus = document.activeElement;
+    document.body.classList.add("cart-open"); drawer.setAttribute("aria-hidden", "false");
+    setTimeout(() => $("#cart-close").focus({ preventScroll: true }), 50);
+  }
+  function closeCart(){
+    if (!document.body.classList.contains("cart-open")) return;
+    document.body.classList.remove("cart-open"); drawer.setAttribute("aria-hidden", "true");
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+  }
+  ov.addEventListener("click", closeCart);
+  $("#cart-close").addEventListener("click", closeCart);
+
+  function paint(){
+    const n = count();
+    $$("[data-cart-count]").forEach(el => { el.textContent = n > 99 ? "99+" : n; el.hidden = n === 0; });
+    $$("[data-cart-count-text]").forEach(el => el.textContent = n ? `(${n} sản phẩm)` : "");
+    $("#cart-btn").setAttribute("aria-label", n ? `Mở giỏ hàng, ${n} sản phẩm` : "Mở giỏ hàng");
+    const t = totals();
+    $("#cart-items").innerHTML = cart.length ? cart.map(i => {
+      const p = bySlug(i.slug);
+      return `<div class="citem">
+        <a href="#san-pham/${esc(p.slug)}" data-close-cart aria-label="${esc(p.name)}">${visual(p)}</a>
+        <div style="min-width:0">
+          <h4><a href="#san-pham/${esc(p.slug)}" data-close-cart>${esc(p.name)}</a></h4>
+          <div class="unit">${fmt(p.price)} / sản phẩm</div>
+          <div class="row">${qtyCtl(p.slug, i.qty, true)}<span class="line">${fmt(p.price * i.qty)}</span></div>
+          <button class="rm" data-rm="${esc(p.slug)}">Xoá</button>
+        </div></div>`;
+    }).join("") : `<div class="cart-empty"><b>Giỏ hàng đang trống</b>Hãy chọn sản phẩm bạn quan tâm.<br><a class="btn btn-ink" href="#cua-hang" data-close-cart>Xem cửa hàng</a></div>`;
+    $("#cart-foot").hidden = !cart.length;
+    $("#cart-foot").innerHTML = cart.length ? `
+      <div class="sumrow"><span>Tạm tính</span><span>${fmt(t.sub)}</span></div>
+      <div class="sumrow"><span>Phí giao hàng</span><span class="muted">${shipText(t.ship)}</span></div>
+      <div class="sumrow total"><span>Tổng cộng</span><b>${fmt(t.total)}</b></div>
+      <a class="btn btn-ink" href="#thanh-toan" data-close-cart>Tiến hành đặt hàng ${arrow}</a>
+      <button class="btn btn-line" data-close-cart>Tiếp tục mua sắm</button>` : "";
+    if (page === "checkout"){ if (cart.length) renderSummary(); else renderCheckout(); }
+  }
+
+  /* ---------- pages ---------- */
+  const root = $("#shop-root");
+  let page = null;
+  const card = p => `<article class="pcard glass">
+      <a href="#san-pham/${esc(p.slug)}" aria-label="Xem ${esc(p.name)}" style="text-decoration:none">${visual(p).replace("</span>", `<span class="tagx">${esc(p.tag)}</span></span>`)}</a>
+      <div class="pbody">
+        <h3><a href="#san-pham/${esc(p.slug)}">${esc(p.name)}</a></h3>
+        <p class="short">${esc(p.short)}</p>
+        ${priceHtml(p)}
+        <div class="pactions">
+          <button class="btn btn-ink btn-sm" data-add="${esc(p.slug)}">Thêm vào giỏ</button>
+          <a class="btn btn-line btn-sm" href="#san-pham/${esc(p.slug)}">Chi tiết</a>
+        </div>
+      </div></article>`;
+
+  function renderList(){
+    page = "list";
+    document.title = "Cửa hàng · " + C.brand;
+    root.innerHTML = `
+      <section class="shero">
+        <div class="eyebrow">Cửa hàng chính thức</div>
+        <h1>Chọn sản phẩm <em>phù hợp với bạn</em></h1>
+        <p>Bộ đôi viên uống bổ sung NMN xuất xứ Nhật Bản. Thêm sản phẩm vào giỏ, điền thông tin nhận hàng và chúng tôi sẽ liên hệ xác nhận đơn.</p>
+        ${perks("perks")}
+      </section>
+      <div class="pgrid">${P.map(card).join("")}</div>
+      <div class="steps3">
+        <div class="glass"><b>i.</b><h3>Chọn sản phẩm</h3><p>Thêm sản phẩm vào giỏ hàng, điều chỉnh số lượng tuỳ ý.</p></div>
+        <div class="glass"><b>ii.</b><h3>Điền thông tin</h3><p>Nhập họ tên, số điện thoại, địa chỉ nhận hàng và chọn cách thanh toán.</p></div>
+        <div class="glass"><b>iii.</b><h3>Xác nhận đơn</h3><p>Chúng tôi liên hệ qua điện thoại hoặc Zalo để xác nhận và giao hàng.</p></div>
+      </div>
+      <p class="disclaimer" style="margin-top:28px;text-align:center">Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.</p>`;
+  }
+
+  function renderProduct(slug){
+    const p = bySlug(slug);
+    if (!p){ history.replaceState(null, "", "#cua-hang"); return renderList(); }
+    page = "product";
+    document.title = p.name + " · " + C.brand;
+    const others = P.filter(x => x !== p);
+    root.innerHTML = `
+      <nav class="crumbs" aria-label="Đường dẫn"><a href="#hero">Trang chủ</a><span>/</span><a href="#cua-hang">Cửa hàng</a><span>/</span><span>${esc(p.name)}</span></nav>
+      <div class="pdetail">
+        ${visual(p)}
+        <div class="pinfo">
+          <span class="flag"${p.theme === "rose" ? ' style="color:var(--rose)"' : ""}><i></i>${esc(p.tag)}</span>
+          <h1>${esc(p.name)}</h1>
+          <p class="short">${esc(p.short)}</p>
+          ${priceHtml(p)}
+          <div class="note-s">${esc(C.priceNote)}</div>
+          <p class="lead2">${esc(p.desc)}</p>
+          <ul class="hl">${p.highlights.map(h => `<li>${esc(h)}</li>`).join("")}</ul>
+          <div class="buyrow">
+            <div class="qty" role="group" aria-label="Số lượng">
+              <button type="button" data-step="-1" aria-label="Giảm số lượng">−</button>
+              <input type="number" id="pd-qty" inputmode="numeric" min="1" max="${MAXQ}" value="1" aria-label="Số lượng">
+              <button type="button" data-step="1" aria-label="Tăng số lượng">+</button>
+            </div>
+            <button class="btn btn-ink" data-add="${esc(p.slug)}" data-qty-from="#pd-qty">Thêm vào giỏ</button>
+            <button class="btn btn-line" data-buy="${esc(p.slug)}" data-qty-from="#pd-qty">Mua ngay</button>
+          </div>
+          ${perks("minis")}
+          <div class="acc">
+            <details open><summary>Thành phần &amp; thông số</summary><div class="ac-body"><table>${p.specs.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("")}</table></div></details>
+            <details><summary>Cách dùng &amp; bảo quản</summary><div class="ac-body"><ul>${p.usage.map(u => `<li>${esc(u)}</li>`).join("")}<li>Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp; đóng chặt nắp sau khi mở.</li><li>Để xa tầm tay trẻ em.</li></ul></div></details>
+            <details><summary>Lưu ý</summary><div class="ac-body"><ul><li>Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.</li><li>Không dùng cho người mẫn cảm với bất kỳ thành phần nào của sản phẩm.</li><li>Hỏi ý kiến bác sĩ nếu đang mang thai, cho con bú, có bệnh nền hoặc đang dùng thuốc.</li></ul></div></details>
+          </div>
+        </div>
+      </div>
+      ${others.length ? `<section class="related"><div class="sec-head"><div><div class="eyebrow">Có thể bạn quan tâm</div><h2>Sản phẩm <em>khác</em></h2></div></div><div class="pgrid">${others.map(card).join("")}</div></section>` : ""}`;
+  }
+
+  function renderCheckout(){
+    page = "checkout";
+    document.title = "Đặt hàng · " + C.brand;
+    if (!cart.length){
+      root.innerHTML = `<div class="done"><h1>Giỏ hàng đang trống</h1><p>Hãy thêm sản phẩm vào giỏ trước khi đặt hàng.</p><div class="cta-row"><a class="btn btn-ink" href="#cua-hang">Xem cửa hàng ${arrow}</a></div></div>`;
+      return;
+    }
+    root.innerHTML = `
+      <nav class="crumbs" aria-label="Đường dẫn"><a href="#cua-hang">Cửa hàng</a><span>/</span><span>Đặt hàng</span></nav>
+      <h1 class="co-title">Thông tin <em>đặt hàng</em></h1>
+      <p class="co-sub">Điền thông tin nhận hàng. Chúng tôi sẽ liên hệ xác nhận trước khi giao.</p>
+      <form class="co" id="co-form" novalidate>
+        <div>
+          <div class="fs glass">
+            <h3>Người nhận</h3>
+            <div class="fgrid">
+              <div class="f"><label for="f-name">Họ và tên <i>*</i></label><input id="f-name" name="name" autocomplete="name" required maxlength="80"><span class="msg"></span></div>
+              <div class="f"><label for="f-phone">Số điện thoại <i>*</i></label><input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="16" placeholder="09xx xxx xxx"><span class="msg"></span></div>
+              <div class="f full"><label for="f-email">Email <small style="color:var(--muted);font-weight:400">(không bắt buộc)</small></label><input id="f-email" name="email" type="email" autocomplete="email" maxlength="120"><span class="msg"></span></div>
+            </div>
+          </div>
+          <div class="fs glass">
+            <h3>Địa chỉ nhận hàng</h3>
+            <div class="fgrid">
+              <div class="f full"><label for="f-city">Tỉnh / Thành phố <i>*</i></label><input id="f-city" name="city" autocomplete="address-level1" required maxlength="60"><span class="msg"></span></div>
+              <div class="f full"><label for="f-addr">Địa chỉ cụ thể <i>*</i></label><input id="f-addr" name="address" autocomplete="street-address" required maxlength="200" placeholder="Số nhà, đường, phường/xã"><span class="msg"></span></div>
+              <div class="f full"><label for="f-note">Ghi chú</label><textarea id="f-note" name="note" maxlength="500" placeholder="Thời gian nhận hàng, yêu cầu khác…"></textarea></div>
+            </div>
+          </div>
+          <div class="fs glass">
+            <h3>Thanh toán</h3>
+            <div class="pay">
+              <label class="on"><input type="radio" name="pay" value="cod" checked><span><b>Thanh toán khi nhận hàng (COD)</b><small>Trả tiền mặt cho nhân viên giao hàng.</small></span></label>
+              ${hasBank ? `<label><input type="radio" name="pay" value="bank"><span><b>Chuyển khoản ngân hàng</b><small>Thông tin tài khoản và mã QR hiện sau khi đặt hàng.</small></span></label>` : ""}
+            </div>
+          </div>
+        </div>
+        <aside class="osum glass" id="osum"></aside>
+      </form>`;
+    renderSummary();
+    const form = $("#co-form");
+    form.addEventListener("change", e => { if (e.target.name === "pay") $$(".pay label").forEach(l => l.classList.toggle("on", l.contains(e.target))); });
+    form.addEventListener("input", e => { const f = e.target.closest(".f"); if (f && f.classList.contains("err")) { f.classList.remove("err"); f.querySelector(".msg").textContent = ""; } });
+    form.addEventListener("submit", e => { e.preventDefault(); submit(form); });
+  }
+  function renderSummary(){
+    const box = $("#osum"); if (!box) return;
+    const t = totals();
+    box.innerHTML = `<h3>Đơn hàng <small style="font-family:var(--sans);font-size:13px;color:var(--muted);font-weight:400">(${count()} sản phẩm)</small></h3>
+      ${cart.map(i => { const p = bySlug(i.slug); return `<div class="oitem">${visual(p)}<div style="min-width:0"><div class="n">${esc(p.name)}</div><div class="q">${fmt(p.price)} × ${i.qty}</div></div><div class="p">${fmt(p.price * i.qty)}</div></div>`; }).join("")}
+      <div class="sums">
+        <div class="sumrow"><span>Tạm tính</span><span>${fmt(t.sub)}</span></div>
+        <div class="sumrow"><span>Phí giao hàng</span><span class="muted">${shipText(t.ship)}</span></div>
+        <div class="sumrow total"><span>Tổng cộng</span><b>${fmt(t.total)}</b></div>
+      </div>
+      <button class="btn btn-ink" type="submit" id="co-submit">Đặt hàng ${arrow}</button>
+      <button class="btn btn-line" type="button" data-cart-open>Sửa giỏ hàng</button>
+      <p class="fine">Bằng việc đặt hàng, bạn đồng ý để chúng tôi liên hệ qua số điện thoại đã cung cấp nhằm xác nhận và giao đơn hàng.</p>`;
+  }
+
+  function fieldError(form, name, msg){
+    const f = form.querySelector(`[name="${name}"]`).closest(".f");
+    f.classList.add("err"); f.querySelector(".msg").textContent = msg;
+  }
+  async function submit(form){
+    if (!cart.length) return renderCheckout();
+    const d = Object.fromEntries(new FormData(form));
+    Object.keys(d).forEach(k => d[k] = String(d[k]).trim());
+    const phone = d.phone.replace(/[\s.\-()]/g, "");
+    let bad = [];
+    if (d.name.length < 2) bad.push(["name", "Vui lòng nhập họ và tên."]);
+    if (!/^(0|\+?84)(3|5|7|8|9)\d{8}$/.test(phone)) bad.push(["phone", "Số điện thoại chưa đúng (ví dụ 0912 345 678)."]);
+    if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) bad.push(["email", "Email chưa đúng định dạng."]);
+    if (d.city.length < 2) bad.push(["city", "Vui lòng nhập tỉnh / thành phố."]);
+    if (d.address.length < 5) bad.push(["address", "Vui lòng nhập địa chỉ cụ thể."]);
+    if (bad.length){
+      bad.forEach(([n, m]) => fieldError(form, n, m));
+      const first = form.querySelector(`[name="${bad[0][0]}"]`);
+      first.focus({ preventScroll: true }); first.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
+    const btn = $("#co-submit"); btn.disabled = true; btn.textContent = "Đang gửi đơn…";
+    const now = new Date(), t = totals();
+    const code = "NMN-" + String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+    const order = {
+      code, createdAt: now.toISOString(),
+      customer: { name: d.name, phone, email: d.email, city: d.city, address: d.address, note: d.note },
+      payment: d.pay === "bank" && hasBank ? "bank" : "cod",
+      items: cart.map(i => { const p = bySlug(i.slug); return { slug: p.slug, name: p.name, price: p.price, qty: i.qty, lineTotal: p.price * i.qty }; }),
+      subtotal: t.sub, shipping: t.ship, total: t.total, sent: false
+    };
+    if (C.orderEndpoint){
+      try {
+        await fetch(C.orderEndpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(order) });
+        order.sent = true;
+      } catch (_) { order.sent = false; }
+    }
+    const orders = store.get(ORDERS, []); orders.unshift(order); store.set(ORDERS, orders.slice(0, 10));
+    page = "submitting"; cart = []; save();
+    location.hash = "#don-hang/" + code;
+  }
+
+  function orderText(o){
+    const head = [
+      `ĐƠN HÀNG ${o.code}`,
+      `Khách hàng: ${o.customer.name}`,
+      `Điện thoại: ${o.customer.phone}`,
+      o.customer.email && `Email: ${o.customer.email}`,
+      `Địa chỉ: ${o.customer.address}, ${o.customer.city}`
+    ].filter(Boolean);
+    const items = o.items.map(i => `- ${i.name} × ${i.qty} = ${fmt(i.lineTotal)}`);
+    const foot = [
+      `Tạm tính: ${fmt(o.subtotal)}`,
+      `Phí giao hàng: ${shipText(o.shipping)}`,
+      `Tổng cộng: ${fmt(o.total)}`,
+      `Thanh toán: ${o.payment === "bank" ? "Chuyển khoản ngân hàng" : "Thanh toán khi nhận hàng (COD)"}`,
+      o.customer.note && `Ghi chú: ${o.customer.note}`
+    ].filter(Boolean);
+    return [head.join("\n"), items.join("\n"), foot.join("\n")].join("\n\n");
+  }
+  function renderDone(code){
+    page = "done";
+    const o = store.get(ORDERS, []).find(x => x.code === code);
+    document.title = "Đơn hàng " + code + " · " + C.brand;
+    if (!o){
+      root.innerHTML = `<div class="done"><h1>Không tìm thấy đơn hàng</h1><p>Đơn hàng ${esc(code)} không có trên thiết bị này. Nếu cần hỗ trợ, vui lòng liên hệ hotline.</p><div class="cta-row"><a class="btn btn-ink" href="#cua-hang">Về cửa hàng</a><a class="btn btn-line" href="tel:${esc(C.phone)}">Gọi ${esc(C.phone)}</a></div></div>`;
+      return;
+    }
+    const txt = orderText(o);
+    const qr = hasBank ? `https://img.vietqr.io/image/${encodeURIComponent(C.bank.code)}-${encodeURIComponent(C.bank.account)}-compact2.png?amount=${o.total}&addInfo=${encodeURIComponent(o.code)}&accountName=${encodeURIComponent(C.bank.owner)}` : "";
+    root.innerHTML = `
+      <div class="done">
+        <div class="ok">${check}</div>
+        ${o.sent
+          ? `<h1>Cảm ơn bạn đã <em>đặt hàng!</em></h1><p>Chúng tôi đã nhận được đơn và sẽ liên hệ qua số ${esc(o.customer.phone)} để xác nhận trước khi giao.</p>`
+          : `<h1>Còn một bước để <em>hoàn tất đơn</em></h1><p>Vui lòng gửi thông tin đơn hàng cho chúng tôi qua Zalo (nội dung đã được soạn sẵn bên dưới) hoặc gọi hotline để xác nhận.</p>`}
+        <div class="code">${esc(o.code)}</div>
+        ${o.sent ? "" : `<div class="cta-row"><button class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi đơn qua Zalo ${arrow}</button><a class="btn btn-line" href="tel:${esc(C.phone.replace(/\s+/g, ""))}">Gọi ${esc(C.phone)}</a></div>`}
+        ${o.payment === "bank" && hasBank ? `
+          <div class="box glass"><h3>Thông tin chuyển khoản</h3>
+            <div class="bank">
+              <dl><dt>Ngân hàng</dt><dd>${esc(C.bank.name || C.bank.code)}</dd><dt>Số tài khoản</dt><dd>${esc(C.bank.account)}</dd><dt>Chủ tài khoản</dt><dd>${esc(C.bank.owner)}</dd><dt>Số tiền</dt><dd>${fmt(o.total)}</dd><dt>Nội dung</dt><dd>${esc(o.code)}</dd></dl>
+              <img src="${qr}" alt="Mã QR chuyển khoản cho đơn ${esc(o.code)}" width="180" height="180" loading="lazy">
+            </div>
+            ${o.shipping == null ? `<p class="fine">Số tiền trên chưa gồm phí giao hàng; phí sẽ được báo khi xác nhận đơn.</p>` : ""}
+          </div>` : ""}
+        <div class="box glass">
+          <h3>Nội dung đơn hàng</h3>
+          <textarea id="order-text" readonly aria-label="Nội dung đơn hàng">${esc(txt)}</textarea>
+          <div class="btns"><button class="btn btn-line" data-copy-order>Sao chép nội dung</button><a class="btn btn-ink" href="#cua-hang">Tiếp tục mua sắm</a></div>
+        </div>
+      </div>`;
+  }
+
+  async function copy(text){
+    try {
+      if (navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; }
+    } catch (_) {}
+    const ta = $("#order-text");
+    if (ta){ ta.focus(); ta.select(); try { return document.execCommand("copy"); } catch (_) {} }
+    return false;
+  }
+  function toast(msg){
+    const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener("click", async e => {
+    const t = e.target;
+    const addB = t.closest("[data-add]"), buyB = t.closest("[data-buy]");
+    if (addB || buyB){
+      const el = addB || buyB, slug = el.dataset.add || el.dataset.buy;
+      const src = el.dataset.qtyFrom && $(el.dataset.qtyFrom);
+      const q = src ? Math.max(1, Math.min(MAXQ, parseInt(src.value, 10) || 1)) : 1;
+      add(slug, q);
+      if (buyB){ location.hash = "#thanh-toan"; return; }
+      toast(`Đã thêm ${bySlug(slug).name} vào giỏ`);
+      openCart();
+      return;
+    }
+    if (t.closest("[data-cart-open]")){ e.preventDefault(); openCart(); return; }
+    const qb = t.closest("[data-q]");
+    if (qb){ const it = cart.find(i => i.slug === qb.dataset.q); if (it) setQty(it.slug, it.qty + Number(qb.dataset.d)); return; }
+    const rm = t.closest("[data-rm]");
+    if (rm){ setQty(rm.dataset.rm, 0); return; }
+    const st = t.closest("[data-step]");
+    if (st){ const inp = $("#pd-qty"); if (inp) inp.value = Math.max(1, Math.min(MAXQ, (parseInt(inp.value, 10) || 1) + Number(st.dataset.step))); return; }
+    if (t.closest("[data-close-cart]")){ closeCart(); return; }
+    if (t.closest("[data-copy-order]")){ const ok = await copy($("#order-text").value); toast(ok ? "Đã sao chép nội dung đơn hàng" : "Hãy chọn và sao chép nội dung thủ công"); return; }
+    const zo = t.closest("[data-zalo-order]");
+    if (zo){
+      const ok = await copy($("#order-text").value);
+      toast(ok ? "Đã sao chép đơn hàng — dán vào khung chat Zalo" : "Hãy sao chép nội dung đơn hàng rồi dán vào Zalo");
+      window.open(zaloUrl, "_blank", "noopener");
+    }
+  });
+  document.addEventListener("change", e => {
+    const qi = e.target.closest("[data-qi]"); if (qi) setQty(qi.dataset.qi, qi.value);
+    if (e.target.id === "pd-qty") e.target.value = Math.max(1, Math.min(MAXQ, parseInt(e.target.value, 10) || 1));
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("cart-open")) { e.stopImmediatePropagation(); closeCart(); } }, true);
+  addEventListener("storage", e => { if (e.key === KEY){ cart = store.get(KEY, []).filter(i => bySlug(i.slug) && i.qty > 0); paint(); } });
+
+  paint();
+
+  return {
+    priceOf: slug => { const p = bySlug(slug); return p ? fmt(p.price) : ""; },
+    match: h => /^(cua-hang|thanh-toan|san-pham\/.+|don-hang\/.+)$/.test(h),
+    leave(){ page = null; closeCart(); },
+    render(h){
+      closeCart();
+      if (h === "cua-hang") renderList();
+      else if (h === "thanh-toan") renderCheckout();
+      else if (h.startsWith("san-pham/")) renderProduct(h.slice(9));
+      else if (h.startsWith("don-hang/")) renderDone(h.slice(9));
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  };
+})();
+
 /* ---------- UI ---------- */
 (function(){
   const C = window.CONFIG, POSTS = window.POSTS, EVENTS = window.EVENTS;
@@ -1091,7 +1782,7 @@ window.SCENE3D = {
 
   /* config → page */
   $$("[data-brand]").forEach(el => { el.textContent = C.brand; const s = document.createElement("small"); s.textContent = C.brandTagline; el.append(s); });
-  $$("[data-price]").forEach(el => el.textContent = C.price[el.dataset.price]);
+  $$("[data-price]").forEach(el => el.textContent = window.SHOP.priceOf(el.dataset.price));
   $$("[data-price-note]").forEach(el => el.textContent = C.priceNote);
   $$("[data-shop-name]").forEach(el => el.textContent = "© " + new Date().getFullYear() + " " + C.shopName);
   $$('[data-link="phone"]').forEach(el => el.href = "tel:" + C.phone.replace(/\s+/g, ""));
@@ -1122,14 +1813,15 @@ window.SCENE3D = {
 
   /* ---------- header / progress / active links ---------- */
   const header = $("#top"), bar = $("#progress");
-  const homeLinks = $$("nav.main a, .side a, .menu a.m").filter(a => (a.getAttribute("href") || "").startsWith("#") && a.getAttribute("href") !== "#tin-tuc");
+  const homeLinks = $$("nav.main a, .side a, .menu a.m").filter(a => (a.getAttribute("href") || "").startsWith("#") && !["#tin-tuc", "#cua-hang"].includes(a.getAttribute("href")));
   const newsLinks = $$('nav.main a[href="#tin-tuc"], .menu a.m[href="#tin-tuc"]');
+  const shopLinks = $$('nav.main a[href="#cua-hang"], .menu a.m[href="#cua-hang"]');
   let ticking = false;
   function ui(){
     ticking = false;
     const max = document.documentElement.scrollHeight - innerHeight;
     bar.style.transform = "scaleX(" + (max > 0 ? Math.min(scrollY / max, 1) : 0) + ")";
-    header.classList.toggle("solid", scrollY > 30 || view === "news");
+    header.classList.toggle("solid", scrollY > 30 || view !== "home");
     if (view === "home"){
       const mid = scrollY + innerHeight * .45;
       homeLinks.forEach(a => {
@@ -1364,14 +2056,16 @@ window.SCENE3D = {
      ROUTER — "#tin-tuc", "#bai/<slug>", "#su-kien/<slug>" → news view; anything else → home
      ===================================================================== */
   let view = "home";
-  const homeEl = $("#home"), newsEl = $("#news");
+  const homeEl = $("#home"), newsEl = $("#news"), shopEl = $("#shop");
   function setView(v){
     if (v === view) return false;
+    if (view === "shop") window.SHOP.leave();
     view = v;
     document.body.dataset.view = v;
-    homeEl.hidden = v !== "home"; newsEl.hidden = v !== "news";
+    homeEl.hidden = v !== "home"; newsEl.hidden = v !== "news"; shopEl.hidden = v !== "shop";
     newsLinks.forEach(a => a.classList.toggle("active", v === "news"));
-    if (v === "news") homeLinks.forEach(a => a.classList.remove("active"));
+    shopLinks.forEach(a => a.classList.toggle("active", v === "shop"));
+    if (v !== "home") homeLinks.forEach(a => a.classList.remove("active"));
     window.dispatchEvent(new CustomEvent("viewchange", { detail: v }));
     return true;
   }
@@ -1384,6 +2078,11 @@ window.SCENE3D = {
       if (changed){ renderNews(); jumpTo(0); $("#loader").classList.add("hide"); }
       if (isItem){ if (!openItem(h)) { history.replaceState(null, "", "#tin-tuc"); closeReader(); } }
       else { closeReader(); document.title = "Tin tức & Sự kiện · " + C.brand; }
+    } else if (window.SHOP.match(h)){
+      closeReader();
+      setView("shop");
+      $("#loader").classList.add("hide");
+      window.SHOP.render(h);
     } else {
       closeReader();
       const changed = setView("home");
@@ -1600,7 +2299,7 @@ addEventListener('pointermove', e => { if (e.pointerType === 'mouse'){ tx = e.cl
 
 const clock = new THREE.Clock();
 let sSmooth = S3.index(), active = false;
-function shouldRun(){ return !document.hidden && document.body.dataset.view !== 'news'; }
+function shouldRun(){ return !document.hidden && document.body.dataset.view === 'home'; }
 function setActive(){
   const want = shouldRun();
   if (want && !active){ active = true; clock.getDelta(); size(); sSmooth = S3.index(); for (const k in cache) delete cache[k]; requestAnimationFrame(loop); }
