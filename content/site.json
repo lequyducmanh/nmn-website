@@ -15,7 +15,8 @@
     "code": "",
     "account": "",
     "owner": "",
-    "name": ""
+    "name": "",
+    "autoConfirm": false
   },
   "perks": [
     "Sản xuất tại Nhật Bản",

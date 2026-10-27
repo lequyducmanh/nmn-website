@@ -185,6 +185,12 @@ window.SHOP = (function(){
   const bySlug = s => P.find(p => p.slug === s);
   const zaloUrl = "https://zalo.me/" + encodeURIComponent(C.zalo);
   const hasBank = !!(C.bank && C.bank.account && C.bank.code);
+  // xác nhận chuyển khoản tự động: cần link Apps Script (nhận đơn + đối soát SePay)
+  const autoPay = hasBank && !!C.bank.autoConfirm && !!C.orderEndpoint;
+  const ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const rnd = n => { const a = new Uint32Array(n); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach((_, i) => a[i] = Math.random() * 4e9); return [...a].map(x => ABC[x % ABC.length]).join(""); };
+  const payCode = code => String(code).toUpperCase().replace(/[^A-Z0-9]/g, "");   // nội dung CK: không dấu gạch (ngân hàng hay bỏ ký tự đặc biệt)
+  let payTimer = null;
   const MAXQ = 99, KEY = "nmn_cart_v1", ORDERS = "nmn_orders_v1", PROFILE = "nmn_profile_v1";
   let addr = null, upsellOpen = false;
   const store = {
@@ -448,7 +454,7 @@ window.SHOP = (function(){
             <h3>Thanh toán</h3>
             <div class="pay">
               <label class="on"><input type="radio" name="pay" value="cod" checked><span><b>Thanh toán khi nhận hàng (COD)</b><small>Trả tiền mặt cho nhân viên giao hàng.</small></span></label>
-              ${hasBank ? `<label><input type="radio" name="pay" value="bank"><span><b>Chuyển khoản ngân hàng</b><small>Thông tin tài khoản và mã QR hiện sau khi đặt hàng.</small></span></label>` : ""}
+              ${hasBank ? `<label><input type="radio" name="pay" value="bank"><span><b>Chuyển khoản ngân hàng · VietQR</b><small>${autoPay ? "Quét mã QR bằng app ngân hàng — đơn được xác nhận tự động ngay khi nhận tiền." : "Mã QR và thông tin tài khoản hiện ngay sau khi đặt hàng."}</small></span></label>` : ""}
             </div>
           </div>
         </div>
@@ -593,12 +599,12 @@ window.SHOP = (function(){
     else { try { localStorage.removeItem(PROFILE); } catch (_) {} store.set(PROFILE + "_off", 1); }
     const btn = $("#co-submit"); btn.disabled = true; btn.textContent = "Đang gửi đơn…";
     const now = new Date(), t = totals();
-    const code = "NMN-" + String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+    const code = "NMN-" + String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0") + "-" + rnd(5);
     const order = {
       code, createdAt: now.toISOString(),
       customer: { name: d.name, phone, email: d.email, city: a.province, address: [a.street, a.ward].filter(Boolean).join(", "),
         province: a.province, provinceCode: a.provinceCode, ward: a.ward, wardCode: a.wardCode, street: a.street, fullAddress: a.full, note: d.note },
-      payment: d.pay === "bank" && hasBank ? "bank" : "cod",
+      payment: d.pay === "bank" && hasBank ? "bank" : "cod", payCode: payCode(code),
       items: cart.map(i => { const p = bySlug(i.slug); return { slug: p.slug, name: p.name, price: p.price, qty: i.qty, lineTotal: p.price * i.qty }; }),
       subtotal: t.sub, shipping: t.ship, total: t.total, sent: false
     };
@@ -640,30 +646,94 @@ window.SHOP = (function(){
       return;
     }
     const txt = orderText(o);
-    const qr = hasBank ? `https://img.vietqr.io/image/${encodeURIComponent(C.bank.code)}-${encodeURIComponent(C.bank.account)}-compact2.png?amount=${o.total}&addInfo=${encodeURIComponent(o.code)}&accountName=${encodeURIComponent(C.bank.owner)}` : "";
+    const bank = o.payment === "bank" && hasBank, auto = bank && autoPay && o.sent;
+    const head = o.paid
+      ? `<h1>Thanh toán <em>thành công!</em></h1><p>Chúng tôi đã nhận ${fmt(o.paidAmount || o.total)} cho đơn hàng này và sẽ liên hệ qua số ${esc(o.customer.phone)} trước khi giao.</p>`
+      : bank && o.sent
+      ? `<h1>Đã nhận đơn — <em>mời bạn thanh toán</em></h1><p>Quét mã QR bên dưới bằng app ngân hàng. ${auto ? "Trang sẽ tự cập nhật ngay khi chúng tôi nhận được tiền." : "Sau khi chuyển khoản, chúng tôi sẽ kiểm tra và liên hệ xác nhận."}</p>`
+      : o.sent
+      ? `<h1>Cảm ơn bạn đã <em>đặt hàng!</em></h1><p>Chúng tôi đã nhận được đơn và sẽ liên hệ qua số ${esc(o.customer.phone)} để xác nhận trước khi giao.</p>`
+      : `<h1>Còn một bước để <em>hoàn tất đơn</em></h1><p>Vui lòng gửi thông tin đơn hàng cho chúng tôi qua Zalo (nội dung đã được soạn sẵn bên dưới) hoặc gọi hotline để xác nhận.</p>`;
     root.innerHTML = `
       <div class="done">
         <div class="ok">${check}</div>
-        ${o.sent
-          ? `<h1>Cảm ơn bạn đã <em>đặt hàng!</em></h1><p>Chúng tôi đã nhận được đơn và sẽ liên hệ qua số ${esc(o.customer.phone)} để xác nhận trước khi giao.</p>`
-          : `<h1>Còn một bước để <em>hoàn tất đơn</em></h1><p>Vui lòng gửi thông tin đơn hàng cho chúng tôi qua Zalo (nội dung đã được soạn sẵn bên dưới) hoặc gọi hotline để xác nhận.</p>`}
+        ${head}
         <div class="code">${esc(o.code)}</div>
         ${o.sent ? "" : `<div class="cta-row"><button class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi đơn qua Zalo ${arrow}</button><a class="btn btn-line" href="tel:${esc(C.phone.replace(/\s+/g, ""))}">Gọi ${esc(C.phone)}</a></div>`}
-        ${o.payment === "bank" && hasBank ? `
-          <div class="box glass"><h3>Thông tin chuyển khoản</h3>
-            <div class="bank">
-              <dl><dt>Ngân hàng</dt><dd>${esc(C.bank.name || C.bank.code)}</dd><dt>Số tài khoản</dt><dd>${esc(C.bank.account)}</dd><dt>Chủ tài khoản</dt><dd>${esc(C.bank.owner)}</dd><dt>Số tiền</dt><dd>${fmt(o.total)}</dd><dt>Nội dung</dt><dd>${esc(o.code)}</dd></dl>
-              <img src="${qr}" alt="Mã QR chuyển khoản cho đơn ${esc(o.code)}" width="180" height="180" loading="lazy">
-            </div>
-            ${o.shipping == null ? `<p class="fine">Số tiền trên chưa gồm phí giao hàng; phí sẽ được báo khi xác nhận đơn.</p>` : ""}
-          </div>` : ""}
+        ${bank ? `<div class="box glass pay-box" id="pay-box">${payBox(o, auto)}</div>` : ""}
         <div class="box glass">
           <h3>Nội dung đơn hàng</h3>
           <textarea id="order-text" readonly aria-label="Nội dung đơn hàng">${esc(txt)}</textarea>
           <div class="btns"><button class="btn btn-line" data-copy-order>Sao chép nội dung</button><a class="btn btn-ink" href="#cua-hang">Tiếp tục mua sắm</a></div>
         </div>
       </div>`;
+    watchPay(o);
   }
+
+  /* ---------- chuyển khoản: QR + thông tin + trạng thái realtime ---------- */
+  const qrUrl = (amount, info) => `https://img.vietqr.io/image/${encodeURIComponent(C.bank.code)}-${encodeURIComponent(C.bank.account)}-compact2.png?amount=${Math.max(0, Math.round(amount))}&addInfo=${encodeURIComponent(info)}&accountName=${encodeURIComponent(C.bank.owner || "")}`;
+  const copyIco = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>';
+  const cp = (val, label) => `<button type="button" class="cp" data-copy-val="${esc(val)}" data-copy-label="${esc(label)}" aria-label="Sao chép ${esc(label)}">${copyIco}<span>Sao chép</span></button>`;
+  function payBox(o, auto){
+    if (o.paid) return `<div class="pay-ok"><div class="ok">${check}</div><div><h3>Đã nhận thanh toán</h3><p>${fmt(o.paidAmount || o.total)}${o.paidAt ? ` · ${esc(new Date(o.paidAt).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }))}` : ""} · Nội dung ${esc(payCode(o.code))}</p></div></div>`;
+    const pc = payCode(o.code), due = Math.max(0, o.total - (o.paidAmount || 0));
+    return `
+      <div class="pay-head"><h3>Chuyển khoản ngân hàng</h3>${auto ? `<span class="pay-st" id="pay-st" data-s="wait"><i></i><span>Đang chờ thanh toán</span></span>` : ""}</div>
+      ${o.paidAmount ? `<p class="pay-part" role="status">Đã nhận ${fmt(o.paidAmount)} — còn thiếu <b>${fmt(due)}</b>. Vui lòng chuyển thêm với cùng nội dung.</p>` : ""}
+      <div class="pay-grid">
+        <figure class="qrw"><img src="${esc(qrUrl(due, pc))}" alt="Mã VietQR chuyển ${fmt(due)} cho đơn ${esc(o.code)}" width="220" height="220" loading="lazy">
+          <figcaption>Quét bằng app ngân hàng — số tiền và nội dung được điền sẵn</figcaption></figure>
+        <dl class="pay-dl">
+          <div><dt>Ngân hàng</dt><dd>${esc(C.bank.name || C.bank.code)}</dd></div>
+          <div><dt>Số tài khoản</dt><dd><b>${esc(C.bank.account)}</b>${cp(C.bank.account, "số tài khoản")}</dd></div>
+          ${C.bank.owner ? `<div><dt>Chủ tài khoản</dt><dd>${esc(C.bank.owner)}</dd></div>` : ""}
+          <div><dt>Số tiền</dt><dd><b>${fmt(due)}</b>${cp(String(due), "số tiền")}</dd></div>
+          <div class="must"><dt>Nội dung</dt><dd><b>${esc(pc)}</b>${cp(pc, "nội dung chuyển khoản")}</dd></div>
+        </dl>
+      </div>
+      <ol class="pay-steps">
+        <li>Mở app ngân hàng → <b>Quét mã QR</b> (hoặc chuyển thủ công theo thông tin trên).</li>
+        <li>Giữ đúng nội dung <b>${esc(pc)}</b> để đơn được nhận diện.</li>
+        <li>${auto ? "Giữ trang này mở — trạng thái tự chuyển sang <b>Đã thanh toán</b> sau vài giây." : "Sau khi chuyển, bấm “Gửi xác nhận qua Zalo” để chúng tôi kiểm tra nhanh hơn."}</li>
+      </ol>
+      <div class="pay-act">${auto ? `<button type="button" class="btn btn-line" data-pay-check>Tôi đã chuyển khoản — kiểm tra ngay</button>` : `<button type="button" class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi xác nhận qua Zalo ${arrow}</button>`}</div>
+      ${o.shipping == null ? `<p class="fine">Số tiền trên chưa gồm phí giao hàng; phí giao hàng (nếu có) sẽ được báo khi xác nhận đơn.</p>` : ""}`;
+  }
+  function saveOrder(o){ const list = store.get(ORDERS, []); const i = list.findIndex(x => x.code === o.code); if (i >= 0){ list[i] = o; store.set(ORDERS, list); } }
+  function setPaySt(s, text){ const el = $("#pay-st"); if (el){ el.dataset.s = s; el.querySelector("span").textContent = text; } }
+  function watchPay(o){
+    clearTimeout(payTimer);
+    if (!(o.payment === "bank" && autoPay && o.sent) || o.paid) return;
+    const started = Date.now(), url = C.orderEndpoint + (C.orderEndpoint.includes("?") ? "&" : "?") + "action=status&code=" + encodeURIComponent(o.code);
+    let lastPaid = o.paidAmount || 0, busy = false;
+    const here = () => page === "done" && decodeURIComponent(location.hash) === "#don-hang/" + o.code;
+    async function tick(force){
+      clearTimeout(payTimer);
+      if (!here()) return;
+      if (document.hidden && !force){ payTimer = setTimeout(tick, 3000); return; }
+      if (busy) return; busy = true;
+      try {
+        const j = await fetch(url, { cache: "no-store" }).then(r => r.json());
+        if (!here()) return;
+        if (j.status === "paid"){
+          Object.assign(o, { paid: true, paidAmount: Number(j.paid) || o.total, paidAt: j.at || new Date().toISOString() }); saveOrder(o);
+          renderDone(o.code); window.scrollTo({ top: 0, behavior: "smooth" }); toast("Đã nhận thanh toán — cảm ơn bạn!"); return;
+        }
+        if (j.status === "partial" && Number(j.paid) !== lastPaid){
+          lastPaid = o.paidAmount = Number(j.paid); saveOrder(o); $("#pay-box").innerHTML = payBox(o, true);
+        }
+        if (j.status === "off"){ setPaySt("idle", "Chúng tôi sẽ kiểm tra và xác nhận thủ công"); return; }
+        setPaySt("wait", j.status === "partial" ? "Đã nhận một phần — chờ phần còn lại" : "Đang chờ thanh toán");
+      } catch (_) { setPaySt("err", "Đang kết nối lại…"); }
+      finally { busy = false; }
+      const age = Date.now() - started, wait = age < 10 * 60e3 ? 4000 : age < 60 * 60e3 ? 15000 : 0;
+      if (wait) payTimer = setTimeout(tick, wait);
+      else setPaySt("idle", "Chưa thấy giao dịch — bấm “kiểm tra ngay” sau khi chuyển");
+    }
+    watchPay.check = () => tick(true);
+    tick();
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && watchPay.check && page === "done") watchPay.check(); });
 
   async function copy(text){
     try {
@@ -711,6 +781,14 @@ window.SHOP = (function(){
     const st = t.closest("[data-step]");
     if (st){ const inp = $("#pd-qty"); if (inp) inp.value = Math.max(1, Math.min(MAXQ, (parseInt(inp.value, 10) || 1) + Number(st.dataset.step))); return; }
     if (t.closest("[data-close-cart]")){ closeCart(); return; }
+    const cv = t.closest("[data-copy-val]");
+    if (cv){
+      const v = cv.dataset.copyVal; let ok = false;
+      try { if (navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(v); ok = true; } } catch (_) {}
+      if (!ok){ const ta = document.createElement("textarea"); ta.value = v; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); try { ok = document.execCommand("copy"); } catch (_) {} ta.remove(); }
+      toast(ok ? `Đã sao chép ${cv.dataset.copyLabel}: ${v}` : v); cv.classList.add("done"); setTimeout(() => cv.classList.remove("done"), 1500); return;
+    }
+    if (t.closest("[data-pay-check]")){ toast("Đang kiểm tra giao dịch…"); watchPay.check && watchPay.check(); return; }
     if (t.closest("[data-copy-order]")){ const ok = await copy($("#order-text").value); toast(ok ? "Đã sao chép nội dung đơn hàng" : "Hãy chọn và sao chép nội dung thủ công"); return; }
     const zo = t.closest("[data-zalo-order]");
     if (zo){
@@ -734,7 +812,7 @@ window.SHOP = (function(){
   return {
     priceOf: slug => { const p = bySlug(slug); return p ? fmt(p.price) : ""; },
     match: h => /^(cua-hang|thanh-toan|san-pham\/.+|don-hang\/.+)$/.test(h),
-    leave(){ page = null; closeCart(); },
+    leave(){ page = null; clearTimeout(payTimer); closeCart(); },
     render(h){
       closeCart();
       if (h === "cua-hang") renderList();

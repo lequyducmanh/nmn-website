@@ -128,6 +128,7 @@ function normalize(){
   const st = S.data.site;
   st.company = Object.assign({ name: "", taxCode: "", address: "", phone: "", email: "" }, st.company || {});
   st.contact = Object.assign({ eyebrow: "", title: "", lead: "", hours: "", showMap: true, mapQuery: "", formEndpoint: "", topics: [], consent: "", faq: [] }, st.contact || {});
+  st.bank = Object.assign({ code: "", account: "", owner: "", name: "", autoConfirm: false }, st.bank || {});
   st.upsell = Object.assign({ enabled: true, title: "Thêm vào đơn", max: 2 }, st.upsell || {});
   S.data.products.forEach(p => {
     if (p.upsell === undefined) p.upsell = true;
@@ -585,11 +586,12 @@ const SETTINGS_SECTIONS = [
     { k: "upsell.enabled", t: "toggle", l: "Bật mục gợi ý" },
     { k: "upsell.max", t: "number", l: "Số sản phẩm hiển thị sẵn", hint: "nên để 2–3" },
     { k: "upsell.title", t: "text", l: "Tiêu đề mục", ph: "Thêm vào đơn" } ] },
-  { h: "Chuyển khoản ngân hàng", d: "Điền đủ Mã ngân hàng và Số tài khoản để bật “Chuyển khoản” kèm mã QR. Để trống = chỉ nhận COD.", f: [
-    { k: "bank.code", t: "text", l: "Mã ngân hàng (VietQR)", ph: "VCB, MB, TCB, ACB…" },
+  { h: "Chuyển khoản ngân hàng", d: "Điền đủ Mã ngân hàng và Số tài khoản để bật “Chuyển khoản · VietQR” ở trang Đặt hàng (mã QR tự điền số tiền và nội dung). Để trống = chỉ nhận COD.", f: [
+    { k: "bank.code", t: "text", l: "Mã ngân hàng (VietQR)", ph: "VCB, MB, ACB…", hint: "SePay kết nối trực tiếp: VCB · BIDV · ICB (VietinBank) · MB · ACB · VPB · TPB · STB (Sacombank) · MSB · OCB · KLB · SHBVN (Shinhan)" },
     { k: "bank.name", t: "text", l: "Tên ngân hàng hiển thị", ph: "Vietcombank" },
     { k: "bank.account", t: "text", l: "Số tài khoản" },
-    { k: "bank.owner", t: "text", l: "Chủ tài khoản", ph: "NGUYEN VAN A" } ] },
+    { k: "bank.owner", t: "text", l: "Chủ tài khoản", ph: "NGUYEN VAN A" },
+    { k: "bank.autoConfirm", t: "toggle", l: "Tự động xác nhận đã thanh toán (SePay)", hint: "Cần: tài khoản SePay + đoạn mã Apps Script mới + “Link nhận đơn tự động”. Xem README → Xác nhận chuyển khoản tự động." } ] },
   { h: "Tìm kiếm Google (SEO)", f: [
     { k: "seo.title", t: "text", l: "Tiêu đề trang chủ", full: 1 },
     { k: "seo.description", t: "textarea", l: "Mô tả ngắn", rows: 2 },
@@ -900,6 +902,10 @@ function validate(){
     });
   });
   [1, 2].forEach(slot => { if (!S.data.products.some(p => Number(p.homeSlot) === slot && p.visible !== false)) warns.push(`Trang chủ: chưa có sản phẩm (đang hiển thị) ở vị trí ${slot}`); });
+  const b = s.bank || {};
+  if (b.autoConfirm && !s.orderEndpoint) warns.push("Chuyển khoản: đã bật tự động xác nhận nhưng chưa có “Link nhận đơn tự động” — khách sẽ không thấy trạng thái thanh toán.");
+  if (b.autoConfirm && !(b.code && b.account)) warns.push("Chuyển khoản: đã bật tự động xác nhận nhưng chưa nhập Mã ngân hàng / Số tài khoản.");
+  if ((b.code || b.account) && !(b.code && b.account)) warns.push("Chuyển khoản: cần nhập đủ cả Mã ngân hàng và Số tài khoản.");
   complianceScan().forEach(w => warns.push(w));
   return { issues, warns };
 }

@@ -102,38 +102,31 @@ Khi có thay đổi địa giới mới: chạy `tools/build-vn-address.py` (hư
 
 ### Nhận đơn vào Google Sheets (miễn phí)
 
-1. Tạo Google Sheet mới → **Tiện ích mở rộng → Apps Script**, dán đoạn sau rồi **Lưu**:
+1. Tạo Google Sheet mới → **Tiện ích mở rộng → Apps Script**. Xoá mã mẫu, dán **toàn bộ** tệp [`tools/google-apps-script.gs`](tools/google-apps-script.gs) → **Lưu**.
+2. **Project Settings (⚙) → Script properties → Add**: `SITE_URL` = `https://lequyducmanh.github.io/nmn-website/` (để máy chủ **tính lại tổng tiền theo bảng giá**, không tin số tiền trình duyệt gửi lên).
+3. **Triển khai → Tùy chọn triển khai mới → Ứng dụng web**: *Thực thi với tư cách* **Tôi**, *Người có quyền truy cập* **Bất kỳ ai** → **Triển khai**.
+4. Sao chép **URL ứng dụng web** (`https://script.google.com/macros/s/…/exec`) → dán vào CMS → Cài đặt chung → *Link nhận đơn tự động*, và CMS → Trang Liên hệ → *Link nhận lời nhắn tự động*.
 
-```js
-function doPost(e) {
-  const o = JSON.parse(e.postData.contents);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (o.type === 'contact') {                      // lời nhắn từ trang Liên hệ
-    const sh = ss.getSheetByName('Liên hệ') || ss.insertSheet('Liên hệ');
-    if (sh.getLastRow() === 0) sh.appendRow(['Mã', 'Thời gian', 'Họ tên', 'SĐT', 'Email', 'Chủ đề', 'Sản phẩm', 'Nội dung']);
-    sh.appendRow([o.code, new Date(o.createdAt), o.name, "'" + o.phone, o.email, o.topic, o.product, o.message]);
-    return ContentService.createTextOutput('ok');
-  }
-  const sh = ss.getSheetByName('Đơn hàng') || ss.insertSheet('Đơn hàng');
-  if (sh.getLastRow() === 0) {
-    sh.appendRow(['Mã đơn', 'Thời gian', 'Họ tên', 'SĐT', 'Email', 'Tỉnh/TP', 'Địa chỉ',
-                  'Sản phẩm', 'Tạm tính', 'Phí ship', 'Tổng', 'Thanh toán', 'Ghi chú']);
-  }
-  sh.appendRow([
-    o.code, new Date(o.createdAt), o.customer.name, "'" + o.customer.phone, o.customer.email,
-    o.customer.city, o.customer.address,               // Địa chỉ = số nhà, đường, phường/xã
-    o.items.map(i => i.name + ' × ' + i.qty).join(', '),
-    o.subtotal, o.shipping == null ? 'Báo sau' : o.shipping, o.total,
-    o.payment === 'bank' ? 'Chuyển khoản' : 'COD', o.customer.note
-  ]);
-  return ContentService.createTextOutput('ok');
-}
-```
+Trang tính tự tạo: **Đơn hàng** (có cột *Nội dung CK, Đã nhận, Trạng thái thanh toán, Kiểm tra*), **Thanh toán** (giao dịch ngân hàng), **Liên hệ**.
 
-2. **Triển khai → Tùy chọn triển khai mới → Ứng dụng web**: *Thực thi với tư cách* **Tôi**, *Người có quyền truy cập* **Bất kỳ ai** → **Triển khai**.
-3. Sao chép **URL ứng dụng web** (`https://script.google.com/macros/s/…/exec`) và dán vào CMS → Cài đặt chung → *Link nhận đơn tự động*. Dán **cùng link** vào CMS → Trang Liên hệ → *Link nhận lời nhắn tự động* để lời nhắn vào trang tính “Liên hệ”.
+> Đã dùng đoạn mã cũ? Dán mã mới đè lên rồi **Triển khai → Quản lý triển khai → ✎ Sửa → Phiên bản: Phiên bản mới → Triển khai** (link giữ nguyên). Cột mới được thêm tự động.
 
-> Đã dùng đoạn mã cũ? Thay bằng đoạn trên rồi **Triển khai → Quản lý triển khai → Sửa → Phiên bản mới** (link giữ nguyên).
+### Xác nhận chuyển khoản tự động (SePay)
+
+Khách chọn **Chuyển khoản · VietQR** → trang xác nhận đơn hiện mã QR (điền sẵn số tiền + nội dung `NMN…`) → khách quét bằng app ngân hàng → **trang tự chuyển sang “Đã nhận thanh toán” sau vài giây**, trang tính *Đơn hàng* cập nhật *Đã thanh toán*.
+
+Cách hoạt động: [SePay](https://sepay.vn) theo dõi biến động số dư tài khoản ngân hàng của bạn. Apps Script hỏi **API chính thức của SePay** để tìm giao dịch có nội dung trùng mã đơn và **đủ số tiền** (tổng tiền do máy chủ tính lại) — chỉ tiền thật vào tài khoản mới được tính; chuyển thiếu hiện “còn thiếu …”. Không cần webhook, không cần máy chủ riêng.
+
+1. Đăng ký [my.sepay.vn](https://my.sepay.vn), **kết nối tài khoản ngân hàng nhận tiền** (cá nhân hoặc doanh nghiệp; kết nối API trực tiếp: Vietcombank, BIDV, VietinBank, MB, ACB, VPBank, TPBank, Sacombank, MSB, OCB, KienlongBank, Shinhan). Gói **Free: 50 giao dịch/tháng**; gói Startup từ 120.000đ/tháng — xem [bảng giá](https://sepay.vn/bang-gia.html).
+2. (Khuyên dùng) **Cấu hình công ty → Cấu trúc mã thanh toán**: tiền tố `NMN`.
+3. **Cấu hình công ty → API Access → + Thêm API** → sao chép **API token**. Token có toàn quyền tài khoản SePay: **chỉ dán vào Script properties**, không dán vào website hay CMS.
+4. Apps Script → **Script properties**, thêm: `SEPAY_TOKEN` = token vừa tạo · `SEPAY_ACCOUNT` = số tài khoản nhận tiền.
+5. Apps Script → **Triggers (⏰) → Add trigger**: hàm `syncPayments` · *Time-driven* · *Minutes timer* · *Every minute* (cập nhật trang tính cả khi khách đã đóng trang).
+6. **Triển khai phiên bản mới** (bước “Đã dùng đoạn mã cũ?” ở trên).
+7. CMS → Cài đặt chung → **Chuyển khoản ngân hàng**: nhập Mã ngân hàng (VietQR), Số tài khoản, Chủ tài khoản → bật **Tự động xác nhận đã thanh toán (SePay)** → Xuất bản.
+8. Thử: đặt 1 đơn, chọn Chuyển khoản, quét QR chuyển tiền thật (hoặc dùng [chế độ thử nghiệm của SePay](https://developer.sepay.vn/en/sepay-webhooks)) → trang đơn hàng chuyển sang *Đã nhận thanh toán*.
+
+Nội dung chuyển khoản là mã đơn **không dấu gạch** (ví dụ `NMN261027K7Q2M`) vì nhiều ngân hàng tự bỏ ký tự đặc biệt.
 
 ## Đường dẫn trên website
 
