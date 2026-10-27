@@ -224,8 +224,8 @@ window.SHOP = (function(){
     const W = 150 * s, H = 230 * s, x = cx - W / 2, y = base - H, r = 26 * s;
     const neckW = 80 * s, neckH = 18 * s, capW = 98 * s, capH = 58 * s, capY = y - neckH - capH + 6 * s;
     const white = k === "w";
-    const lab = white ? { bg: "#fdfbf7", ink: "#13202a", acc: "#a3804c", t: "PURE NMN", s: "12,000mg+", ts: 20, ss: 17 }
-                      : { bg: "#3b1020", ink: "#fbf0ea", acc: "#e6bfa6", t: "NMN", s: "Regene", ts: 32, ss: 23 };
+    const lab = white ? { bg: "#fdfbf7", ink: "#13202a", acc: "#a3804c", t: "PURE NMN", s: "12,000mg+", ts: 17, ss: 14 }
+                      : { bg: "#3b1020", ink: "#fbf0ea", acc: "#e6bfa6", t: "NMN", s: "Regene", ts: 30, ss: 20 };
     const ly = y + H * .3, lh = H * .42;
     let ridges = "";
     for (let i = 1; i < 9; i++) ridges += `<rect x="${(cx - capW / 2 + i * capW / 9).toFixed(1)}" y="${(capY + 8 * s).toFixed(1)}" width="${(1.3 * s).toFixed(2)}" height="${(capH - 16 * s).toFixed(1)}" fill="#000" opacity=".12"/>`;
@@ -236,8 +236,8 @@ window.SHOP = (function(){
       <rect x="${x}" y="${ly}" width="${W}" height="${lh}" fill="url(#labShade)"/>
       <rect x="${x}" y="${ly + 7 * s}" width="${W}" height="${1.3 * s}" fill="${lab.acc}"/>
       <rect x="${x}" y="${ly + lh - 8.3 * s}" width="${W}" height="${1.3 * s}" fill="${lab.acc}"/>
-      <text x="${cx}" y="${ly + lh * .5}" text-anchor="middle" font-family="Noto Serif Display, Georgia, serif" font-weight="600" font-size="${lab.ts * s}" fill="${lab.ink}">${lab.t}</text>
-      <text x="${cx}" y="${ly + lh * .78}" text-anchor="middle" font-family="Noto Serif Display, Georgia, serif" font-style="italic" font-weight="500" font-size="${lab.ss * s}" fill="${lab.acc}">${lab.s}</text>
+      <text x="${cx}" y="${ly + lh * .5}" text-anchor="middle" font-family="Be Vietnam Pro, system-ui, sans-serif" font-weight="600" font-size="${lab.ts * s}" fill="${lab.ink}">${lab.t}</text>
+      <text x="${cx}" y="${ly + lh * .78}" text-anchor="middle" font-family="Be Vietnam Pro, system-ui, sans-serif" font-weight="500" font-size="${lab.ss * s}" fill="${lab.acc}">${lab.s}</text>
       <rect x="${x + 14 * s}" y="${y + 12 * s}" width="${9 * s}" height="${H - 24 * s}" rx="${4.5 * s}" fill="#fff" opacity="${white ? .6 : .2}"/>
       <rect x="${cx - capW / 2}" y="${capY}" width="${capW}" height="${capH}" rx="${9 * s}" fill="url(#${white ? "capG" : "capR"})"/>${ridges}`;
   }
@@ -1197,7 +1197,7 @@ window.CONTACT = (function(){
       g = `<ellipse cx="${bx + 40}" cy="292" rx="120" ry="14" fill="#000" opacity=".35"/>
         <rect x="${bx - 30}" y="96" width="140" height="196" rx="22" fill="url(#glassG)"/>
         <rect x="${bx - 30}" y="150" width="140" height="92" fill="#fbf7ef" opacity=".95"/>
-        <text x="${bx + 40}" y="190" text-anchor="middle" font-family="Noto Serif Display, Georgia, serif" font-weight="600" font-size="22" fill="#13202a">NMN</text>
+        <text x="${bx + 40}" y="190" text-anchor="middle" font-family="Be Vietnam Pro, system-ui, sans-serif" font-weight="600" font-size="22" fill="#13202a">NMN</text>
         <rect x="${bx + 20}" y="204" width="40" height="1.5" fill="${ink}"/>
         <rect x="${bx + 2}" y="56" width="76" height="44" rx="8" fill="${ink}"/>
         <circle cx="140" cy="90" r="2" fill="${ink}"/><circle cx="210" cy="240" r="3" fill="${ink}" opacity=".6"/>`;
