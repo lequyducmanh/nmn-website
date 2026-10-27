@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Noto+Serif+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=20261027">
+<link rel="stylesheet" href="assets/css/site.css?v=20261027b">
 </head>
 <body data-view="home">
 <svg class="svg-defs" aria-hidden="true" focusable="false"><defs>
@@ -39,6 +39,7 @@
     <a href="#pure">Sản phẩm</a>
     <a href="#cua-hang">Cửa hàng</a>
     <a href="#tin-tuc">Tin tức &amp; Sự kiện</a>
+    <a href="#lien-he">Liên hệ</a>
   </nav>
   <div class="h-actions">
     <a class="btn btn-ink" href="#cua-hang">Mua hàng</a>
@@ -60,6 +61,7 @@
     <a class="m" href="#ritual">Mỗi ngày</a>
     <a class="m" href="#cua-hang">Cửa hàng</a>
     <a class="m" href="#tin-tuc">Tin tức &amp; Sự kiện</a>
+    <a class="m" href="#lien-he">Liên hệ</a>
   </nav>
   <div class="m-cta">
     <a class="btn btn-ink" data-link="phone" href="#">Gọi tư vấn</a>
@@ -253,6 +255,7 @@
           <a class="btn btn-line" data-link="zalo" href="#">Nhắn Zalo</a>
           <a class="btn btn-line" href="#cua-hang">Mua hàng</a>
         </div>
+        <p class="more-contact reveal d3"><a href="#lien-he">Xem thông tin liên hệ &amp; gửi lời nhắn →</a></p>
       </div>
     </div>
   </section>
@@ -321,6 +324,11 @@
      ===================================================================== -->
 <main id="shop" hidden><div class="nwrap" id="shop-root"></div></main>
 
+<!-- =====================================================================
+     VIEW 4 · LIÊN HỆ  (#lien-he)
+     ===================================================================== -->
+<main id="lienhe" hidden><div id="lienhe-root"></div></main>
+
 <footer class="site">
   <div class="foot">
     <div>
@@ -329,7 +337,7 @@
       <p style="margin-top:6px">PURE NMN 12,000mg+: Số ĐKSP 581/2023/ĐKSP · Số XNQC 336/2023/XNQC-ATTP.<br>NMN Regene: Số ĐKSP 5585/2024/ĐKSP · Số XNQC 1669/2024/XNQC-ATTP.</p>
       <p style="margin-top:6px">Hình ảnh sản phẩm 3D mang tính minh họa; thông tin sản phẩm theo hồ sơ công bố — vui lòng đối chiếu nhãn sản phẩm thực tế.</p>
       <p style="margin-top:10px"><b>Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</b></p>
-      <div class="links"><a href="#hero">Trang chủ</a><a href="#cua-hang">Cửa hàng</a><a href="#tin-tuc">Tin tức &amp; Sự kiện</a><a href="#contact">Liên hệ</a></div>
+      <div class="links"><a href="#hero">Trang chủ</a><a href="#cua-hang">Cửa hàng</a><a href="#tin-tuc">Tin tức &amp; Sự kiện</a><a href="#lien-he">Liên hệ</a></div>
     </div>
     <div>
       <h5>Tài liệu tham khảo</h5>
@@ -355,7 +363,8 @@
 </aside>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/app.js?v=20261027"></script>
+<script src="assets/js/vn-address.js?v=20261027b"></script>
+<script src="assets/js/app.js?v=20261027b"></script>
 
 <script type="importmap">
 { "imports": {
@@ -363,6 +372,6 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="assets/js/scene.js?v=20261027"></script>
+<script type="module" src="assets/js/scene.js?v=20261027b"></script>
 </body>
 </html>

@@ -78,6 +78,21 @@ Theo thông báo nội dung quảng cáo của Công ty (CV số 2110/2026/CV-CV
 
 CMS có **bộ dò từ khoá**: thẻ *Kiểm tra câu từ quảng cáo* ở trang Tổng quan, và cảnh báo khi bấm Xuất bản. Bộ dò chỉ hỗ trợ — nội dung mới vẫn cần người phụ trách duyệt theo hồ sơ xác nhận quảng cáo.
 
+## Trang Liên hệ
+
+`#lien-he`: nút gọi hotline, Zalo, email, chỉ đường; biểu mẫu gửi lời nhắn (có ô đồng ý liên hệ lại); thông tin doanh nghiệp; bản đồ Google Maps; câu hỏi thường gặp. Sửa tất cả trong CMS → **Trang Liên hệ**.
+
+## Địa chỉ giao hàng (đơn vị hành chính mới)
+
+Ô địa chỉ ở trang Đặt hàng dùng **2 cấp mới** — Tỉnh/Thành phố → Phường/Xã/Đặc khu (không còn quận/huyện):
+
+- `assets/data/vn-units.json`: 34 tỉnh/thành, 3.321 phường/xã/đặc khu — bộ dữ liệu [vietnamese-provinces-database](https://github.com/ThangLeQuoc/vietnamese-provinces-database) v5.2.0 (theo Nghị quyết 388/NQ-UBTVQH16, cập nhật 20/09/2026), giấy phép MIT.
+- `assets/data/vn-old-wards.json`: tra địa chỉ cũ → mới (khách gõ “Phường 12 Gò Vấp” → “Phường An Hội Tây, TP Hồ Chí Minh”) — từ [vietnam-address-database](https://github.com/quangtam/vietnam-address-database), giấy phép MIT. Chỉ tải khi khách bấm tra cứu.
+- Tìm không dấu, gõ tắt (`hcm`, `hn`, `sg`…), gõ tên tỉnh cũ (“Bình Dương” → TP Hồ Chí Minh).
+- Khách có thể lưu thông tin nhận hàng trên máy của mình để lần sau đặt nhanh hơn.
+
+Khi có thay đổi địa giới mới: chạy `tools/build-vn-address.py` (hướng dẫn ở đầu tệp) rồi tăng `VER` trong `assets/js/vn-address.js`.
+
 ## Cửa hàng & nhận đơn
 
 - Giỏ hàng lưu trên trình duyệt của khách. Khi đặt hàng, website tạo **mã đơn** và trang xác nhận.
@@ -92,6 +107,12 @@ CMS có **bộ dò từ khoá**: thẻ *Kiểm tra câu từ quảng cáo* ở t
 function doPost(e) {
   const o = JSON.parse(e.postData.contents);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (o.type === 'contact') {                      // lời nhắn từ trang Liên hệ
+    const sh = ss.getSheetByName('Liên hệ') || ss.insertSheet('Liên hệ');
+    if (sh.getLastRow() === 0) sh.appendRow(['Mã', 'Thời gian', 'Họ tên', 'SĐT', 'Email', 'Chủ đề', 'Sản phẩm', 'Nội dung']);
+    sh.appendRow([o.code, new Date(o.createdAt), o.name, "'" + o.phone, o.email, o.topic, o.product, o.message]);
+    return ContentService.createTextOutput('ok');
+  }
   const sh = ss.getSheetByName('Đơn hàng') || ss.insertSheet('Đơn hàng');
   if (sh.getLastRow() === 0) {
     sh.appendRow(['Mã đơn', 'Thời gian', 'Họ tên', 'SĐT', 'Email', 'Tỉnh/TP', 'Địa chỉ',
@@ -99,7 +120,7 @@ function doPost(e) {
   }
   sh.appendRow([
     o.code, new Date(o.createdAt), o.customer.name, "'" + o.customer.phone, o.customer.email,
-    o.customer.city, o.customer.address,
+    o.customer.city, o.customer.address,               // Địa chỉ = số nhà, đường, phường/xã
     o.items.map(i => i.name + ' × ' + i.qty).join(', '),
     o.subtotal, o.shipping == null ? 'Báo sau' : o.shipping, o.total,
     o.payment === 'bank' ? 'Chuyển khoản' : 'COD', o.customer.note
@@ -109,7 +130,9 @@ function doPost(e) {
 ```
 
 2. **Triển khai → Tùy chọn triển khai mới → Ứng dụng web**: *Thực thi với tư cách* **Tôi**, *Người có quyền truy cập* **Bất kỳ ai** → **Triển khai**.
-3. Sao chép **URL ứng dụng web** (`https://script.google.com/macros/s/…/exec`) và dán vào CMS.
+3. Sao chép **URL ứng dụng web** (`https://script.google.com/macros/s/…/exec`) và dán vào CMS → Cài đặt chung → *Link nhận đơn tự động*. Dán **cùng link** vào CMS → Trang Liên hệ → *Link nhận lời nhắn tự động* để lời nhắn vào trang tính “Liên hệ”.
+
+> Đã dùng đoạn mã cũ? Thay bằng đoạn trên rồi **Triển khai → Quản lý triển khai → Sửa → Phiên bản mới** (link giữ nguyên).
 
 ## Đường dẫn trên website
 

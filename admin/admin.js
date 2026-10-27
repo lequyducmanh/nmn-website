@@ -125,6 +125,9 @@ function normalize(){
   s.home = s.home || {};
   ["perks"].forEach(k => s[k] = Array.isArray(s[k]) ? s[k] : []);
   ["heroMeta", "marquee"].forEach(k => s.home[k] = Array.isArray(s.home[k]) ? s.home[k] : []);
+  const st = S.data.site;
+  st.company = Object.assign({ name: "", taxCode: "", address: "", phone: "", email: "" }, st.company || {});
+  st.contact = Object.assign({ eyebrow: "", title: "", lead: "", hours: "", showMap: true, mapQuery: "", formEndpoint: "", topics: [], consent: "", faq: [] }, st.contact || {});
   S.data.products.forEach(p => {
     ["gallery", "highlights", "specs", "usage", "homeSpecs", "ingredients", "ingredientNotes", "warnings", "legal"].forEach(k => p[k] = Array.isArray(p[k]) ? p[k] : []);
     ["officialName", "claim", "target", "ingredientsBasis", "excipients", "storage"].forEach(k => p[k] = p[k] || "");
@@ -178,7 +181,7 @@ $("#logout").addEventListener("click", async () => {
 /* =====================================================================
    ĐIỀU HƯỚNG
    ===================================================================== */
-const TITLES = { overview: "Tổng quan", settings: "Cài đặt chung", home: "Trang chủ", products: "Sản phẩm", posts: "Bài viết", events: "Sự kiện", media: "Thư viện ảnh" };
+const TITLES = { overview: "Tổng quan", settings: "Cài đặt chung", home: "Trang chủ", contact: "Trang Liên hệ", products: "Sản phẩm", posts: "Bài viết", events: "Sự kiện", media: "Thư viện ảnh" };
 $("#nav").addEventListener("click", e => { const b = e.target.closest("[data-view]"); if (b) { location.hash = b.dataset.view; document.body.classList.remove("nav-open"); } });
 $("#menu-btn").addEventListener("click", () => document.body.classList.toggle("nav-open"));
 $("#side-ov").addEventListener("click", () => document.body.classList.remove("nav-open"));
@@ -197,6 +200,7 @@ function render(){
   if (v === "overview") viewOverview();
   else if (v === "settings") viewForm("site", S.data.site, SETTINGS_SECTIONS);
   else if (v === "home") viewForm("site", S.data.site, HOME_SECTIONS);
+  else if (v === "contact") viewForm("site", S.data.site, CONTACT_SECTIONS);
   else if (v === "media") viewMedia();
   else if (COLL[v]){
     if (S.editing != null){
@@ -585,6 +589,27 @@ const SETTINGS_SECTIONS = [
     { k: "seo.description", t: "textarea", l: "Mô tả ngắn", rows: 2 },
     { k: "postsPerPage", t: "number", l: "Số bài mỗi lần tải ở trang Tin tức" } ] }
 ];
+const CONTACT_SECTIONS = [
+  { h: "Phần đầu trang", d: `Trang <b>#lien-he</b>: kênh liên hệ (lấy từ <a href="#settings">Cài đặt chung</a> → hotline, Zalo, email, địa chỉ), biểu mẫu gửi lời nhắn, thông tin doanh nghiệp, bản đồ và câu hỏi thường gặp.`, f: [
+    { k: "contact.eyebrow", t: "text", l: "Dòng chữ nhỏ", full: 1 },
+    { k: "contact.title", t: "emph", l: "Tiêu đề", full: 1 },
+    { k: "contact.lead", t: "textarea", l: "Đoạn mô tả", rows: 2 } ] },
+  { h: "Thông tin doanh nghiệp", d: "Ghi đúng theo giấy đăng ký doanh nghiệp / hồ sơ công bố sản phẩm.", f: [
+    { k: "company.name", t: "text", l: "Tên doanh nghiệp", full: 1 },
+    { k: "company.taxCode", t: "text", l: "Mã số doanh nghiệp" },
+    { k: "company.phone", t: "tel", l: "Điện thoại doanh nghiệp" },
+    { k: "company.address", t: "text", l: "Địa chỉ trụ sở", full: 1 },
+    { k: "company.email", t: "email", l: "Email doanh nghiệp" },
+    { k: "contact.hours", t: "textarea", l: "Giờ làm việc", rows: 2, hint: "để trống = không hiển thị" },
+    { k: "contact.showMap", t: "toggle", l: "Hiện bản đồ Google Maps" },
+    { k: "contact.mapQuery", t: "text", l: "Địa điểm trên bản đồ", full: 1, hint: "để trống = dùng địa chỉ ở Cài đặt chung" } ] },
+  { h: "Biểu mẫu gửi lời nhắn", f: [
+    { k: "contact.topics", t: "lines", l: "Các chủ đề để khách chọn" },
+    { k: "contact.consent", t: "textarea", l: "Câu xin đồng ý liên hệ lại", rows: 2 },
+    { k: "contact.formEndpoint", t: "url", l: "Link nhận lời nhắn tự động (Google Apps Script)", full: 1, hint: "Để trống: khách gửi qua Zalo/email. Có thể dùng chung link nhận đơn — xem README." } ] },
+  { h: "Câu hỏi thường gặp", d: "Câu trả lời phải đúng hồ sơ công bố; không ghi công dụng khác. Bộ kiểm tra câu từ sẽ dò cả phần này.", f: [
+    { k: "contact.faq", t: "pairs", l: "Hỏi & đáp", ph1: "Câu hỏi", ph2: "Câu trả lời" } ] }
+];
 const HOME_SECTIONS = [
   { h: "Phần mở đầu", d: "Khối chữ lớn đầu tiên trên trang chủ, cạnh cảnh 3D.", f: [
     { k: "home.heroEyebrow", t: "text", l: "Dòng chữ nhỏ phía trên", full: 1 },
@@ -900,7 +925,7 @@ function findBanned(text){
 function complianceScan(){
   const res = [];
   const add = (where, val) => { const hit = findBanned(textsOf(val, "", []).join("\n")); if (hit.length) res.push(`Câu từ cần xem lại — ${where}: “${hit.join("”, “")}”`); };
-  add("Cài đặt / Trang chủ", S.data.site);
+  add("Cài đặt / Trang chủ / Liên hệ", S.data.site);
   ["products", "posts", "events"].forEach(f => S.data[f].forEach(it => add(`${FILE_LABEL[f]} “${COLL[f].title(it) || it.slug}”`, it)));
   return res;
 }
@@ -918,7 +943,7 @@ function preview(hash = ""){
 }
 $("#preview-btn").addEventListener("click", () => {
   const v = S.view, ed = S.editing != null && COLL[v] ? COLL[v].find(S.editing) : null;
-  preview(ed ? COLL[v].preview(ed) : v === "products" ? "#cua-hang" : v === "posts" || v === "events" ? "#tin-tuc" : "");
+  preview(ed ? COLL[v].preview(ed) : v === "products" ? "#cua-hang" : v === "contact" ? "#lien-he" : v === "posts" || v === "events" ? "#tin-tuc" : "");
 });
 
 /* =====================================================================

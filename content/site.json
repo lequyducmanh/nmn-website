@@ -5,7 +5,7 @@
   "phone": "0900000000",
   "zalo": "0900000000",
   "email": "",
-  "address": "",
+  "address": "Số nhà 21, ngách 218/8 đường Đê La Thành, phường Thổ Quan, quận Đống Đa, Hà Nội",
   "priceNote": "Giá có thể thay đổi theo thời điểm",
   "postsPerPage": 6,
   "shippingFee": null,
@@ -55,5 +55,55 @@
     "contactEyebrow": "Tư vấn sản phẩm",
     "contactTitle": "Chọn sản phẩm *phù hợp với bạn*",
     "contactLead": "Đội ngũ tư vấn sẽ giải đáp về thành phần, cách dùng và lưu ý của từng sản phẩm."
+  },
+  "company": {
+    "name": "Công ty Cổ phần Clastive Nhật Việt",
+    "taxCode": "0109906508",
+    "address": "Số nhà 21, ngách 218/8 đường Đê La Thành, phường Thổ Quan, quận Đống Đa, Hà Nội",
+    "phone": "0868964410",
+    "email": "clastive.nhatviet@gmail.com"
+  },
+  "contact": {
+    "eyebrow": "Liên hệ",
+    "title": "Luôn sẵn sàng *lắng nghe bạn*",
+    "lead": "Cần tư vấn về thành phần, cách dùng, đơn hàng hay hợp tác phân phối? Gọi hotline, nhắn Zalo hoặc để lại lời nhắn — đội ngũ tư vấn sẽ liên hệ lại với bạn.",
+    "hours": "",
+    "showMap": true,
+    "mapQuery": "",
+    "formEndpoint": "",
+    "topics": [
+      "Tư vấn sản phẩm",
+      "Đơn hàng & giao hàng",
+      "Hợp tác / đại lý",
+      "Góp ý",
+      "Khác"
+    ],
+    "consent": "Tôi đồng ý để Công ty sử dụng thông tin trên để liên hệ phản hồi yêu cầu này.",
+    "faq": [
+      [
+        "PURE NMN 12,000mg+ và NMN Regene có phải là thuốc không?",
+        "Không. Đây là thực phẩm bảo vệ sức khỏe, sản xuất tại Nhật Bản. Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh."
+      ],
+      [
+        "Công dụng của từng sản phẩm là gì?",
+        "Theo hồ sơ công bố: PURE NMN 12,000mg+ hỗ trợ làm đẹp da; NMN Regene hỗ trợ chống lão hóa da."
+      ],
+      [
+        "Cách dùng như thế nào?",
+        "PURE NMN 12,000mg+: uống 2 viên mỗi ngày. NMN Regene: uống 3 viên mỗi ngày. Uống với nước lọc hoặc nước ấm và đọc kỹ hướng dẫn trên nhãn trước khi dùng."
+      ],
+      [
+        "Ai không nên sử dụng?",
+        "Người mẫn cảm, kiêng kị với bất kỳ thành phần nào của sản phẩm. Phụ nữ có thai, người đang cho con bú, trẻ sơ sinh và trẻ nhỏ không sử dụng NMN Regene (sản phẩm có nguyên liệu từ cá thu và đậu nành). Nếu đang mang thai, cho con bú hoặc đang dùng thuốc, hãy hỏi ý kiến bác sĩ trước khi dùng PURE NMN 12,000mg+."
+      ],
+      [
+        "Làm sao để đối chiếu thông tin sản phẩm?",
+        "Mỗi sản phẩm có Số đăng ký bản công bố (ĐKSP) và Số xác nhận nội dung quảng cáo (XNQC), ghi tại trang sản phẩm và chân trang website. Bạn có thể đối chiếu với thông tin trên nhãn hộp sản phẩm."
+      ],
+      [
+        "Đặt hàng và thanh toán thế nào?",
+        "Bạn có thể đặt hàng tại Cửa hàng trên website, nhắn Zalo hoặc gọi hotline. Chúng tôi liên hệ xác nhận trước khi giao và hỗ trợ thanh toán khi nhận hàng (COD)."
+      ]
+    ]
   }
 }

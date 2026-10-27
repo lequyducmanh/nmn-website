@@ -185,7 +185,8 @@ window.SHOP = (function(){
   const bySlug = s => P.find(p => p.slug === s);
   const zaloUrl = "https://zalo.me/" + encodeURIComponent(C.zalo);
   const hasBank = !!(C.bank && C.bank.account && C.bank.code);
-  const MAXQ = 99, KEY = "nmn_cart_v1", ORDERS = "nmn_orders_v1";
+  const MAXQ = 99, KEY = "nmn_cart_v1", ORDERS = "nmn_orders_v1", PROFILE = "nmn_profile_v1";
+  let addr = null;
   const store = {
     get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (_) { return d; } },
     set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }
@@ -419,6 +420,7 @@ window.SHOP = (function(){
       root.innerHTML = `<div class="done"><h1>Giỏ hàng đang trống</h1><p>Hãy thêm sản phẩm vào giỏ trước khi đặt hàng.</p><div class="cta-row"><a class="btn btn-ink" href="#cua-hang">Xem cửa hàng ${arrow}</a></div></div>`;
       return;
     }
+    const saved = store.get(PROFILE, {}), optedOut = !!store.get(PROFILE + "_off", 0);
     root.innerHTML = `
       <nav class="crumbs" aria-label="Đường dẫn"><a href="#cua-hang">Cửa hàng</a><span>/</span><span>Đặt hàng</span></nav>
       <h1 class="co-title">Thông tin <em>đặt hàng</em></h1>
@@ -428,17 +430,18 @@ window.SHOP = (function(){
           <div class="fs glass">
             <h3>Người nhận</h3>
             <div class="fgrid">
-              <div class="f"><label for="f-name">Họ và tên <i>*</i></label><input id="f-name" name="name" autocomplete="name" required maxlength="80"><span class="msg"></span></div>
-              <div class="f"><label for="f-phone">Số điện thoại <i>*</i></label><input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="16" placeholder="09xx xxx xxx"><span class="msg"></span></div>
-              <div class="f full"><label for="f-email">Email <small style="color:var(--muted);font-weight:400">(không bắt buộc)</small></label><input id="f-email" name="email" type="email" autocomplete="email" maxlength="120"><span class="msg"></span></div>
+              <div class="f"><label for="f-name">Họ và tên <i>*</i></label><input id="f-name" name="name" autocomplete="name" required maxlength="80" value="${esc(saved.name || "")}"><span class="msg"></span></div>
+              <div class="f"><label for="f-phone">Số điện thoại <i>*</i></label><input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="16" placeholder="09xx xxx xxx" value="${esc(saved.phone || "")}"><span class="msg"></span></div>
+              <div class="f full"><label for="f-email">Email <small style="color:var(--muted);font-weight:400">(không bắt buộc)</small></label><input id="f-email" name="email" type="email" autocomplete="email" maxlength="120" value="${esc(saved.email || "")}"><span class="msg"></span></div>
             </div>
           </div>
           <div class="fs glass">
             <h3>Địa chỉ nhận hàng</h3>
-            <div class="fgrid">
-              <div class="f full"><label for="f-city">Tỉnh / Thành phố <i>*</i></label><input id="f-city" name="city" autocomplete="address-level1" required maxlength="60"><span class="msg"></span></div>
-              <div class="f full"><label for="f-addr">Địa chỉ cụ thể <i>*</i></label><input id="f-addr" name="address" autocomplete="street-address" required maxlength="200" placeholder="Số nhà, đường, phường/xã"><span class="msg"></span></div>
+            <p class="fs-sub">Theo đơn vị hành chính mới: Tỉnh/Thành phố → Phường/Xã (không còn quận/huyện). Gõ không dấu cũng tìm được.</p>
+            <div id="co-addr"></div>
+            <div class="fgrid" style="margin-top:14px">
               <div class="f full"><label for="f-note">Ghi chú</label><textarea id="f-note" name="note" maxlength="500" placeholder="Thời gian nhận hàng, yêu cầu khác…"></textarea></div>
+              <div class="f full"><label class="consent"><input type="checkbox" name="remember" id="f-remember"${optedOut ? "" : " checked"}><span>Lưu thông tin nhận hàng trên thiết bị này để lần sau đặt nhanh hơn</span></label></div>
             </div>
           </div>
           <div class="fs glass">
@@ -453,6 +456,8 @@ window.SHOP = (function(){
       </form>`;
     renderSummary();
     const form = $("#co-form");
+    addr = window.VNAddress.mount($("#co-addr"), { value: saved });
+    $("#co-addr").addEventListener("vna:toast", e => toast(e.detail));
     form.addEventListener("change", e => { if (e.target.name === "pay") $$(".pay label").forEach(l => l.classList.toggle("on", l.contains(e.target))); });
     form.addEventListener("input", e => { const f = e.target.closest(".f"); if (f && f.classList.contains("err")) { f.classList.remove("err"); f.querySelector(".msg").textContent = ""; } });
     form.addEventListener("submit", e => { e.preventDefault(); submit(form); });
@@ -485,20 +490,24 @@ window.SHOP = (function(){
     if (d.name.length < 2) bad.push(["name", "Vui lòng nhập họ và tên."]);
     if (!/^(0|\+?84)(3|5|7|8|9)\d{8}$/.test(phone)) bad.push(["phone", "Số điện thoại chưa đúng (ví dụ 0912 345 678)."]);
     if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) bad.push(["email", "Email chưa đúng định dạng."]);
-    if (d.city.length < 2) bad.push(["city", "Vui lòng nhập tỉnh / thành phố."]);
-    if (d.address.length < 5) bad.push(["address", "Vui lòng nhập địa chỉ cụ thể."]);
-    if (bad.length){
-      bad.forEach(([n, m]) => fieldError(form, n, m));
-      const first = form.querySelector(`[name="${bad[0][0]}"]`);
-      first.focus({ preventScroll: true }); first.scrollIntoView({ block: "center", behavior: "smooth" });
+    bad.forEach(([n, m]) => fieldError(form, n, m));
+    const badAddr = addr ? addr.validate() : [];
+    if (bad.length || badAddr.length){
+      const firstF = bad.length ? form.querySelector(`[name="${bad[0][0]}"]`).closest(".f") : badAddr[0];
+      const first = firstF.querySelector("input:not([disabled]),textarea") || firstF;
+      first.focus({ preventScroll: true }); firstF.scrollIntoView({ block: "center", behavior: "smooth" });
       return;
     }
+    const a = addr.get();
+    if (d.remember){ try { localStorage.removeItem(PROFILE + "_off"); } catch (_) {} } if (d.remember) store.set(PROFILE, { name: d.name, phone: d.phone, email: d.email, provinceCode: a.provinceCode, wardCode: a.wardCode, street: a.street });
+    else { try { localStorage.removeItem(PROFILE); } catch (_) {} store.set(PROFILE + "_off", 1); }
     const btn = $("#co-submit"); btn.disabled = true; btn.textContent = "Đang gửi đơn…";
     const now = new Date(), t = totals();
     const code = "NMN-" + String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
     const order = {
       code, createdAt: now.toISOString(),
-      customer: { name: d.name, phone, email: d.email, city: d.city, address: d.address, note: d.note },
+      customer: { name: d.name, phone, email: d.email, city: a.province, address: [a.street, a.ward].filter(Boolean).join(", "),
+        province: a.province, provinceCode: a.provinceCode, ward: a.ward, wardCode: a.wardCode, street: a.street, fullAddress: a.full, note: d.note },
       payment: d.pay === "bank" && hasBank ? "bank" : "cod",
       items: cart.map(i => { const p = bySlug(i.slug); return { slug: p.slug, name: p.name, price: p.price, qty: i.qty, lineTotal: p.price * i.qty }; }),
       subtotal: t.sub, shipping: t.ship, total: t.total, sent: false
@@ -635,6 +644,202 @@ window.SHOP = (function(){
   };
 })();
 
+/* =====================================================================
+   LIÊN HỆ — #lien-he
+   Kênh liên hệ, biểu mẫu gửi lời nhắn, thông tin doanh nghiệp, bản đồ, câu hỏi thường gặp.
+   Biểu mẫu: có "formEndpoint" → gửi thẳng (Google Apps Script); không có → chép nội dung + mở Zalo / email.
+   ===================================================================== */
+window.CONTACT = (function(){
+  const C = window.CONFIG, P = (window.PRODUCTS || []).filter(p => p.visible !== false);
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const { esc, emph } = window.NMN;
+  const K = Object.assign({ topics: [], faq: [], showMap: true }, C.contact || {});
+  const CO = C.company || {};
+  const address = C.address || CO.address || "";
+  const email = C.email || CO.email || "";
+  const tel = s => String(s || "").replace(/[^\d+]/g, "");
+  const nicePhone = s => { const d = tel(s); return d.length === 10 ? d.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3") : (s || ""); };
+  const zaloUrl = "https://zalo.me/" + encodeURIComponent(tel(C.zalo));
+  const mapsUrl = q => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+  const arrow = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.4"/></svg>';
+  const I = {
+    phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4.1-2 1.4a12 12 0 0 0 6.4 6.4l1.4-2 4.1 1.4v2.6A2 2 0 0 1 18.4 19.5 15.9 15.9 0 0 1 4.5 5.6a2 2 0 0 1 2.1-2.1z"/></svg>',
+    chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10.5H9.5L5 19.5V16H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>',
+    mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    ok: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+  };
+  let last = null;     // last submitted message (for the "done" panel)
+
+  function channels(){
+    const out = [];
+    if (C.phone) out.push(`<a class="chan glass" href="tel:${esc(tel(C.phone))}"><span class="ic">${I.phone}</span><span class="lb">Hotline</span><b>${esc(nicePhone(C.phone))}</b><span class="go">Gọi ngay ${arrow}</span></a>`);
+    if (C.zalo) out.push(`<a class="chan glass" href="${esc(zaloUrl)}" target="_blank" rel="noopener"><span class="ic">${I.chat}</span><span class="lb">Zalo</span><b>${esc(nicePhone(C.zalo))}</b><span class="go">Nhắn tin ${arrow}</span></a>`);
+    if (email) out.push(`<a class="chan glass" href="mailto:${esc(email)}"><span class="ic">${I.mail}</span><span class="lb">Email</span><b class="mail">${esc(email)}</b><span class="go">Gửi email ${arrow}</span></a>`);
+    if (address) out.push(`<a class="chan glass" href="${esc(mapsUrl(K.mapQuery || address))}" target="_blank" rel="noopener"><span class="ic">${I.pin}</span><span class="lb">Văn phòng</span><b class="addr">${esc(address)}</b><span class="go">Chỉ đường ${arrow}</span></a>`);
+    return out.join("");
+  }
+
+  function info(){
+    const rows = [
+      ["Doanh nghiệp", CO.name], ["Mã số doanh nghiệp", CO.taxCode], ["Địa chỉ", CO.address],
+      ["Điện thoại", CO.phone && nicePhone(CO.phone)], ["Email", CO.email]
+    ].filter(r => r[1]);
+    const q = K.mapQuery || address;
+    return `<aside class="cinfo">
+      ${rows.length ? `<div class="fs glass"><h3>Thông tin doanh nghiệp</h3><dl>${rows.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
+        <p class="fine">Thương nhân chịu trách nhiệm về sản phẩm PURE NMN 12,000mg+ và NMN Regene.</p></div>` : ""}
+      ${K.hours ? `<div class="fs glass hours"><span class="ic">${I.clock}</span><div><h3>Giờ làm việc</h3><p>${esc(K.hours).replace(/\n/g, "<br>")}</p></div></div>` : ""}
+      ${K.showMap !== false && q ? `<div class="cmap glass"><iframe title="Bản đồ: ${esc(q)}" src="https://maps.google.com/maps?q=${encodeURIComponent(q)}&z=16&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>` : ""}
+    </aside>`;
+  }
+
+  function form(){
+    const topics = K.topics.length ? K.topics : ["Tư vấn sản phẩm", "Khác"];
+    return `<form class="fs glass cform" id="ct-form" novalidate>
+      <h3>Gửi lời nhắn</h3>
+      <p class="co-sub">Để lại thông tin, chúng tôi sẽ liên hệ lại qua điện thoại hoặc Zalo.</p>
+      <div class="fgrid">
+        <div class="f"><label for="ct-name">Họ và tên <i>*</i></label><input id="ct-name" name="name" autocomplete="name" required maxlength="80"><span class="msg"></span></div>
+        <div class="f"><label for="ct-phone">Số điện thoại <i>*</i></label><input id="ct-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="16" placeholder="09xx xxx xxx"><span class="msg"></span></div>
+        <div class="f full"><label for="ct-email">Email <small>(không bắt buộc)</small></label><input id="ct-email" name="email" type="email" autocomplete="email" maxlength="120"><span class="msg"></span></div>
+        <div class="f"><label for="ct-topic">Chủ đề</label><select id="ct-topic" name="topic">${topics.map(t => `<option>${esc(t)}</option>`).join("")}</select></div>
+        <div class="f"><label for="ct-product">Sản phẩm quan tâm</label><select id="ct-product" name="product"><option value="">Chưa chọn</option>${P.map(p => `<option>${esc(p.name)}</option>`).join("")}</select></div>
+        <div class="f full"><label for="ct-msg">Nội dung <i>*</i></label><textarea id="ct-msg" name="message" required maxlength="1500" placeholder="Bạn cần hỗ trợ điều gì?"></textarea><span class="msg"></span></div>
+        <div class="f full"><label class="consent"><input type="checkbox" name="consent" id="ct-consent"><span>${esc(K.consent || "Tôi đồng ý để Công ty sử dụng thông tin trên để liên hệ phản hồi yêu cầu này.")}</span></label><span class="msg"></span></div>
+      </div>
+      <button class="btn btn-ink" type="submit" id="ct-submit">Gửi lời nhắn ${arrow}</button>
+    </form>`;
+  }
+
+  function faq(){
+    const list = (K.faq || []).filter(q => q && q[0] && q[1]);
+    if (!list.length) return "";
+    return `<section class="cfaq">
+      <div class="sec-head reveal"><div><div class="eyebrow">Hỏi &amp; đáp</div><h2>Câu hỏi <em>thường gặp</em></h2></div></div>
+      <div class="acc glass">${list.map(([q, a], i) => `<details${i === 0 ? " open" : ""}><summary>${esc(q)}</summary><div class="ac-body"><p>${esc(a).replace(/\n/g, "<br>")}</p></div></details>`).join("")}</div>
+    </section>`;
+  }
+
+  function render(){
+    const root = $("#lienhe-root");
+    root.innerHTML = `
+      <section class="nhero chero">
+        <div class="nwrap">
+          <div>
+            <div class="eyebrow reveal">${esc(K.eyebrow || "Liên hệ")}</div>
+            <h1 class="reveal">${emph(K.title || "Liên hệ *với chúng tôi*")}</h1>
+            ${K.lead ? `<p class="reveal">${esc(K.lead)}</p>` : ""}
+          </div>
+          <div class="pearl" aria-hidden="true"><div class="orbit"><i></i></div><div class="orbit o2"><i></i></div></div>
+        </div>
+      </section>
+      <div class="nwrap">
+        <div class="chans">${channels()}</div>
+        <div class="cgrid" id="ct-main">${form()}${info()}</div>
+        ${faq()}
+        <p class="disc-line">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>
+      </div>`;
+    bind();
+    document.title = "Liên hệ · " + (C.brand || "");
+    window.NMN.ld({
+      "@context": "https://schema.org", "@type": "ContactPage", url: location.href,
+      mainEntity: { "@type": "Organization", name: CO.name || C.shopName || C.brand, taxID: CO.taxCode || undefined,
+        telephone: C.phone || CO.phone || undefined, email: email || undefined,
+        address: address ? { "@type": "PostalAddress", streetAddress: address, addressCountry: "VN" } : undefined }
+    });
+  }
+
+  function bind(){
+    const f = $("#ct-form");
+    f.addEventListener("input", e => { const box = e.target.closest(".f"); if (box && box.classList.contains("err")){ box.classList.remove("err"); box.querySelector(".msg").textContent = ""; } });
+    f.addEventListener("change", e => { if (e.target.id === "ct-consent") { const box = e.target.closest(".f"); box.classList.remove("err"); box.querySelector(".msg").textContent = ""; } });
+    f.addEventListener("submit", e => { e.preventDefault(); submit(f); });
+  }
+
+  function err(id, msg){ const box = $("#" + id).closest(".f"); box.classList.add("err"); box.querySelector(".msg").textContent = msg; return box; }
+
+  async function submit(f){
+    const d = Object.fromEntries(new FormData(f).entries());
+    d.name = (d.name || "").trim(); d.message = (d.message || "").trim(); d.email = (d.email || "").trim();
+    const phone = tel(d.phone);
+    const bad = [];
+    if (d.name.length < 2) bad.push(err("ct-name", "Vui lòng nhập họ tên"));
+    if (!/^(\+?84|0)\d{8,10}$/.test(phone)) bad.push(err("ct-phone", "Số điện thoại chưa đúng"));
+    if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) bad.push(err("ct-email", "Email chưa đúng"));
+    if (d.message.length < 5) bad.push(err("ct-msg", "Vui lòng nhập nội dung"));
+    if (!d.consent) bad.push(err("ct-consent", "Vui lòng đánh dấu đồng ý để chúng tôi liên hệ lại"));
+    if (bad.length){ const el = bad[0].querySelector("input,textarea"); el && el.focus({ preventScroll: true }); bad[0].scrollIntoView({ block: "center", behavior: "smooth" }); return; }
+
+    const btn = $("#ct-submit"); btn.disabled = true; btn.textContent = "Đang gửi…";
+    const now = new Date();
+    const msg = {
+      type: "contact", code: "LH-" + now.toISOString().slice(2, 10).replace(/-/g, "") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase(),
+      createdAt: now.toISOString(), name: d.name, phone, email: d.email, topic: d.topic || "", product: d.product || "", message: d.message, page: location.href, sent: false
+    };
+    if (K.formEndpoint){
+      try {
+        await fetch(K.formEndpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(msg) });
+        msg.sent = true;
+      } catch (_) { msg.sent = false; }
+    }
+    last = msg;
+    done();
+  }
+
+  function text(m){
+    return [`LỜI NHẮN ${m.code}`, `Họ tên: ${m.name}`, `Điện thoại: ${m.phone}`, m.email && `Email: ${m.email}`,
+      m.topic && `Chủ đề: ${m.topic}`, m.product && `Sản phẩm quan tâm: ${m.product}`, "", m.message].filter(x => x !== undefined && x !== "" || x === "").filter((x, i, a) => x || a[i - 1]).join("\n");
+  }
+
+  function done(){
+    const m = last, t = text(m), box = $("#ct-main");
+    const mail = email ? `mailto:${email}?subject=${encodeURIComponent("Liên hệ " + m.code + (m.topic ? " · " + m.topic : ""))}&body=${encodeURIComponent(t)}` : "";
+    box.innerHTML = `<div class="done cdone">
+      <div class="ok">${I.ok}</div>
+      <h2>${m.sent ? "Đã gửi lời nhắn" : "Lời nhắn đã sẵn sàng"}</h2>
+      <p>${m.sent ? `Cảm ơn ${esc(m.name)}! Chúng tôi đã nhận được lời nhắn và sẽ liên hệ lại qua số <b>${esc(nicePhone(m.phone))}</b>.`
+        : `Cảm ơn ${esc(m.name)}! Bấm <b>Gửi qua Zalo</b> (nội dung được chép sẵn, chỉ cần dán) hoặc gửi email để chúng tôi nhận được lời nhắn.`}</p>
+      <div class="code">${esc(m.code)}</div>
+      <div class="box glass">
+        <h3>Nội dung lời nhắn</h3>
+        <textarea id="ct-text" readonly>${esc(t)}</textarea>
+        <div class="btns">
+          ${C.zalo ? `<button class="btn btn-ink" data-ct-zalo>Gửi qua Zalo ${arrow}</button>` : ""}
+          ${mail ? `<a class="btn btn-line" href="${esc(mail)}">Gửi qua email</a>` : ""}
+          ${C.phone ? `<a class="btn btn-line" href="tel:${esc(tel(C.phone))}">Gọi ${esc(nicePhone(C.phone))}</a>` : ""}
+        </div>
+      </div>
+      <p class="fine"><a href="#lien-he" data-ct-new>Gửi lời nhắn khác</a></p>
+    </div>`;
+    box.classList.add("is-done");
+    box.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+
+  async function copy(t){
+    try { if (navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(t); return true; } } catch (_) {}
+    const ta = $("#ct-text"); if (ta){ ta.focus(); ta.select(); try { return document.execCommand("copy"); } catch (_) {} }
+    return false;
+  }
+  function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2600); }
+
+  document.addEventListener("click", async e => {
+    if (e.target.closest("[data-ct-zalo]")){
+      const ok = await copy($("#ct-text").value);
+      toast(ok ? "Đã chép lời nhắn — dán vào khung chat Zalo" : "Hãy sao chép nội dung rồi dán vào Zalo");
+      window.open(zaloUrl, "_blank", "noopener");
+    } else if (e.target.closest("[data-ct-new]")){
+      e.preventDefault(); const box = $("#ct-main"); box.classList.remove("is-done"); box.innerHTML = form() + info(); bind();
+    }
+  });
+
+  return {
+    match: h => h === "lien-he",
+    render(){ render(); window.scrollTo({ top: 0, left: 0, behavior: "instant" }); }
+  };
+})();
+
 /* ---------- UI ---------- */
 (function(){
   const C = window.CONFIG, POSTS = window.POSTS, EVENTS = window.EVENTS;
@@ -675,9 +880,10 @@ window.SHOP = (function(){
 
   /* ---------- header / progress / active links ---------- */
   const header = $("#top"), bar = $("#progress");
-  const homeLinks = $$("nav.main a, .side a, .menu a.m").filter(a => (a.getAttribute("href") || "").startsWith("#") && !["#tin-tuc", "#cua-hang"].includes(a.getAttribute("href")));
+  const homeLinks = $$("nav.main a, .side a, .menu a.m").filter(a => (a.getAttribute("href") || "").startsWith("#") && !["#tin-tuc", "#cua-hang", "#lien-he"].includes(a.getAttribute("href")));
   const newsLinks = $$('nav.main a[href="#tin-tuc"], .menu a.m[href="#tin-tuc"]');
   const shopLinks = $$('nav.main a[href="#cua-hang"], .menu a.m[href="#cua-hang"]');
+  const contactLinks = $$('nav.main a[href="#lien-he"], .menu a.m[href="#lien-he"]');
   let ticking = false;
   function ui(){
     ticking = false;
@@ -923,15 +1129,16 @@ window.SHOP = (function(){
      ROUTER — "#tin-tuc", "#bai/<slug>", "#su-kien/<slug>" → news view; anything else → home
      ===================================================================== */
   let view = "home";
-  const homeEl = $("#home"), newsEl = $("#news"), shopEl = $("#shop");
+  const homeEl = $("#home"), newsEl = $("#news"), shopEl = $("#shop"), contactEl = $("#lienhe");
   function setView(v){
     if (v === view) return false;
     if (view === "shop") window.SHOP.leave();
     view = v;
     document.body.dataset.view = v;
-    homeEl.hidden = v !== "home"; newsEl.hidden = v !== "news"; shopEl.hidden = v !== "shop";
+    homeEl.hidden = v !== "home"; newsEl.hidden = v !== "news"; shopEl.hidden = v !== "shop"; contactEl.hidden = v !== "contact";
     newsLinks.forEach(a => a.classList.toggle("active", v === "news"));
     shopLinks.forEach(a => a.classList.toggle("active", v === "shop"));
+    contactLinks.forEach(a => a.classList.toggle("active", v === "contact"));
     if (v !== "home") homeLinks.forEach(a => a.classList.remove("active"));
     window.dispatchEvent(new CustomEvent("viewchange", { detail: v }));
     return true;
@@ -945,6 +1152,12 @@ window.SHOP = (function(){
       if (changed){ renderNews(); jumpTo(0); $("#loader").classList.add("hide"); }
       if (isItem){ if (!openItem(h)) { history.replaceState(null, "", "#tin-tuc"); closeReader(); } }
       else { closeReader(); document.title = "Tin tức & Sự kiện · " + C.brand; }
+    } else if (window.CONTACT.match(h)){
+      closeReader();
+      setView("contact");
+      $("#loader").classList.add("hide");
+      window.CONTACT.render();
+      observe();
     } else if (window.SHOP.match(h)){
       closeReader();
       setView("shop");
