@@ -1,0 +1,78 @@
+# Tự động đưa website lên Firebase mỗi khi có thay đổi trên nhánh main
+# (kể cả khi sửa nội dung bằng trang quản trị CMS).
+#
+# Cần cài 1 lần trong GitHub → Settings → Secrets and variables → Actions:
+#   Variables → FIREBASE_PROJECT_ID         = mã dự án Firebase (vd: nmn-clastive)
+#   Secrets   → FIREBASE_SERVICE_ACCOUNT    = nội dung tệp JSON khoá tài khoản dịch vụ
+# Chưa cài → bước triển khai tự bỏ qua (không báo lỗi).
+
+name: Deploy Firebase
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      functions:
+        description: "Triển khai lại cả Cloud Functions"
+        type: boolean
+        default: true
+
+concurrency:
+  group: firebase-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ vars.FIREBASE_PROJECT_ID != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Chọn phần cần triển khai
+        id: what
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          EVENT: ${{ github.event_name }}
+          WANT_FN: ${{ inputs.functions }}
+        run: |
+          ONLY="hosting,firestore"
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            [ "$WANT_FN" = "true" ] && ONLY="$ONLY,functions"
+          elif [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            ONLY="$ONLY,functions"
+          elif git diff --name-only "$BEFORE" "$AFTER" | grep -q '^functions/'; then
+            ONLY="$ONLY,functions"
+          fi
+          echo "only=$ONLY" >> "$GITHUB_OUTPUT"
+          echo "Triển khai: $ONLY"
+
+      - name: Cài thư viện Cloud Functions
+        if: contains(steps.what.outputs.only, 'functions')
+        working-directory: functions
+        run: npm install --omit=dev --no-audit --no-fund
+
+      - name: Triển khai lên Firebase
+        env:
+          SA_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          PROJECT: ${{ vars.FIREBASE_PROJECT_ID }}
+          ONLY: ${{ steps.what.outputs.only }}
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          printf '%s' "$SA_JSON" > "$GOOGLE_APPLICATION_CREDENTIALS"
+          npx --yes firebase-tools@13 deploy --only "$ONLY" --project "$PROJECT" --non-interactive --force
+
+      - name: Xoá khoá tạm
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"

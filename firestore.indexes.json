@@ -1,0 +1,6 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    { "collectionGroup": "ratelimits", "fieldPath": "exp", "ttl": true, "indexes": [] }
+  ]
+}

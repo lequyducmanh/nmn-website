@@ -18,6 +18,8 @@ const MAX_FILE = 20 * 1024 * 1024; // 20MB
 
 /* ---------- helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
+let FIREBASE_ON = false;
+fetch("/__/firebase/init.json", { cache: "no-store" }).then(r => { FIREBASE_ON = r.ok; }).catch(() => {});
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = n => new Intl.NumberFormat("vi-VN").format(Math.round(Number(n) || 0)) + "đ";
@@ -581,7 +583,7 @@ const SETTINGS_SECTIONS = [
     { k: "shippingFee", t: "money", l: "Phí giao hàng", nullable: 1, nullLabel: "Để trống = “Báo khi xác nhận đơn”" },
     { k: "freeShippingFrom", t: "money", l: "Miễn phí giao hàng từ", nullable: 1, nullLabel: "Để trống = không áp dụng" },
     { k: "perks", t: "lines", l: "Cam kết hiển thị ở cửa hàng", hint: "Chỉ ghi điều bạn thực sự áp dụng." },
-    { k: "orderEndpoint", t: "url", l: "Link nhận đơn tự động (Google Apps Script)", full: 1, hint: "Để trống: khách gửi đơn qua Zalo. Hướng dẫn trong README." } ] },
+    { k: "orderEndpoint", t: "url", l: "Link nhận đơn tự động (Google Apps Script)", full: 1, hint: "Không cần khi website chạy trên Firebase (đơn tự lưu vào Firestore). Để trống trên GitHub Pages: khách gửi đơn qua Zalo." } ] },
   { h: "Gợi ý “Thêm vào đơn” ở trang Đặt hàng", d: `Hiện các sản phẩm khách chưa chọn ngay cạnh đơn hàng để khách thêm bằng một lần bấm. Sản phẩm vượt quá số lượng hiển thị sẽ nằm sau nút “Xem thêm”. Chọn sản phẩm được gợi ý trong <a href="#products">Sản phẩm</a> → “Gợi ý ở mục Thêm vào đơn”; thứ tự theo thứ tự sản phẩm.`, f: [
     { k: "upsell.enabled", t: "toggle", l: "Bật mục gợi ý" },
     { k: "upsell.max", t: "number", l: "Số sản phẩm hiển thị sẵn", hint: "nên để 2–3" },
@@ -591,7 +593,7 @@ const SETTINGS_SECTIONS = [
     { k: "bank.name", t: "text", l: "Tên ngân hàng hiển thị", ph: "Vietcombank" },
     { k: "bank.account", t: "text", l: "Số tài khoản" },
     { k: "bank.owner", t: "text", l: "Chủ tài khoản", ph: "NGUYEN VAN A" },
-    { k: "bank.autoConfirm", t: "toggle", l: "Tự động xác nhận đã thanh toán (SePay)", hint: "Cần: tài khoản SePay + đoạn mã Apps Script mới + “Link nhận đơn tự động”. Xem README → Xác nhận chuyển khoản tự động." } ] },
+    { k: "bank.autoConfirm", t: "toggle", l: "Tự động xác nhận đã thanh toán (SePay)", hint: "Bật sau khi đã cài SePay: Firebase → <a href=\"orders.html#payments\">Quản lý đơn hàng → Thanh toán · SePay</a> (hoặc Apps Script + “Link nhận đơn tự động”)." } ] },
   { h: "Tìm kiếm Google (SEO)", f: [
     { k: "seo.title", t: "text", l: "Tiêu đề trang chủ", full: 1 },
     { k: "seo.description", t: "textarea", l: "Mô tả ngắn", rows: 2 },
@@ -904,7 +906,7 @@ function validate(){
   });
   [1, 2].forEach(slot => { if (!S.data.products.some(p => Number(p.homeSlot) === slot && p.visible !== false)) warns.push(`Trang chủ: chưa có sản phẩm (đang hiển thị) ở vị trí ${slot}`); });
   const b = s.bank || {};
-  if (b.autoConfirm && !s.orderEndpoint) warns.push("Chuyển khoản: đã bật tự động xác nhận nhưng chưa có “Link nhận đơn tự động” — khách sẽ không thấy trạng thái thanh toán.");
+  if (b.autoConfirm && !s.orderEndpoint && !FIREBASE_ON) warns.push("Chuyển khoản: đã bật tự động xác nhận nhưng chưa có “Link nhận đơn tự động” — khách sẽ không thấy trạng thái thanh toán.");
   if (b.autoConfirm && !(b.code && b.account)) warns.push("Chuyển khoản: đã bật tự động xác nhận nhưng chưa nhập Mã ngân hàng / Số tài khoản.");
   if ((b.code || b.account) && !(b.code && b.account)) warns.push("Chuyển khoản: cần nhập đủ cả Mã ngân hàng và Số tài khoản.");
   complianceScan().forEach(w => warns.push(w));

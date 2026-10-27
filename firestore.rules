@@ -1,0 +1,63 @@
+rules_version = '2';
+
+// Quy tắc bảo mật Firestore cho website NMN
+// - Khách KHÔNG ghi trực tiếp vào database: đơn hàng / lời nhắn / thanh toán đều đi qua Cloud Functions.
+// - Khách chỉ được ĐỌC 1 tài liệu trạng thái thanh toán khi biết đúng mã (không liệt kê được, không có thông tin cá nhân).
+// - Quản trị viên: email đã xác minh, có trong collection "admins" (thêm trong Firebase Console).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // Trạng thái thanh toán công khai theo mã chuyển khoản (trang xác nhận đơn nghe realtime)
+    match /status/{payCode} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow update: if isAdmin() && onlyChanges(['state', 'paid', 'paidAt', 'manual', 'updatedAt']);
+      allow create, delete: if false;
+    }
+
+    // Đơn hàng đầy đủ — chỉ quản trị viên
+    match /orders/{code} {
+      allow read: if isAdmin();
+      allow update: if isAdmin() && onlyChanges(['fulfillment', 'adminNote', 'payment', 'updatedAt']);
+      allow create, delete: if false;
+    }
+
+    // Lời nhắn liên hệ
+    match /contacts/{id} {
+      allow read: if isAdmin();
+      allow update: if isAdmin() && onlyChanges(['handled', 'updatedAt']);
+      allow create, delete: if false;
+    }
+
+    // Giao dịch ngân hàng (SePay) — chỉ xem
+    match /payments/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Cấu hình SePay (khoá webhook) — quản trị viên đặt trong trang Quản lý đơn hàng
+    match /config/{doc} {
+      allow read, write: if isAdmin();
+    }
+
+    // Danh sách quản trị viên — chỉ thêm/xoá trong Firebase Console
+    match /admins/{email} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Mọi thứ khác (ratelimits, …): chỉ Cloud Functions
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

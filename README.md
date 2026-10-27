@@ -2,8 +2,8 @@
 
 Website giới thiệu **PURE NMN 12,000mg+** và **NMN Regene**: trang chủ có hiệu ứng 3D khi cuộn, **Cửa hàng – giỏ hàng – đặt hàng**, **Tin tức & Sự kiện**, và **trang quản trị nội dung (CMS)** để thay ảnh, sửa chữ, thêm sản phẩm/bài viết mà không cần sửa code.
 
-- Website: **https://lequyducmanh.github.io/nmn-website/**
-- Quản trị: **https://lequyducmanh.github.io/nmn-website/admin/**
+- Website: **https://<mã-dự-án>.web.app/** (Firebase Hosting — xem mục *Firebase* bên dưới) · bản cũ: https://lequyducmanh.github.io/nmn-website/
+- Quản trị nội dung: **/admin/** · Quản lý đơn hàng: **/admin/orders.html**
 
 ## Cấu trúc
 
@@ -19,7 +19,12 @@ content/                ← NỘI DUNG (sửa qua /admin)
   posts.json            Bài viết
   events.json           Sự kiện
 images/                 Ảnh tải lên qua CMS (products/, posts/, events/, misc/)
-admin/                  Trang quản trị (index.html, admin.css, admin.js)
+admin/                  Trang quản trị nội dung (index.html, admin.js) + quản lý đơn hàng (orders.html, orders.js)
+functions/              Cloud Functions: /api/orders, /api/contact, /api/status, /api/sepay
+firebase.json           Cấu hình Firebase Hosting (+ chuyển /api/** tới Cloud Functions)
+firestore.rules         Quy tắc bảo mật Firestore
+.github/workflows/      Tự động triển khai lên Firebase mỗi lần đẩy code / xuất bản CMS
+tools/                  Công cụ phụ (dữ liệu địa chỉ, Apps Script dự phòng)
 ```
 
 Website đọc `content/*.json` mỗi lần tải trang, nên **đổi nội dung không cần sửa code**.
@@ -93,6 +98,52 @@ CMS có **bộ dò từ khoá**: thẻ *Kiểm tra câu từ quảng cáo* ở t
 
 Khi có thay đổi địa giới mới: chạy `tools/build-vn-address.py` (hướng dẫn ở đầu tệp) rồi tăng `VER` trong `assets/js/vn-address.js`.
 
+## Firebase (database + hosting + xác nhận thanh toán realtime)
+
+Website chạy trên **Firebase Hosting**; đơn hàng, lời nhắn, giao dịch lưu ở **Cloud Firestore**; **Cloud Functions** (Singapore) nhận đơn, tính lại tiền theo bảng giá, nhận webhook **SePay**. Trang của khách nghe trực tiếp trạng thái thanh toán → hiện *“Thanh toán thành công”* ngay khi tiền vào.
+
+```
+Khách đặt hàng ──POST /api/orders──▶ Cloud Function ──▶ Firestore orders/{mã}, status/{mã CK}
+Khách quét QR, chuyển khoản ─▶ Ngân hàng ─▶ SePay ──POST /api/sepay (API Key)──▶ Cloud Function ──▶ status = paid
+Trang của khách ◀── nghe status/{mã CK} (realtime) ──┘          Quản lý đơn hàng ◀── nghe orders (realtime)
+```
+
+### Cài đặt lần đầu (chủ cửa hàng làm, ~20 phút)
+
+1. **Tạo dự án**: [console.firebase.google.com](https://console.firebase.google.com) → *Add project* (ví dụ `nmn-clastive`). Ghi lại **Project ID**.
+2. **Nâng lên gói Blaze** (⚙ → *Usage and billing* → *Modify plan*). Cần cho Cloud Functions; cửa hàng nhỏ thường nằm trong hạn mức miễn phí. Nên đặt *Budget alert* (ví dụ 50.000đ).
+3. **Firestore Database** → *Create database* → vị trí **asia-southeast1 (Singapore)** → *Production mode*.
+4. **Authentication** → *Get started* → *Sign-in method* → bật **Google**.
+5. **Thêm quản trị viên**: Firestore → *Start collection* `admins` → *Document ID* = **email Google của bạn** (ví dụ `ten.cua.ban@gmail.com`) → thêm trường `role` = `owner` → *Save*. Thêm người khác: tạo thêm tài liệu với email của họ.
+6. **Tài khoản dịch vụ cho GitHub** ([Google Cloud Console → IAM → Service accounts](https://console.cloud.google.com/iam-admin/serviceaccounts), chọn đúng dự án) → *Create service account* `github-deploy` → cấp các vai trò:
+   *Firebase Admin* · *Cloud Functions Admin* · *Cloud Run Admin* · *Service Account User* · *Artifact Registry Administrator* · *Service Usage Admin*
+   → mở tài khoản vừa tạo → *Keys* → *Add key* → *JSON* → tải tệp về.
+7. **GitHub** → repo `nmn-website` → *Settings* → *Secrets and variables* → *Actions*:
+   - tab *Secrets* → *New repository secret*: `FIREBASE_SERVICE_ACCOUNT` = **toàn bộ nội dung tệp JSON** vừa tải (sau đó xoá tệp trên máy).
+   - tab *Variables* → *New repository variable*: `FIREBASE_PROJECT_ID` = Project ID ở bước 1.
+8. **Triển khai lần đầu**: GitHub → *Actions* → *Deploy Firebase* → *Run workflow* (để tích “Triển khai lại cả Cloud Functions”). Chờ dấu ✓ xanh (~3–5 phút). Website có tại `https://<Project ID>.web.app`.
+9. **SePay**: mở `https://<Project ID>.web.app/admin/orders.html` → đăng nhập Google → **Thanh toán · SePay** → *Tạo khoá mới* → nhập số tài khoản → *Lưu*. Rồi trong [my.sepay.vn](https://my.sepay.vn): kết nối tài khoản ngân hàng, **Tích hợp WebHooks → Thêm webhook**: sự kiện *Có tiền vào*, URL = URL webhook trong trang, chứng thực **API Key** = khoá vừa tạo.
+10. **CMS** → Cài đặt chung → Chuyển khoản: bật **Tự động xác nhận đã thanh toán (SePay)** → Xuất bản. Thử với sản phẩm test 5.000đ (`#san-pham/san-pham-test`).
+
+Sau đó: mỗi lần **Xuất bản trong CMS** hoặc đẩy code lên `main`, GitHub tự triển khai lại (1–2 phút; Cloud Functions chỉ triển khai lại khi thư mục `functions/` thay đổi). Tên miền riêng: Firebase → Hosting → *Add custom domain*.
+
+### Dữ liệu & bảo mật
+
+| Firestore | Nội dung | Ai đọc được |
+|---|---|---|
+| `orders/{mã đơn}` | Đơn đầy đủ (khách, địa chỉ, sản phẩm, thanh toán, trạng thái xử lý) | Quản trị viên |
+| `status/{mã CK}` | Chỉ trạng thái thanh toán + tổng tiền (không có thông tin khách) | Ai biết đúng mã |
+| `payments/{id}` | Giao dịch từ SePay (chống trùng theo id) | Quản trị viên |
+| `contacts/{id}` | Lời nhắn trang Liên hệ | Quản trị viên |
+| `config/sepay` | Khoá webhook, số tài khoản | Quản trị viên |
+| `admins/{email}` | Danh sách quản trị viên | Chỉ sửa trong Console |
+
+- Khách **không ghi trực tiếp** vào database; mọi thứ đi qua Cloud Functions (kiểm tra dữ liệu, **tính lại tiền theo bảng giá**, giới hạn 15 đơn / 10 phút / IP).
+- Webhook SePay bắt buộc đúng **API Key**; chỉ tính **tiền vào** đúng **số tài khoản**; giao dịch gửi lại không bị cộng 2 lần.
+- Quản lý đơn hàng: xem đơn realtime, lọc/tìm, đổi trạng thái (Mới → Đã xác nhận → Đang giao → Hoàn tất / Huỷ), ghi chú nội bộ, *Đánh dấu đã thanh toán* thủ công, tải CSV, xử lý lời nhắn.
+
+Khi chưa cài Firebase (ví dụ bản GitHub Pages), website vẫn chạy như cũ: đơn gửi qua Zalo hoặc Google Apps Script (mục dưới).
+
 ## Cửa hàng & nhận đơn
 
 - Giỏ hàng lưu trên trình duyệt của khách. Khi đặt hàng, website tạo **mã đơn** và trang xác nhận.
@@ -100,7 +151,7 @@ Khi có thay đổi địa giới mới: chạy `tools/build-vn-address.py` (hư
 - **Mặc định:** khách gửi đơn qua **Zalo** (nội dung đơn được chép sẵn) hoặc gọi hotline.
 - **Nhận đơn tự động vào Google Sheets:** làm theo mục dưới, rồi dán link vào CMS → Cài đặt chung → *Link nhận đơn tự động*.
 
-### Nhận đơn vào Google Sheets (miễn phí)
+### (Dự phòng) Nhận đơn vào Google Sheets — khi không dùng Firebase
 
 1. Tạo Google Sheet mới → **Tiện ích mở rộng → Apps Script**. Xoá mã mẫu, dán **toàn bộ** tệp [`tools/google-apps-script.gs`](tools/google-apps-script.gs) → **Lưu**.
 2. **Project Settings (⚙) → Script properties → Add**: `SITE_URL` = `https://lequyducmanh.github.io/nmn-website/` (để máy chủ **tính lại tổng tiền theo bảng giá**, không tin số tiền trình duyệt gửi lên).
@@ -111,7 +162,7 @@ Trang tính tự tạo: **Đơn hàng** (có cột *Nội dung CK, Đã nhận, 
 
 > Đã dùng đoạn mã cũ? Dán mã mới đè lên rồi **Triển khai → Quản lý triển khai → ✎ Sửa → Phiên bản: Phiên bản mới → Triển khai** (link giữ nguyên). Cột mới được thêm tự động.
 
-### Xác nhận chuyển khoản tự động (SePay)
+### (Dự phòng) Xác nhận chuyển khoản qua Apps Script + SePay
 
 Khách chọn **Chuyển khoản · VietQR** → trang xác nhận đơn hiện mã QR (điền sẵn số tiền + nội dung `NMN…`) → khách quét bằng app ngân hàng → **trang tự chuyển sang “Đã nhận thanh toán” sau vài giây**, trang tính *Đơn hàng* cập nhật *Đã thanh toán*.
 
@@ -163,6 +214,6 @@ Website thương mại điện tử tại Việt Nam thường cần: thông tin
 
 ## Công nghệ
 
-HTML, CSS, JavaScript thuần (không cần build) · [three.js](https://threejs.org) 0.160 · Google Fonts (Noto Serif Display, Be Vietnam Pro) · GitHub Git Data API (CMS) · VietQR (mã QR chuyển khoản) · GitHub Pages.
+HTML, CSS, JavaScript thuần (không cần build) · Firebase (Hosting, Firestore, Cloud Functions, Authentication) · [three.js](https://threejs.org) 0.160 · Google Fonts (Noto Serif Display, Be Vietnam Pro) · GitHub Git Data API (CMS) · VietQR (mã QR chuyển khoản) · GitHub Pages.
 
 > Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.

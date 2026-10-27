@@ -1,0 +1,11 @@
+{
+  "name": "nmn-functions",
+  "description": "Cloud Functions cho website NMN: đơn hàng, liên hệ, webhook SePay",
+  "private": true,
+  "main": "index.js",
+  "engines": { "node": "20" },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.1.0"
+  }
+}

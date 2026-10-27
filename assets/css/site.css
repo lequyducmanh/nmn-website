@@ -949,3 +949,4 @@ html.qv-open{overflow:hidden}
 @media (prefers-reduced-motion:reduce){ .pay-st i{animation:none} }
 
 .unlisted-note{display:inline-block;margin:6px 0 4px;padding:6px 12px;border-radius:10px;font-size:13px;background:rgba(44,106,109,.08);color:var(--teal)}
+.co-err{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(143,67,87,.08);color:var(--rose);font-size:13.5px}
