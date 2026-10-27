@@ -8,8 +8,8 @@ const lowPower = matchMedia('(pointer: coarse)').matches;
 
 try {
   if (document.fonts) await Promise.race([Promise.all([
-    document.fonts.load('600 120px "Be Vietnam Pro"'),
-    document.fonts.load('500 96px "Be Vietnam Pro"'),
+    document.fonts.load('600 120px "Lora"'),
+    document.fonts.load('italic 500 96px "Lora"'),
     document.fonts.load('500 30px "Be Vietnam Pro"')
   ]), new Promise(r => setTimeout(r, 2500))]);
 } catch (_) {}
@@ -65,8 +65,8 @@ function makeLabel(o){
   g.fillStyle = o.accent; g.fillRect(0, 60, 2048, 3); g.fillRect(0, 74, 2048, 1); g.fillRect(0, 737, 2048, 3); g.fillRect(0, 726, 2048, 1);
   g.textAlign = 'center'; g.textBaseline = 'middle';
   g.font = '500 28px "Be Vietnam Pro", sans-serif'; spaced(g, 'MADE IN JAPAN · CLASTIVE', 1024, 150, 12);
-  g.fillStyle = o.ink; g.font = '600 ' + o.titleSize + 'px "Be Vietnam Pro", system-ui, sans-serif'; g.fillText(o.title, 1024, 300);
-  g.fillStyle = o.accent; g.font = '500 ' + o.subSize + 'px "Be Vietnam Pro", system-ui, sans-serif'; g.fillText(o.sub, 1024, 450);
+  g.fillStyle = o.ink; g.font = '600 ' + o.titleSize + 'px "Lora", Georgia, serif'; g.fillText(o.title, 1024, 300);
+  g.fillStyle = o.accent; g.font = 'italic 500 ' + o.subSize + 'px "Lora", Georgia, serif'; g.fillText(o.sub, 1024, 450);
   g.fillRect(974, 545, 100, 2);
   g.fillStyle = o.ink; g.globalAlpha = .8; g.font = '400 28px "Be Vietnam Pro", sans-serif'; spaced(g, o.line, 1024, 620, 6);
   g.globalAlpha = 1;
@@ -92,9 +92,9 @@ function makeBottle(o){
   const holder = new THREE.Group(); holder.add(inner); return holder;
 }
 const bottleA = makeBottle({ glass: 0xf8f6f1, rough: .32, sheen: .4, cap: 0xc9a46c,
-  label: makeLabel({ bg1: '#fdfbf7', bg2: '#efe8db', accent: '#a3804c', ink: '#13202a', title: 'PURE NMN', titleSize: 112, sub: '12,000mg+', subSize: 84, line: '60 CAPSULES · NMN' }) });
+  label: makeLabel({ bg1: '#fdfbf7', bg2: '#efe8db', accent: '#a3804c', ink: '#13202a', title: 'PURE NMN', titleSize: 124, sub: '12,000mg+', subSize: 92, line: '60 CAPSULES · NMN' }) });
 const bottleB = makeBottle({ glass: 0x5c1a2c, rough: .12, cap: 0xe2bca2,
-  label: makeLabel({ bg1: '#4a1424', bg2: '#2c0b16', accent: '#e6bfa6', ink: '#fbf0ea', title: 'NMN', titleSize: 168, sub: 'Regene', subSize: 104, line: '90 CAPSULES · NMN' }) });
+  label: makeLabel({ bg1: '#4a1424', bg2: '#2c0b16', accent: '#e6bfa6', ink: '#fbf0ea', title: 'NMN', titleSize: 176, sub: 'Regene', subSize: 116, line: '90 CAPSULES · NMN' }) });
 scene.add(bottleA, bottleB);
 
 /* ---------- pearl cell ---------- */
