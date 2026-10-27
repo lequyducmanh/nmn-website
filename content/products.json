@@ -400,5 +400,51 @@
     "homeLead": "",
     "forWho": "",
     "homeSpecs": []
+  },
+  {
+    "slug": "san-pham-test",
+    "visible": true,
+    "unlisted": true,
+    "upsell": false,
+    "theme": "pearl",
+    "image": "",
+    "gallery": [],
+    "name": "Sản phẩm test thanh toán",
+    "officialName": "",
+    "tag": "Test",
+    "short": "Dùng nội bộ để kiểm tra đặt hàng và chuyển khoản",
+    "price": 5000,
+    "compareAt": null,
+    "claim": "",
+    "target": "",
+    "desc": "Sản phẩm dùng nội bộ để kiểm tra quy trình đặt hàng, chuyển khoản VietQR và xác nhận thanh toán. Không phải sản phẩm bán, không giao hàng.",
+    "highlights": [
+      "Giá 5.000đ để thử chuyển khoản thật",
+      "Không giao hàng — chỉ dùng để kiểm tra"
+    ],
+    "specs": [
+      [
+        "Mục đích",
+        "Kiểm tra đặt hàng và thanh toán"
+      ],
+      [
+        "Giao hàng",
+        "Không giao"
+      ]
+    ],
+    "ingredientsBasis": "",
+    "ingredients": [],
+    "excipients": "",
+    "ingredientNotes": [],
+    "usage": [],
+    "storage": "",
+    "warnings": [],
+    "legal": [],
+    "homeSlot": 0,
+    "homeTag": "",
+    "homeTitle": "",
+    "homeLead": "",
+    "forWho": "",
+    "homeSpecs": []
   }
 ]

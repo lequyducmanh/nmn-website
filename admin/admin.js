@@ -643,6 +643,7 @@ const PRODUCT_SECTIONS = [
     { k: "price", t: "money", l: "Giá bán (đồng)", req: 1 },
     { k: "compareAt", t: "money", l: "Giá gốc (gạch ngang)", nullable: 1, nullLabel: "Để trống nếu không giảm giá" },
     { k: "visible", t: "toggle", l: "Hiển thị trên website" },
+    { k: "unlisted", t: "toggle", l: "Link riêng (ẩn khỏi danh sách)", hint: "không hiện ở Cửa hàng, trang chủ, gợi ý; vẫn mua được qua đường dẫn — dùng cho sản phẩm test" },
     { k: "upsell", t: "toggle", l: "Gợi ý ở mục Thêm vào đơn" },
     { k: "theme", t: "select", l: "Màu nền hình minh họa", opts: [["pearl", "Ngọc trai (sáng)"], ["rose", "Hồng"], ["duo", "Bộ đôi"]] } ] },
   { h: "Hình ảnh", d: "Ảnh tự được nén (tối đa 1600px). Nếu không có ảnh, website dùng hình minh họa chai.", f: [
@@ -709,7 +710,7 @@ const COLL = {
     find: i => S.data.products.find(p => p.slug === i),
     title: p => p.name,
     img: p => p.image || (p.gallery || [])[0],
-    meta: p => [fmt(p.price), p.short, p.homeSlot ? `<span class="badge gold">Trang chủ · vị trí ${p.homeSlot}</span>` : "", p.visible === false ? '<span class="badge off">Đang ẩn</span>' : '<span class="badge on">Hiển thị</span>'],
+    meta: p => [fmt(p.price), p.short, p.homeSlot ? `<span class="badge gold">Trang chủ · vị trí ${p.homeSlot}</span>` : "", p.visible === false ? '<span class="badge off">Đang ẩn</span>' : p.unlisted ? '<span class="badge gold">Link riêng</span>' : '<span class="badge on">Hiển thị</span>'],
     make: () => ({ slug: "", visible: false, upsell: true, name: "Sản phẩm mới", officialName: "", tag: "", short: "", price: 0, compareAt: null, claim: "", target: "Người trưởng thành.", theme: "pearl", image: "", gallery: [], desc: "", highlights: [], specs: [["Xuất xứ", "Nhật Bản"]],
       ingredientsBasis: "", ingredients: [], excipients: "", ingredientNotes: [], usage: [], storage: "",
       warnings: ["Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.", "Không sử dụng cho người mẫn cảm, kiêng kị với bất kỳ thành phần nào của sản phẩm.", "Để xa tầm tay trẻ em."],

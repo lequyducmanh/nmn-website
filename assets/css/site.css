@@ -947,3 +947,5 @@ html.qv-open{overflow:hidden}
   .cp svg{width:16px;height:16px}
 }
 @media (prefers-reduced-motion:reduce){ .pay-st i{animation:none} }
+
+.unlisted-note{display:inline-block;margin:6px 0 4px;padding:6px 12px;border-radius:10px;font-size:13px;background:rgba(44,106,109,.08);color:var(--teal)}

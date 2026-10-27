@@ -88,7 +88,7 @@ window.NMN = (function(){
     set("#contact p.lead", esc(H.contactLead));
     [1, 2].forEach(slot => {
       const el = document.querySelector(`[data-home-slot="${slot}"]`); if (!el) return;
-      const p = window.PRODUCTS.find(x => Number(x.homeSlot) === slot);
+      const p = window.PRODUCTS.find(x => Number(x.homeSlot) === slot && !x.unlisted);
       if (!p){ el.innerHTML = `<p class="lead">Chưa chọn sản phẩm cho vị trí này (vào /admin → Sản phẩm → "Hiển thị ở trang chủ").</p>`; return; }
       const specs = (p.homeSpecs && p.homeSpecs.length ? p.homeSpecs : p.specs || []).slice(0, 6);
       el.innerHTML = `
@@ -344,7 +344,7 @@ window.SHOP = (function(){
         <p>Thực phẩm bảo vệ sức khỏe chứa NMN, sản xuất tại Nhật Bản. Thêm sản phẩm vào giỏ, điền thông tin nhận hàng và chúng tôi sẽ liên hệ xác nhận đơn.</p>
         ${perks("perks")}
       </section>
-      <div class="pgrid">${P.map(card).join("")}</div>
+      <div class="pgrid">${P.filter(x => !x.unlisted).map(card).join("")}</div>
       <div class="steps3">
         <div class="glass"><b>i.</b><h3>Chọn sản phẩm</h3><p>Thêm sản phẩm vào giỏ hàng, điều chỉnh số lượng tuỳ ý.</p></div>
         <div class="glass"><b>ii.</b><h3>Điền thông tin</h3><p>Nhập họ tên, số điện thoại, địa chỉ nhận hàng và chọn cách thanh toán.</p></div>
@@ -366,7 +366,7 @@ window.SHOP = (function(){
     if ((p.ingredientNotes || []).length) out.push(`<details><summary>Về các thành phần</summary><div class="ac-body">
       <dl class="notes">${p.ingredientNotes.filter(r => r && r[0]).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
       <p class="ac-small">Thông tin mô tả đặc tính của từng thành phần, không phải công dụng của sản phẩm.${p.claim ? ` Công dụng của sản phẩm: ${esc(p.claim.replace(/\.$/, "").toLowerCase())}.` : ""}</p></div></details>`);
-    out.push(`<details><summary>Công dụng &amp; cách dùng</summary><div class="ac-body"><table>
+    if (p.claim || p.target || (p.usage || []).length || p.storage) out.push(`<details><summary>Công dụng &amp; cách dùng</summary><div class="ac-body"><table>
       ${p.claim ? `<tr><td>Công dụng</td><td>${esc(p.claim)}</td></tr>` : ""}
       ${p.target ? `<tr><td>Đối tượng sử dụng</td><td>${esc(p.target)}</td></tr>` : ""}
       ${(p.usage || []).length ? `<tr><td>Hướng dẫn sử dụng</td><td>${p.usage.map(esc).join("<br>")}</td></tr>` : ""}
@@ -377,16 +377,23 @@ window.SHOP = (function(){
     return out.join("");
   }
 
+  // sản phẩm "link riêng": không cho Google lập chỉ mục
+  function robots(noindex){
+    let m = document.querySelector('meta[name="robots"]');
+    if (noindex){ if (!m){ m = document.createElement("meta"); m.name = "robots"; document.head.appendChild(m); } m.content = "noindex, nofollow"; }
+    else if (m) m.remove();
+  }
   function renderProduct(slug){
     const p = bySlug(slug);
     if (!p){ history.replaceState(null, "", "#cua-hang"); return renderList(); }
     page = "product";
     document.title = p.name + " · " + C.brand;
-    const others = P.filter(x => x !== p);
+    const others = P.filter(x => x !== p && !x.unlisted);
+    robots(!!p.unlisted);
     const pics = [p.image, ...(p.gallery || [])].filter(Boolean);
     const main = pics.length ? `<span class="pvis" style="--pv:${THEMES[p.theme] || THEMES.pearl}"><img id="pd-main" src="${esc(window.NMN.img(pics[0]))}" alt="${esc(p.name)}" decoding="async"></span>` : visual(p);
     const thumbs = pics.length > 1 ? `<div class="thumbs" role="list">${pics.map((src, i) => `<button type="button" role="listitem" class="${i ? "" : "on"}" data-gal="${esc(window.NMN.img(src))}" aria-label="Ảnh ${i + 1}"><img src="${esc(window.NMN.img(src))}" alt="" loading="lazy"></button>`).join("")}</div>` : "";
-    window.NMN.ld({ "@context": "https://schema.org", "@type": "Product", name: p.name, description: p.desc,
+    if (!p.unlisted) window.NMN.ld({ "@context": "https://schema.org", "@type": "Product", name: p.name, description: p.desc,
       image: pics.map(window.NMN.abs), brand: { "@type": "Brand", name: "Clastive" },
       offers: { "@type": "Offer", priceCurrency: "VND", price: p.price, availability: "https://schema.org/InStock", url: location.href } });
     root.innerHTML = `
@@ -397,6 +404,7 @@ window.SHOP = (function(){
           <span class="flag"${p.theme === "rose" ? ' style="color:var(--rose)"' : ""}><i></i>${esc(p.tag)}</span>
           <h1>${esc(p.name)}</h1>
           ${p.officialName ? `<p class="kind">${esc(p.officialName)}</p>` : ""}
+          ${p.unlisted ? `<p class="unlisted-note">Sản phẩm không hiển thị công khai — chỉ mở được bằng đường dẫn riêng.</p>` : ""}
           <p class="short">${esc(p.short)}</p>
           ${priceHtml(p)}
           <div class="note-s">${esc(C.priceNote)}</div>
@@ -475,7 +483,7 @@ window.SHOP = (function(){
     const a = document.activeElement, keep = a && box.contains(a) ? (a.dataset.oq ? `[data-oq="${a.dataset.oq}"][data-d="${a.dataset.d}"]` : a.dataset.oadd ? "[data-oadd]" : a.dataset.qv ? `[data-qv="${a.dataset.qv}"]` : a.hasAttribute("data-oexp") ? "[data-oexp]" : null) : null;
     // "Thêm vào đơn": chỉ hiện vài sản phẩm, phần còn lại ẩn sau nút Xem thêm
     const U = Object.assign({ enabled: true, title: "Thêm vào đơn", max: 2 }, C.upsell || {});
-    const more = U.enabled === false ? [] : P.filter(p => p.visible !== false && p.upsell !== false && !cart.some(i => i.slug === p.slug));
+    const more = U.enabled === false ? [] : P.filter(p => p.visible !== false && !p.unlisted && p.upsell !== false && !cart.some(i => i.slug === p.slug));
     const lim = Math.max(1, parseInt(U.max, 10) || 2), hidden = Math.max(0, more.length - lim);
     const chips = upsellOpen ? more : more.slice(0, lim);
     const one = cart.length === 1;
@@ -812,9 +820,9 @@ window.SHOP = (function(){
   return {
     priceOf: slug => { const p = bySlug(slug); return p ? fmt(p.price) : ""; },
     match: h => /^(cua-hang|thanh-toan|san-pham\/.+|don-hang\/.+)$/.test(h),
-    leave(){ page = null; clearTimeout(payTimer); closeCart(); },
+    leave(){ page = null; clearTimeout(payTimer); closeCart(); robots(false); },
     render(h){
-      closeCart();
+      closeCart(); robots(false);
       if (h === "cua-hang") renderList();
       else if (h === "thanh-toan") renderCheckout();
       else if (h.startsWith("san-pham/")) renderProduct(h.slice(9));
@@ -830,7 +838,7 @@ window.SHOP = (function(){
    Biểu mẫu: có "formEndpoint" → gửi thẳng (Google Apps Script); không có → chép nội dung + mở Zalo / email.
    ===================================================================== */
 window.CONTACT = (function(){
-  const C = window.CONFIG, P = (window.PRODUCTS || []).filter(p => p.visible !== false);
+  const C = window.CONFIG, P = (window.PRODUCTS || []).filter(p => p.visible !== false && !p.unlisted);
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const { esc, emph } = window.NMN;
   const K = Object.assign({ topics: [], faq: [], showMap: true }, C.contact || {});
