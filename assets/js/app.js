@@ -465,16 +465,27 @@ window.SHOP = (function(){
   function renderSummary(){
     const box = $("#osum"); if (!box) return;
     const t = totals();
+    // giữ vị trí con trỏ (bàn phím) sau khi vẽ lại
+    const a = document.activeElement, keep = a && box.contains(a) ? (a.dataset.oq ? `[data-oq="${a.dataset.oq}"][data-d="${a.dataset.d}"]` : a.dataset.oadd ? "[data-oadd]" : null) : null;
+    const more = P.filter(p => p.visible !== false && !cart.some(i => i.slug === p.slug));
+    const one = cart.length === 1;
     box.innerHTML = `<h3>Đơn hàng <small style="font-family:var(--sans);font-size:13px;color:var(--muted);font-weight:400">(${count()} sản phẩm)</small></h3>
-      ${cart.map(i => { const p = bySlug(i.slug); return `<div class="oitem">${visual(p)}<div style="min-width:0"><div class="n">${esc(p.name)}</div><div class="q">${fmt(p.price)} × ${i.qty}</div></div><div class="p">${fmt(p.price * i.qty)}</div></div>`; }).join("")}
-      <div class="sums">
+      ${cart.map(i => { const p = bySlug(i.slug), n = esc(p.name); return `<div class="oitem">${visual(p)}<div class="oi-main"><div class="n">${n}</div><div class="q">${fmt(p.price)} / sản phẩm</div>
+        <div class="oi-ctl"><div class="qty sm" role="group" aria-label="Số lượng ${n}">
+          <button type="button" data-oq="${esc(p.slug)}" data-d="-1" aria-label="Giảm số lượng ${n}"${i.qty <= 1 ? " disabled" : ""}>−</button>
+          <input type="number" inputmode="numeric" min="1" max="${MAXQ}" value="${i.qty}" data-oqi="${esc(p.slug)}" aria-label="Số lượng ${n}">
+          <button type="button" data-oq="${esc(p.slug)}" data-d="1" aria-label="Tăng số lượng ${n}"${i.qty >= MAXQ ? " disabled" : ""}>+</button></div>
+          ${one ? "" : `<button type="button" class="oi-rm" data-orm="${esc(p.slug)}" aria-label="Xoá ${n} khỏi đơn">Xoá</button>`}</div></div>
+        <div class="p">${fmt(p.price * i.qty)}</div></div>`; }).join("")}
+      ${more.length ? `<div class="omore"><span>Thêm vào đơn</span>${more.map(p => `<button type="button" class="ochip" data-oadd="${esc(p.slug)}">+ ${esc(p.name)} <small>${fmt(p.price)}</small></button>`).join("")}</div>` : ""}
+      <div class="sums" aria-live="polite">
         <div class="sumrow"><span>Tạm tính</span><span>${fmt(t.sub)}</span></div>
         <div class="sumrow"><span>Phí giao hàng</span><span class="muted">${shipText(t.ship)}</span></div>
         <div class="sumrow total"><span>Tổng cộng</span><b>${fmt(t.total)}</b></div>
       </div>
       <button class="btn btn-ink" type="submit" id="co-submit">Đặt hàng ${arrow}</button>
-      <button class="btn btn-line" type="button" data-cart-open>Sửa giỏ hàng</button>
       <p class="fine">Bằng việc đặt hàng, bạn đồng ý để chúng tôi liên hệ qua số điện thoại đã cung cấp nhằm xác nhận và giao đơn hàng.</p>`;
+    if (keep){ const el = box.querySelector(keep); if (el && !el.disabled) el.focus({ preventScroll: true }); else box.querySelector("[data-oqi]")?.focus({ preventScroll: true }); }
   }
 
   function fieldError(form, name, msg){
@@ -603,6 +614,12 @@ window.SHOP = (function(){
       return;
     }
     if (t.closest("[data-cart-open]")){ e.preventDefault(); openCart(); return; }
+    const oq = t.closest("[data-oq]");
+    if (oq){ const it = cart.find(i => i.slug === oq.dataset.oq); if (it) setQty(it.slug, Math.max(1, it.qty + Number(oq.dataset.d))); return; }
+    const orm = t.closest("[data-orm]");
+    if (orm){ if (cart.length > 1){ const p = bySlug(orm.dataset.orm); setQty(orm.dataset.orm, 0); toast(`Đã xoá ${p.name} khỏi đơn`); } return; }
+    const oadd = t.closest("[data-oadd]");
+    if (oadd){ add(oadd.dataset.oadd, 1); toast(`Đã thêm ${bySlug(oadd.dataset.oadd).name} vào đơn`); return; }
     const qb = t.closest("[data-q]");
     if (qb){ const it = cart.find(i => i.slug === qb.dataset.q); if (it) setQty(it.slug, it.qty + Number(qb.dataset.d)); return; }
     const rm = t.closest("[data-rm]");
@@ -622,8 +639,11 @@ window.SHOP = (function(){
   });
   document.addEventListener("change", e => {
     const qi = e.target.closest("[data-qi]"); if (qi) setQty(qi.dataset.qi, qi.value);
+    const oqi = e.target.closest("[data-oqi]"); if (oqi) setQty(oqi.dataset.oqi, Math.max(1, parseInt(oqi.value, 10) || 1));
     if (e.target.id === "pd-qty") e.target.value = Math.max(1, Math.min(MAXQ, parseInt(e.target.value, 10) || 1));
   });
+  // Enter trong ô số lượng ở trang đặt hàng: cập nhật số lượng, không gửi đơn
+  document.addEventListener("keydown", e => { const oqi = e.target.closest && e.target.closest("[data-oqi]"); if (oqi && e.key === "Enter"){ e.preventDefault(); setQty(oqi.dataset.oqi, Math.max(1, parseInt(oqi.value, 10) || 1)); } });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("cart-open")) { e.stopImmediatePropagation(); closeCart(); } }, true);
   addEventListener("storage", e => { if (e.key === KEY){ cart = store.get(KEY, []).filter(i => bySlug(i.slug) && i.qty > 0); paint(); } });
 
