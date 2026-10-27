@@ -122,6 +122,10 @@ function doPost(e) {
 | `#tin-tuc` | Tin tức & Sự kiện |
 | `#bai/<đường-dẫn>`, `#su-kien/<đường-dẫn>` | Một bài viết / sự kiện |
 
+## Khi sửa code (CSS/JS)
+
+Tăng số `?v=…` ở các thẻ `<link>`/`<script>` trong `index.html` và `admin/index.html` để khách nhận bản mới ngay (không cần khi chỉ sửa nội dung qua CMS).
+
 ## Chạy thử trên máy
 
 Website đọc nội dung bằng `fetch`, nên cần mở qua một máy chủ web (không mở trực tiếp file):
