@@ -125,7 +125,11 @@ function normalize(){
   s.home = s.home || {};
   ["perks"].forEach(k => s[k] = Array.isArray(s[k]) ? s[k] : []);
   ["heroMeta", "marquee"].forEach(k => s.home[k] = Array.isArray(s.home[k]) ? s.home[k] : []);
-  S.data.products.forEach(p => { p.gallery = p.gallery || []; p.highlights = p.highlights || []; p.specs = p.specs || []; p.usage = p.usage || []; p.homeSpecs = p.homeSpecs || []; if (p.visible === undefined) p.visible = true; });
+  S.data.products.forEach(p => {
+    ["gallery", "highlights", "specs", "usage", "homeSpecs", "ingredients", "ingredientNotes", "warnings", "legal"].forEach(k => p[k] = Array.isArray(p[k]) ? p[k] : []);
+    ["officialName", "claim", "target", "ingredientsBasis", "excipients", "storage"].forEach(k => p[k] = p[k] || "");
+    if (p.visible === undefined) p.visible = true;
+  });
   S.data.posts.forEach(p => { if (p.published === undefined) p.published = true; });
   S.data.events.forEach(e => { if (e.published === undefined) e.published = true; });
 }
@@ -595,8 +599,11 @@ const HOME_SECTIONS = [
   { h: "Hai sản phẩm trên trang chủ", d: `Chọn trong <a href="#products">Sản phẩm</a> → mục “Hiển thị ở trang chủ” (Vị trí 1 và Vị trí 2).`, f: [] }
 ];
 const PRODUCT_SECTIONS = [
-  { h: "Thông tin chính", f: [
-    { k: "name", t: "text", l: "Tên sản phẩm", req: 1, full: 1 },
+  { h: "Thông tin chính", d: "Công dụng, thành phần, hàm lượng phải đúng <b>hồ sơ công bố</b> và nội dung quảng cáo đã được xác nhận. Không tự thêm công dụng khác.", f: [
+    { k: "name", t: "text", l: "Tên hiển thị", req: 1, full: 1 },
+    { k: "officialName", t: "text", l: "Tên theo hồ sơ công bố", full: 1, ph: "Thực phẩm bảo vệ sức khỏe …" },
+    { k: "claim", t: "text", l: "Công dụng (đúng hồ sơ công bố)", full: 1, ph: "Hỗ trợ làm đẹp da." },
+    { k: "target", t: "text", l: "Đối tượng sử dụng", full: 1, ph: "Người trưởng thành." },
     { k: "slug", t: "slug", l: "Đường dẫn", req: 1, hint: "chỉ chữ thường không dấu, số, gạch nối" },
     { k: "tag", t: "text", l: "Nhãn ngắn", ph: "Dòng sắc đẹp" },
     { k: "short", t: "text", l: "Mô tả một dòng", full: 1 },
@@ -610,8 +617,17 @@ const PRODUCT_SECTIONS = [
   { h: "Nội dung chi tiết", f: [
     { k: "desc", t: "textarea", l: "Mô tả" },
     { k: "highlights", t: "lines", l: "Điểm nổi bật" },
-    { k: "specs", t: "pairs", l: "Thành phần & thông số", ph1: "Tên", ph2: "Giá trị" },
-    { k: "usage", t: "lines", l: "Cách dùng" } ] },
+    { k: "specs", t: "pairs", l: "Thông số nhanh", ph1: "Tên", ph2: "Giá trị" } ] },
+  { h: "Thành phần (theo hồ sơ công bố)", f: [
+    { k: "ingredientsBasis", t: "text", l: "Đơn vị tính", full: 1, ph: "Trong 3 viên nang chứa" },
+    { k: "ingredients", t: "pairs", l: "Thành phần & hàm lượng", ph1: "Thành phần", ph2: "Hàm lượng" },
+    { k: "excipients", t: "textarea", l: "Phụ liệu", rows: 2 },
+    { k: "ingredientNotes", t: "pairs", l: "Giới thiệu thành phần", hint: "chỉ dùng nội dung Công ty đã xác nhận", ph1: "Thành phần", ph2: "Mô tả" } ] },
+  { h: "Cách dùng, bảo quản & lưu ý (theo nhãn)", f: [
+    { k: "usage", t: "lines", l: "Hướng dẫn sử dụng" },
+    { k: "storage", t: "textarea", l: "Bảo quản", rows: 2 },
+    { k: "warnings", t: "lines", l: "Lưu ý", hint: "dòng đầu nên là: Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh." },
+    { k: "legal", t: "pairs", l: "Thông tin pháp lý", hint: "Số ĐKSP, Số XNQC, nhà sản xuất, thương nhân chịu trách nhiệm…", ph1: "Mục", ph2: "Nội dung" } ] },
   { h: "Hiển thị ở trang chủ", d: "Trang chủ có 2 vị trí giới thiệu sản phẩm (cạnh cảnh 3D). Chọn vị trí cho sản phẩm này.", f: [
     { k: "homeSlot", t: "select", l: "Vị trí", opts: [["0", "Không hiển thị ở trang chủ"], ["1", "Vị trí 1 (nền sáng)"], ["2", "Vị trí 2 (nền hồng)"]] },
     { k: "homeTag", t: "text", l: "Nhãn nhỏ", ph: "Sản phẩm 01 · …" },
@@ -660,7 +676,10 @@ const COLL = {
     title: p => p.name,
     img: p => p.image || (p.gallery || [])[0],
     meta: p => [fmt(p.price), p.short, p.homeSlot ? `<span class="badge gold">Trang chủ · vị trí ${p.homeSlot}</span>` : "", p.visible === false ? '<span class="badge off">Đang ẩn</span>' : '<span class="badge on">Hiển thị</span>'],
-    make: () => ({ slug: "", visible: false, name: "Sản phẩm mới", tag: "", short: "", price: 0, compareAt: null, theme: "pearl", image: "", gallery: [], desc: "", highlights: [], specs: [["Xuất xứ", "Nhật Bản"]], usage: [], homeSlot: 0, homeTag: "", homeTitle: "", homeLead: "", forWho: "", homeSpecs: [] }),
+    make: () => ({ slug: "", visible: false, name: "Sản phẩm mới", officialName: "", tag: "", short: "", price: 0, compareAt: null, claim: "", target: "Người trưởng thành.", theme: "pearl", image: "", gallery: [], desc: "", highlights: [], specs: [["Xuất xứ", "Nhật Bản"]],
+      ingredientsBasis: "", ingredients: [], excipients: "", ingredientNotes: [], usage: [], storage: "",
+      warnings: ["Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.", "Không sử dụng cho người mẫn cảm, kiêng kị với bất kỳ thành phần nào của sản phẩm.", "Để xa tầm tay trẻ em."],
+      legal: [["Số ĐKSP", ""], ["Số XNQC", ""]], homeSlot: 0, homeTag: "", homeTitle: "", homeLead: "", forWho: "", homeSpecs: [] }),
     preview: p => "#san-pham/" + p.slug
   },
   posts: {
@@ -713,6 +732,19 @@ function viewOverview(){
         <div style="margin-top:12px"><button class="btn btn-danger btn-sm" id="discard">Huỷ mọi thay đổi</button></div>`
         : `<p class="muted">Không có thay đổi nào. Website đang hiển thị đúng nội dung trong repo.</p>`}
     </section>
+    ${(() => { const cw = complianceScan(); return `<section class="card"><h2>Kiểm tra câu từ quảng cáo</h2>
+      <p class="muted small">Theo thông báo nội dung quảng cáo của Công ty (CV 2110/2026/CV-CVJ). Website là thực phẩm bảo vệ sức khỏe:</p>
+      <ul class="tips small">
+        <li>Chỉ ghi công dụng đúng hồ sơ: <b>NMN Regene</b> — “Hỗ trợ chống lão hoá da”; <b>PURE NMN 12,000mg+</b> — “Hỗ trợ làm đẹp da”.</li>
+        <li>Không dùng: trường thọ, trường sinh, đảo ngược lão hóa, kéo dài tuổi thọ, chữa/điều trị/phòng bệnh, thay thế thuốc.</li>
+        <li>Không lấy nghiên cứu trên tế bào, động vật hay nghiên cứu chung về NMN để nói sản phẩm có tác dụng tương tự.</li>
+        <li>Không cam kết hiệu quả tuyệt đối/tức thì, không đăng lời chứng thực hay ảnh trước – sau.</li>
+        <li>Luôn có câu: <b>“${esc(MANDATORY)}.”</b></li>
+      </ul>
+      ${cw.length ? `<p style="color:var(--rose);margin-top:12px"><b>${cw.length} chỗ cần xem lại:</b></p><ul class="changes">${cw.map(c => `<li>${esc(c)}</li>`).join("")}</ul>`
+        : `<p class="muted small" style="margin-top:12px">✓ Không thấy từ ngữ cần tránh trong nội dung đang soạn.</p>`}
+      <p class="muted small" style="margin-top:8px">Công cụ chỉ dò từ khoá, không thay thế việc duyệt nội dung theo hồ sơ xác nhận quảng cáo.</p>
+    </section>`; })()}
     <section class="card"><h2>Bắt đầu nhanh</h2>
       <ul class="tips">
         <li><a href="#settings">Cài đặt chung</a> — hotline, Zalo, tên cửa hàng, phí giao hàng, tài khoản ngân hàng.</li>
@@ -836,7 +868,41 @@ function validate(){
     });
   });
   [1, 2].forEach(slot => { if (!S.data.products.some(p => Number(p.homeSlot) === slot && p.visible !== false)) warns.push(`Trang chủ: chưa có sản phẩm (đang hiển thị) ở vị trí ${slot}`); });
+  complianceScan().forEach(w => warns.push(w));
   return { issues, warns };
+}
+
+/* =====================================================================
+   KIỂM TRA CÂU TỪ QUẢNG CÁO (theo CV 2110/2026/CV-CVJ)
+   Chỉ cảnh báo — người quản trị tự quyết định. Bỏ qua câu bắt buộc,
+   mục “Lưu ý” và “Thông tin pháp lý”.
+   ===================================================================== */
+const MANDATORY = "Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh";
+const BANNED = [
+  ["trường thọ"], ["trường sinh"], ["đảo ngược"], ["kéo dài tuổi thọ"], ["trẻ hóa", "trẻ hoá"], ["cải lão hoàn đồng"], ["thần dược"],
+  ["chữa khỏi"], ["chữa bệnh"], ["điều trị"], ["đặc trị"], ["phòng ngừa bệnh"], ["phòng bệnh"], ["ngăn ngừa bệnh"], ["thay thế thuốc"],
+  ["tức thì"], ["100%"], ["cam kết hiệu quả"], ["tốt nhất"], ["số 1", "số một"], ["duy nhất"], ["tuyệt đối"], ["vượt trội"],
+  ["ung thư"], ["tiểu đường"], ["huyết áp"], ["tim mạch"], ["đột quỵ"], ["mỡ máu"], ["miễn dịch"], ["sinh lý"], ["nội tiết"], ["giảm cân"],
+  ["trước và sau", "trước – sau", "trước - sau", "trước/sau"], ["chứng thực"], ["bác sĩ khuyên"], ["thử nghiệm trên chuột", "trên chuột"]
+];
+const SKIP_KEYS = new Set(["warnings", "legal", "slug", "image", "gallery", "cover", "theme", "registerUrl", "orderEndpoint", "bank"]);
+function textsOf(v, key, out){
+  if (SKIP_KEYS.has(key)) return out;
+  if (typeof v === "string") out.push(v);
+  else if (Array.isArray(v)) v.forEach(x => textsOf(x, key, out));
+  else if (v && typeof v === "object") Object.keys(v).forEach(k => textsOf(v[k], k, out));
+  return out;
+}
+function findBanned(text){
+  const t = String(text).replace(/<[^>]+>/g, " ").split(MANDATORY).join(" ").toLowerCase();
+  return BANNED.filter(g => g.some(w => t.includes(w))).map(g => g[0]);
+}
+function complianceScan(){
+  const res = [];
+  const add = (where, val) => { const hit = findBanned(textsOf(val, "", []).join("\n")); if (hit.length) res.push(`Câu từ cần xem lại — ${where}: “${hit.join("”, “")}”`); };
+  add("Cài đặt / Trang chủ", S.data.site);
+  ["products", "posts", "events"].forEach(f => S.data[f].forEach(it => add(`${FILE_LABEL[f]} “${COLL[f].title(it) || it.slug}”`, it)));
+  return res;
 }
 
 /* =====================================================================

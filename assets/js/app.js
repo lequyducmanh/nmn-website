@@ -103,7 +103,8 @@ window.NMN = (function(){
             <a class="btn btn-line" href="#san-pham/${esc(p.slug)}">Chi tiết</a>
           </div>
         </div>
-        ${p.forWho ? `<div class="for reveal d3">${esc(p.forWho)}</div>` : ""}`;
+        ${p.forWho ? `<div class="for reveal d3">${esc(p.forWho)}</div>` : ""}
+        <p class="disc-line reveal d3">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>`;
     });
   }
 
@@ -202,7 +203,7 @@ window.SHOP = (function(){
     const W = 150 * s, H = 230 * s, x = cx - W / 2, y = base - H, r = 26 * s;
     const neckW = 80 * s, neckH = 18 * s, capW = 98 * s, capH = 58 * s, capY = y - neckH - capH + 6 * s;
     const white = k === "w";
-    const lab = white ? { bg: "#fdfbf7", ink: "#13202a", acc: "#a3804c", t: "PURE NMN", s: "12000MG+", ts: 20, ss: 17 }
+    const lab = white ? { bg: "#fdfbf7", ink: "#13202a", acc: "#a3804c", t: "PURE NMN", s: "12,000mg+", ts: 20, ss: 17 }
                       : { bg: "#3b1020", ink: "#fbf0ea", acc: "#e6bfa6", t: "NMN", s: "Regene", ts: 32, ss: 23 };
     const ly = y + H * .3, lh = H * .42;
     let ridges = "";
@@ -317,6 +318,7 @@ window.SHOP = (function(){
       <div class="pbody">
         <h3><a href="#san-pham/${esc(p.slug)}">${esc(p.name)}</a></h3>
         <p class="short">${esc(p.short)}</p>
+        ${p.claim ? `<p class="claim">${esc(p.claim)}</p>` : ""}
         ${priceHtml(p)}
         <div class="pactions">
           <button class="btn btn-ink btn-sm" data-add="${esc(p.slug)}">Thêm vào giỏ</button>
@@ -330,9 +332,9 @@ window.SHOP = (function(){
     document.title = "Cửa hàng · " + C.brand;
     root.innerHTML = `
       <section class="shero">
-        <div class="eyebrow">Cửa hàng chính thức</div>
+        <div class="eyebrow">Cửa hàng trực tuyến</div>
         <h1>Chọn sản phẩm <em>phù hợp với bạn</em></h1>
-        <p>Bộ đôi viên uống bổ sung NMN xuất xứ Nhật Bản. Thêm sản phẩm vào giỏ, điền thông tin nhận hàng và chúng tôi sẽ liên hệ xác nhận đơn.</p>
+        <p>Thực phẩm bảo vệ sức khỏe chứa NMN, sản xuất tại Nhật Bản. Thêm sản phẩm vào giỏ, điền thông tin nhận hàng và chúng tôi sẽ liên hệ xác nhận đơn.</p>
         ${perks("perks")}
       </section>
       <div class="pgrid">${P.map(card).join("")}</div>
@@ -341,7 +343,31 @@ window.SHOP = (function(){
         <div class="glass"><b>ii.</b><h3>Điền thông tin</h3><p>Nhập họ tên, số điện thoại, địa chỉ nhận hàng và chọn cách thanh toán.</p></div>
         <div class="glass"><b>iii.</b><h3>Xác nhận đơn</h3><p>Chúng tôi liên hệ qua điện thoại hoặc Zalo để xác nhận và giao hàng.</p></div>
       </div>
-      <p class="disclaimer" style="margin-top:28px;text-align:center">Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.</p>`;
+      <p class="disclaimer" style="margin-top:28px;text-align:center">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>`;
+  }
+
+  /* Thông tin chi tiết theo hồ sơ công bố của từng sản phẩm */
+  const DISCLAIMER = "Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.";
+  const rows = list => (list || []).filter(r => r && (r[0] || r[1])).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("");
+  const lis = list => (list || []).filter(Boolean).map(x => `<li>${esc(x)}</li>`).join("");
+  function detailSections(p){
+    const out = [];
+    const hasIng = (p.ingredients || []).length;
+    out.push(`<details open><summary>Thành phần</summary><div class="ac-body">
+      ${hasIng ? `${p.ingredientsBasis ? `<p class="ac-lead">${esc(p.ingredientsBasis)}:</p>` : ""}<table>${rows(p.ingredients)}</table>${p.excipients ? `<p class="ac-small"><b>Phụ liệu:</b> ${esc(p.excipients)}</p>` : ""}`
+               : `<table>${rows(p.specs)}</table>`}</div></details>`);
+    if ((p.ingredientNotes || []).length) out.push(`<details><summary>Về các thành phần</summary><div class="ac-body">
+      <dl class="notes">${p.ingredientNotes.filter(r => r && r[0]).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+      <p class="ac-small">Thông tin mô tả đặc tính của từng thành phần, không phải công dụng của sản phẩm.${p.claim ? ` Công dụng của sản phẩm: ${esc(p.claim.replace(/\.$/, "").toLowerCase())}.` : ""}</p></div></details>`);
+    out.push(`<details><summary>Công dụng &amp; cách dùng</summary><div class="ac-body"><table>
+      ${p.claim ? `<tr><td>Công dụng</td><td>${esc(p.claim)}</td></tr>` : ""}
+      ${p.target ? `<tr><td>Đối tượng sử dụng</td><td>${esc(p.target)}</td></tr>` : ""}
+      ${(p.usage || []).length ? `<tr><td>Hướng dẫn sử dụng</td><td>${p.usage.map(esc).join("<br>")}</td></tr>` : ""}
+      ${p.storage ? `<tr><td>Bảo quản</td><td>${esc(p.storage)}</td></tr>` : ""}</table></div></details>`);
+    const warn = (p.warnings || []).length ? p.warnings : [DISCLAIMER, "Không sử dụng cho người mẫn cảm, kiêng kị với bất kỳ thành phần nào của sản phẩm.", "Đọc kỹ hướng dẫn sử dụng trước khi dùng. Để xa tầm tay trẻ em."];
+    out.push(`<details><summary>Lưu ý</summary><div class="ac-body"><ul>${lis(warn)}</ul></div></details>`);
+    if ((p.legal || []).length) out.push(`<details><summary>Thông tin sản phẩm</summary><div class="ac-body"><table>${rows(p.legal)}</table></div></details>`);
+    return out.join("");
   }
 
   function renderProduct(slug){
@@ -363,6 +389,7 @@ window.SHOP = (function(){
         <div class="pinfo">
           <span class="flag"${p.theme === "rose" ? ' style="color:var(--rose)"' : ""}><i></i>${esc(p.tag)}</span>
           <h1>${esc(p.name)}</h1>
+          ${p.officialName ? `<p class="kind">${esc(p.officialName)}</p>` : ""}
           <p class="short">${esc(p.short)}</p>
           ${priceHtml(p)}
           <div class="note-s">${esc(C.priceNote)}</div>
@@ -378,11 +405,8 @@ window.SHOP = (function(){
             <button class="btn btn-line" data-buy="${esc(p.slug)}" data-qty-from="#pd-qty">Mua ngay</button>
           </div>
           ${perks("minis")}
-          <div class="acc">
-            <details open><summary>Thành phần &amp; thông số</summary><div class="ac-body"><table>${p.specs.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("")}</table></div></details>
-            <details><summary>Cách dùng &amp; bảo quản</summary><div class="ac-body"><ul>${p.usage.map(u => `<li>${esc(u)}</li>`).join("")}<li>Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp; đóng chặt nắp sau khi mở.</li><li>Để xa tầm tay trẻ em.</li></ul></div></details>
-            <details><summary>Lưu ý</summary><div class="ac-body"><ul><li>Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.</li><li>Không dùng cho người mẫn cảm với bất kỳ thành phần nào của sản phẩm.</li><li>Hỏi ý kiến bác sĩ nếu đang mang thai, cho con bú, có bệnh nền hoặc đang dùng thuốc.</li></ul></div></details>
-          </div>
+          <p class="disc-line">${esc(DISCLAIMER)}</p>
+          <div class="acc">${detailSections(p)}</div>
         </div>
       </div>
       ${others.length ? `<section class="related"><div class="sec-head"><div><div class="eyebrow">Có thể bạn quan tâm</div><h2>Sản phẩm <em>khác</em></h2></div></div><div class="pgrid">${others.map(card).join("")}</div></section>` : ""}`;

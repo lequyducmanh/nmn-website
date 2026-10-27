@@ -3,7 +3,7 @@
     "slug": "hoi-thao-nad",
     "published": true,
     "sample": true,
-    "title": "Hội thảo: Khoa học về NAD+ và lão hóa khỏe mạnh",
+    "title": "Hội thảo: Tìm hiểu về NAD+ và NMN",
     "date": "2026-11-21",
     "time": "09:00 – 11:30",
     "place": "[Tên địa điểm]",
@@ -11,7 +11,7 @@
     "seats": "50 chỗ",
     "image": "",
     "registerUrl": "",
-    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay ngày giờ, địa điểm và diễn giả bằng thông tin thực tế.</p>\n<p>Buổi hội thảo giúp bạn hiểu NAD+ là gì, vì sao nó suy giảm theo tuổi và các nghiên cứu khoa học mới nhất về NMN.</p>\n<h3>Nội dung chính</h3>\n<ul><li>NAD+ và vai trò trong tế bào</li><li>Đọc hiểu nghiên cứu lâm sàng về NMN</li><li>Hỏi đáp cùng diễn giả</li></ul>\n<h3>Diễn giả</h3><p>[Tên, chức danh diễn giả]</p>"
+    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay ngày giờ, địa điểm và diễn giả bằng thông tin thực tế.</p>\n<p>Buổi hội thảo giúp bạn hiểu NAD+ là gì, mối liên hệ giữa NMN và NAD+, cách đọc đúng các nghiên cứu về hoạt chất NMN, cùng thông tin về thành phần, cách dùng và lưu ý của sản phẩm.</p>\n<h3>Nội dung chính</h3>\n<ul><li>NAD+ và vai trò sinh học trong tế bào</li><li>Hiểu đúng nghiên cứu về hoạt chất NMN</li><li>Hỏi đáp về thành phần, cách dùng sản phẩm</li></ul>\n<h3>Diễn giả</h3><p>[Tên, chức danh diễn giả]</p>"
   },
   {
     "slug": "workshop-nghi-thuc",
@@ -25,7 +25,7 @@
     "seats": "30 chỗ",
     "image": "",
     "registerUrl": "",
-    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay bằng thông tin thực tế.</p>\n<p>Workshop thực hành xây dựng thói quen ngủ, vận động và dinh dưỡng, kết hợp tư vấn sản phẩm phù hợp.</p>"
+    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay bằng thông tin thực tế.</p>\n<p>Workshop thực hành xây dựng thói quen ngủ, vận động và ăn uống cân bằng, kèm tư vấn thông tin sản phẩm.</p>"
   },
   {
     "slug": "tu-van-truc-tuyen",
@@ -39,6 +39,6 @@
     "seats": "Không giới hạn",
     "image": "",
     "registerUrl": "",
-    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay bằng thông tin thực tế.</p>\n<p>Phiên hỏi đáp trực tuyến: cách dùng, bảo quản và cách chọn sản phẩm NMN phù hợp.</p>"
+    "desc": "<p class=\"note\">Đây là sự kiện mẫu. Hãy thay bằng thông tin thực tế.</p>\n<p>Phiên hỏi đáp trực tuyến về thành phần, cách dùng, bảo quản và lưu ý khi sử dụng sản phẩm.</p>"
   }
 ]

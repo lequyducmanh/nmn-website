@@ -18,42 +18,42 @@
     "name": ""
   },
   "perks": [
-    "Xuất xứ Nhật Bản",
+    "Sản xuất tại Nhật Bản",
     "Tư vấn miễn phí qua Zalo",
     "Thanh toán khi nhận hàng (COD)"
   ],
   "seo": {
-    "title": "NMN · Năng lượng tế bào",
-    "description": "PURE NMN 12000MG+ và NMN Regene — câu chuyện về NAD+ và sức khỏe tế bào, cửa hàng trực tuyến, tin tức và lịch sự kiện."
+    "title": "NMN Regene & PURE NMN · Thực phẩm bảo vệ sức khỏe Nhật Bản",
+    "description": "Thực phẩm bảo vệ sức khỏe PURE NMN 12,000mg+ (hỗ trợ làm đẹp da) và NMN Regene (hỗ trợ chống lão hóa da), sản xuất tại Nhật Bản. Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh."
   },
   "home": {
-    "heroEyebrow": "Khoa học về sức khỏe tế bào · Nhật Bản",
-    "heroTitle": "Sức khỏe bền vững bắt đầu từ *từng tế bào*",
-    "heroLead": "NMN là tiền chất trực tiếp của NAD+ — phân tử mà mọi tế bào trong cơ thể cần để tạo ra năng lượng. Bộ đôi PURE NMN 12000MG+ và NMN Regene giúp bạn bổ sung NMN mỗi ngày.",
+    "heroEyebrow": "Thực phẩm bảo vệ sức khỏe · Sản xuất tại Nhật Bản",
+    "heroTitle": "Chăm sóc làn da từ *bên trong*",
+    "heroLead": "NMN là tiền chất giúp cơ thể tổng hợp NAD+ – một coenzyme thiết yếu tham gia vào quá trình chuyển hóa năng lượng và duy trì hoạt động bình thường của tế bào. PURE NMN 12,000mg+ hỗ trợ làm đẹp da; NMN Regene hỗ trợ chống lão hóa da.",
     "heroMeta": [
       [
-        "β-NMN",
-        "Hoạt chất chính"
+        "NMN",
+        "Tiền chất NAD+"
       ],
       [
         "Nhật Bản",
-        "Xuất xứ"
+        "Nơi sản xuất"
       ],
       [
-        "2 dòng",
-        "Sức khỏe & sắc đẹp"
+        "2 sản phẩm",
+        "Làm đẹp da · Chống lão hóa da"
       ]
     ],
     "marquee": [
-      "Năng lượng tế bào",
-      "NAD+",
-      "Made in Japan",
-      "Lão hóa khỏe mạnh",
-      "β-Nicotinamide Mononucleotide",
-      "Nghi thức mỗi ngày"
+      "Thực phẩm bảo vệ sức khỏe",
+      "Sản xuất tại Nhật Bản",
+      "NMN · tiền chất NAD+",
+      "Hỗ trợ làm đẹp da",
+      "Hỗ trợ chống lão hóa da",
+      "Chăm sóc bản thân mỗi ngày"
     ],
-    "contactEyebrow": "Đồng hành cùng bạn",
-    "contactTitle": "Bắt đầu hành trình *khỏe từ bên trong*",
-    "contactLead": "Đội ngũ tư vấn sẽ giúp bạn chọn sản phẩm phù hợp và giải đáp mọi câu hỏi về NMN."
+    "contactEyebrow": "Tư vấn sản phẩm",
+    "contactTitle": "Chọn sản phẩm *phù hợp với bạn*",
+    "contactLead": "Đội ngũ tư vấn sẽ giải đáp về thành phần, cách dùng và lưu ý của từng sản phẩm."
   }
 }

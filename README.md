@@ -1,6 +1,6 @@
-# NMN · Năng lượng tế bào
+# NMN Regene & PURE NMN 12,000mg+
 
-Website giới thiệu **PURE NMN 12000MG+** và **NMN Regene**: trang chủ có hiệu ứng 3D khi cuộn, **Cửa hàng – giỏ hàng – đặt hàng**, **Tin tức & Sự kiện**, và **trang quản trị nội dung (CMS)** để thay ảnh, sửa chữ, thêm sản phẩm/bài viết mà không cần sửa code.
+Website giới thiệu **PURE NMN 12,000mg+** và **NMN Regene**: trang chủ có hiệu ứng 3D khi cuộn, **Cửa hàng – giỏ hàng – đặt hàng**, **Tin tức & Sự kiện**, và **trang quản trị nội dung (CMS)** để thay ảnh, sửa chữ, thêm sản phẩm/bài viết mà không cần sửa code.
 
 - Website: **https://lequyducmanh.github.io/nmn-website/**
 - Quản trị: **https://lequyducmanh.github.io/nmn-website/admin/**
@@ -44,13 +44,13 @@ Mở `/admin/`, dán mã → **Đăng nhập**. Các mục:
 |---|---|
 | **Cài đặt chung** | Thương hiệu, hotline, Zalo, email, phí giao hàng, miễn phí ship từ, tài khoản ngân hàng (bật chuyển khoản + QR), link nhận đơn, SEO |
 | **Trang chủ** | Tiêu đề lớn, đoạn giới thiệu, 3 điểm nổi bật, dải chữ chạy, phần liên hệ |
-| **Sản phẩm** | Thêm/sửa/ẩn/xoá/sắp xếp; giá, giá gốc; **ảnh chính + ảnh phụ**; mô tả, điểm nổi bật, thông số, cách dùng; chọn **Vị trí 1 / Vị trí 2** để hiện ở trang chủ |
+| **Sản phẩm** | Thêm/sửa/ẩn/xoá/sắp xếp; giá, giá gốc; **ảnh chính + ảnh phụ**; tên theo hồ sơ, công dụng, thành phần & hàm lượng, cách dùng, bảo quản, lưu ý, số ĐKSP/XNQC; chọn **Vị trí 1 / Vị trí 2** để hiện ở trang chủ |
 | **Bài viết** | Soạn bài có tiêu đề, chữ đậm, danh sách, trích dẫn, ghi chú, liên kết, **chèn ảnh**; ảnh bìa; bản nháp/đăng; bài nổi bật |
 | **Sự kiện** | Ngày, giờ, địa điểm, số chỗ, link đăng ký, ảnh bìa, mô tả |
 | **Thư viện ảnh** | Tải nhiều ảnh, xem ảnh đang dùng ở đâu, xoá ảnh |
 
 - Ảnh tải lên được **tự nén** (tối đa 1600px, định dạng WebP) để website nhanh.
-- Trong tiêu đề, đặt chữ trong `*dấu sao*` để hiện **chữ nghiêng màu vàng**, ví dụ `Sức khỏe bắt đầu từ *từng tế bào*`.
+- Trong tiêu đề, đặt chữ trong `*dấu sao*` để hiện **chữ nghiêng màu vàng**, ví dụ `Chăm sóc làn da từ *bên trong*`.
 
 ### 3. Xem trước và Xuất bản
 
@@ -58,6 +58,25 @@ Mở `/admin/`, dán mã → **Đăng nhập**. Các mục:
 - **Xuất bản**: lưu mọi thay đổi vào GitHub trong **một lần cập nhật**; website hiển thị nội dung mới sau khoảng **1 phút**.
 - CMS tự kiểm tra lỗi trước khi xuất bản (thiếu tên, đường dẫn trùng, ngày sai…) và cảnh báo nếu nội dung vừa bị sửa ở nơi khác.
 - Mọi lần xuất bản đều lưu trong **lịch sử GitHub** → có thể khôi phục phiên bản cũ.
+
+## Quy định câu từ quảng cáo (bắt buộc)
+
+Theo thông báo nội dung quảng cáo của Công ty (CV số 2110/2026/CV-CVJ). Sản phẩm là **thực phẩm bảo vệ sức khỏe**, nên mọi nội dung trên website phải bám đúng **hồ sơ công bố** và **nội dung quảng cáo đã được xác nhận**.
+
+| Sản phẩm | Công dụng được phép ghi | Số ĐKSP | Số XNQC |
+|---|---|---|---|
+| NMN Regene | Hỗ trợ chống lão hoá da | 5585/2024/ĐKSP | 1669/2024/XNQC-ATTP |
+| PURE NMN 12,000mg+ | Hỗ trợ làm đẹp da | 581/2023/ĐKSP | 336/2023/XNQC-ATTP |
+
+**Không được dùng:**
+- Từ ngữ quá mức: *trường thọ, trường sinh, đảo ngược lão hóa, kéo dài tuổi thọ, trẻ hóa, thần dược*…
+- Nói sản phẩm chữa, điều trị, phòng ngừa bệnh, hay thay thế thuốc; nhắc tên bệnh (tiểu đường, tim mạch, ung thư…).
+- Lấy nghiên cứu trên tế bào, động vật hoặc nghiên cứu chung về NMN để nói người dùng sản phẩm có tác dụng tương tự.
+- Cam kết hiệu quả tuyệt đối, tức thì; so sánh “tốt nhất / số 1 / duy nhất”; lời chứng thực, ảnh trước – sau.
+
+**Bắt buộc:** luôn có câu *“Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.”* (đã có ở chân trang, trang chủ, trang sản phẩm).
+
+CMS có **bộ dò từ khoá**: thẻ *Kiểm tra câu từ quảng cáo* ở trang Tổng quan, và cảnh báo khi bấm Xuất bản. Bộ dò chỉ hỗ trợ — nội dung mới vẫn cần người phụ trách duyệt theo hồ sơ xác nhận quảng cáo.
 
 ## Cửa hàng & nhận đơn
 
@@ -125,4 +144,4 @@ Website thương mại điện tử tại Việt Nam thường cần: thông tin
 
 HTML, CSS, JavaScript thuần (không cần build) · [three.js](https://threejs.org) 0.160 · Google Fonts (Noto Serif Display, Be Vietnam Pro) · GitHub Git Data API (CMS) · VietQR (mã QR chuyển khoản) · GitHub Pages.
 
-> Thực phẩm này không phải là thuốc và không có tác dụng thay thế thuốc chữa bệnh.
+> Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.

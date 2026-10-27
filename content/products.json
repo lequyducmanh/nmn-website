@@ -2,67 +2,153 @@
   {
     "slug": "pure-nmn",
     "visible": true,
-    "name": "PURE NMN 12000MG+",
-    "tag": "Sức khỏe toàn diện",
-    "short": "Lọ 60 viên · tổng 12.000mg NMN",
-    "price": 4950000,
-    "compareAt": null,
     "theme": "pearl",
     "image": "",
     "gallery": [],
-    "desc": "Viên uống bổ sung NMN xuất xứ Nhật Bản. Mỗi lọ 60 viên chứa tổng cộng 12.000mg NMN, kết hợp các thành phần hướng tới chăm sóc làn da từ bên trong.",
+    "name": "PURE NMN 12,000mg+",
+    "officialName": "Thực phẩm bảo vệ sức khỏe PURE NMN 12,000mg+",
+    "tag": "Hỗ trợ làm đẹp da",
+    "short": "Lọ 60 viên nang cứng · 200mg NMN mỗi viên",
+    "price": 4950000,
+    "compareAt": null,
+    "claim": "Hỗ trợ làm đẹp da.",
+    "target": "Người trưởng thành.",
+    "desc": "Thực phẩm bảo vệ sức khỏe PURE NMN 12,000mg+ sản xuất tại Nhật Bản. Mỗi viên nang cứng 374mg chứa 200mg Nicotinamide mononucleotide (NMN) cùng collagen peptides từ cá, hyaluronic acid, bột chiết xuất nhau thai ngựa và bột chiết xuất nấm men.",
     "highlights": [
-      "Tổng 12.000mg NMN mỗi lọ",
-      "Kết hợp collagen peptide, glutathione, hyaluronic acid",
-      "Dùng 2 viên mỗi ngày — một lọ dùng được khoảng 30 ngày"
+      "Công dụng: hỗ trợ làm đẹp da",
+      "200mg NMN mỗi viên · tổng 12.000mg NMN mỗi lọ 60 viên",
+      "Kết hợp collagen peptides từ cá, hyaluronic acid, chiết xuất nhau thai ngựa",
+      "Sản xuất tại Nhật Bản"
     ],
     "specs": [
       [
-        "Tổng NMN mỗi lọ",
-        "12.000mg"
+        "Quy cách",
+        "Lọ 60 viên nang cứng"
+      ],
+      [
+        "NMN",
+        "200mg/viên · 12.000mg/lọ"
+      ],
+      [
+        "Cách dùng",
+        "2 viên mỗi ngày"
+      ],
+      [
+        "Công dụng",
+        "Hỗ trợ làm đẹp da"
+      ],
+      [
+        "Xuất xứ",
+        "Nhật Bản"
+      ]
+    ],
+    "ingredientsBasis": "Mỗi viên nang cứng 374mg chứa",
+    "ingredients": [
+      [
+        "Nicotinamide mononucleotide (NMN)",
+        "200mg"
+      ],
+      [
+        "Collagen peptides từ cá",
+        "10mg"
+      ],
+      [
+        "Bột chiết xuất nhau thai ngựa",
+        "6,7mg"
+      ],
+      [
+        "Hyaluronic acid",
+        "2,2mg"
+      ],
+      [
+        "Bột chiết xuất nấm men (nấm men, dextrin)",
+        "1mg"
+      ]
+    ],
+    "excipients": "Vỏ nang (Gelatin), chất chống đông vón (Calcium stearate), chất tạo màu tổng hợp (Titanium dioxide), Dextrin.",
+    "ingredientNotes": [
+      [
+        "Nicotinamide mononucleotide (NMN)",
+        "NMN là tiền chất giúp cơ thể tổng hợp NAD⁺ – một coenzyme thiết yếu tham gia vào quá trình chuyển hóa năng lượng và duy trì hoạt động bình thường của tế bào."
+      ],
+      [
+        "Collagen peptides từ cá",
+        "Hỗ trợ duy trì độ ẩm và độ đàn hồi của làn da."
+      ],
+      [
+        "Hyaluronic acid",
+        "Là thành phần có khả năng giữ nước, hỗ trợ duy trì độ ẩm tự nhiên, giúp làn da mềm mại và duy trì độ đàn hồi."
+      ],
+      [
+        "Bột chiết xuất nhau thai ngựa",
+        "Cung cấp các peptide và axit amin, là những thành phần tham gia vào quá trình cấu tạo và duy trì hoạt động bình thường của cơ thể."
+      ]
+    ],
+    "usage": [
+      "Uống 2 viên mỗi ngày với nước lọc hoặc nước ấm."
+    ],
+    "storage": "Bảo quản nơi thoáng mát và ở nhiệt độ dưới 30°C.",
+    "warnings": [
+      "Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.",
+      "Không sử dụng cho người mẫn cảm, kiêng kị với bất kỳ thành phần nào của sản phẩm.",
+      "Nếu bạn đang mang thai hoặc có thể đang mang thai, đang cho con bú, đang đi bệnh viện hoặc đang dùng thuốc, hãy hỏi ý kiến bác sĩ trước khi dùng.",
+      "Để xa tầm tay trẻ em."
+    ],
+    "legal": [
+      [
+        "Tên sản phẩm",
+        "Thực phẩm bảo vệ sức khỏe PURE NMN 12,000mg+"
       ],
       [
         "Quy cách",
-        "Lọ 60 viên"
+        "Lọ 60 viên nang cứng (22,44 g/lọ)"
       ],
       [
-        "Thành phần kèm",
-        "Collagen peptide, glutathione, hyaluronic acid, nhau thai ngựa"
+        "Hạn sử dụng",
+        "24 tháng kể từ ngày sản xuất"
+      ],
+      [
+        "Sản xuất bởi",
+        "Nhà máy số 1 của công ty GENSEI CO., LTD – Nhật Bản"
+      ],
+      [
+        "Thương nhân chịu trách nhiệm",
+        "Công ty Cổ phần Clastive Nhật Việt"
       ],
       [
         "Xuất xứ",
         "Nhật Bản"
       ],
       [
-        "Thương hiệu",
-        "Clastive"
+        "Số ĐKSP",
+        "581/2023/ĐKSP"
+      ],
+      [
+        "Số XNQC",
+        "336/2023/XNQC-ATTP"
       ]
     ],
-    "usage": [
-      "Uống 2 viên mỗi ngày, sau bữa ăn.",
-      "Uống cùng nước lọc hoặc nước ấm."
-    ],
     "homeSlot": 1,
-    "homeTag": "Sản phẩm 01 · Sức khỏe toàn diện",
-    "homeTitle": "PURE NMN *12000MG+*",
-    "homeLead": "Lọ 60 viên chứa tổng cộng 12.000mg NMN, kết hợp các thành phần hướng tới chăm sóc làn da từ bên trong.",
-    "forWho": "Phù hợp với người trưởng thành muốn bổ sung NMN hằng ngày, đồng thời quan tâm đến làn da.",
+    "homeTag": "Sản phẩm 01 · Hỗ trợ làm đẹp da",
+    "homeTitle": "PURE NMN *12,000mg+*",
+    "homeLead": "Mỗi viên nang cứng chứa 200mg NMN, kết hợp collagen peptides từ cá, hyaluronic acid và chiết xuất nhau thai ngựa. Công dụng: hỗ trợ làm đẹp da.",
+    "forWho": "Đối tượng sử dụng: người trưởng thành.",
     "homeSpecs": [
       [
-        "Tổng NMN mỗi lọ",
-        "12.000mg"
+        "NMN",
+        "200mg / viên"
       ],
       [
         "Quy cách",
-        "Lọ 60 viên"
+        "Lọ 60 viên nang cứng"
       ],
       [
         "Cách dùng",
-        "2 viên mỗi ngày, sau bữa ăn"
+        "2 viên mỗi ngày"
       ],
       [
         "Thành phần kèm",
-        "Collagen peptide, glutathione, hyaluronic acid, nhau thai ngựa"
+        "Collagen peptides từ cá, hyaluronic acid, chiết xuất nhau thai ngựa"
       ],
       [
         "Xuất xứ",
@@ -73,71 +159,166 @@
   {
     "slug": "nmn-regene",
     "visible": true,
-    "name": "NMN Regene",
-    "tag": "Dòng sắc đẹp",
-    "short": "320mg β-NMN mỗi khẩu phần",
-    "price": 6950000,
-    "compareAt": null,
     "theme": "rose",
     "image": "",
     "gallery": [],
-    "desc": "Viên uống bổ sung β-NMN xuất xứ Nhật Bản, mỗi khẩu phần chứa 320mg β-NMN, được định vị cho nhu cầu chăm sóc sắc đẹp và làn da.",
+    "name": "NMN Regene",
+    "officialName": "Thực phẩm bảo vệ sức khỏe NMN Regene",
+    "tag": "Hỗ trợ chống lão hóa da",
+    "short": "Lọ 90 viên nang · 400mg NMN trong 3 viên",
+    "price": 6950000,
+    "compareAt": null,
+    "claim": "Hỗ trợ chống lão hóa da.",
+    "target": "Người trưởng thành.",
+    "desc": "Thực phẩm bảo vệ sức khỏe NMN Regene sản xuất tại Nhật Bản. Trong 3 viên nang chứa 400mg NMN, kết hợp bột tảo Euglena KINOKUNI, bột chiết xuất peptide cá thu, Coenzyme Q10 dạng khử và Resveratrol.",
     "highlights": [
-      "320mg β-NMN mỗi khẩu phần",
-      "Chỉ 2,11 kcal mỗi khẩu phần",
-      "Xuất xứ Nhật Bản"
+      "Công dụng: hỗ trợ chống lão hóa da",
+      "400mg NMN trong 3 viên · tổng 12.000mg NMN mỗi lọ 90 viên",
+      "Kết hợp tảo Euglena KINOKUNI, peptide cá thu, Coenzyme Q10 dạng khử, Resveratrol",
+      "Vỏ nang thực vật DRcaps® · sản xuất tại Nhật Bản"
     ],
     "specs": [
       [
-        "β-NMN",
-        "320mg / khẩu phần"
+        "Quy cách",
+        "Lọ 90 viên nang"
       ],
       [
-        "Năng lượng",
-        "2,11 kcal"
+        "NMN",
+        "400mg/3 viên · 12.000mg/lọ"
       ],
       [
-        "Carbohydrate",
-        "0,49 g"
+        "Cách dùng",
+        "3 viên mỗi ngày"
       ],
       [
-        "Lipid · Protein",
-        "0,018 g · 0 g"
+        "Công dụng",
+        "Hỗ trợ chống lão hóa da"
+      ],
+      [
+        "Xuất xứ",
+        "Nhật Bản"
+      ]
+    ],
+    "ingredientsBasis": "Trong 3 viên nang chứa",
+    "ingredients": [
+      [
+        "NMN (Nicotinamide mononucleotide)",
+        "400mg"
+      ],
+      [
+        "Bột chiết xuất peptide cá thu",
+        "166,674mg"
+      ],
+      [
+        "Bột tảo Euglena KINOKUNI",
+        "100mg"
+      ],
+      [
+        "Coenzyme Q10 (từ thực phẩm chế biến Coenzym Q10 dạng khử, dextrin)",
+        "15mg"
+      ],
+      [
+        "Resveratrol (từ bột chiết xuất rượu vang đỏ có chứa resveratrol)",
+        "15mg"
+      ]
+    ],
+    "excipients": "Vỏ nang [chất chống oxy hóa (Vitamin C – L-ascorbic acid), Lecithin, HPMC (Hydroxypropyl methyl cellulose); chất tạo gel (Gellan gum); chất ổn định (Gum Arabic); chất tạo màu nhân tạo (Titan dioxide)]; chất độn (Cellulose); chất chống đông vón (Canxi stearate; Silicon dioxide hạt mịn).",
+    "ingredientNotes": [
+      [
+        "Vỏ nang DRcaps®",
+        "Viên nang thực vật thiết kế giải phóng chậm, giúp hạn chế viên mở quá sớm trong dạ dày và hỗ trợ bảo vệ các thành phần nhạy với môi trường acid."
+      ],
+      [
+        "NMN – thành phần trung tâm",
+        "NMN là tiền chất của NAD⁺ – coenzyme tham gia hàng loạt phản ứng chuyển hóa và là cơ chất cho các enzyme như sirtuin, PARP. Cơ thể có thể sử dụng NMN để tạo NAD⁺; vì vai trò này, NMN đang được nghiên cứu rộng rãi trong lĩnh vực khoa học lão hóa."
+      ],
+      [
+        "Coenzyme Q10 dạng khử (ubiquinol)",
+        "CoQ10 tham gia chuỗi vận chuyển electron – một phần thiết yếu của quá trình tế bào tạo ATP – và tham gia cân bằng oxy hóa của màng tế bào. Dạng khử ubiquinol có đặc tính chống oxy hóa."
+      ],
+      [
+        "Resveratrol",
+        "Một polyphenol tự nhiên, được khoa học nghiên cứu nhiều về chống oxy hóa và khả năng đáp ứng của tế bào trước stress."
+      ],
+      [
+        "Peptide cá thu (Saba Peptide) + Selenoneine",
+        "Làm từ cá thu Nhật qua xử lý enzyme, giàu peptide chuỗi ngắn và được chuẩn hóa Selenoneine ≥1,0 µg/g – một hợp chất selenium hữu cơ được nghiên cứu tại Nhật về đặc tính chống oxy hóa."
+      ],
+      [
+        "Tảo Euglena KINOKUNI",
+        "Euglena gracilis chủng Kishu – chủng vi tảo được cấp bằng sáng chế tại Nhật Bản. Nguyên liệu được chuẩn hóa tối thiểu 25% Paramylon (một β-1,3-glucan đặc trưng của Euglena) và 25% protein, với khoảng 74 thành phần dinh dưỡng."
+      ]
+    ],
+    "usage": [
+      "Uống 3 viên mỗi ngày với nước lọc hoặc nước ấm."
+    ],
+    "storage": "Tránh xa nơi có nhiệt độ, độ ẩm cao, ánh nắng chiếu trực tiếp; nên bảo quản ở nơi râm mát. Sau khi mở lọ hãy đóng nắp thật chặt và nhanh chóng sử dụng.",
+    "warnings": [
+      "Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.",
+      "Không sử dụng cho người mẫn cảm, kiêng kị với bất cứ thành phần nào của sản phẩm.",
+      "Phụ nữ có thai, người đang cho con bú, trẻ sơ sinh và trẻ nhỏ không sử dụng sản phẩm này.",
+      "Những người đang điều trị ngoại trú hoặc nội trú tại bệnh viện hãy trao đổi với bác sĩ trước khi sử dụng sản phẩm.",
+      "Những người bị dị ứng thực phẩm hãy kiểm tra kỹ tên nguyên liệu (sản phẩm có nguyên liệu từ cá thu và đậu nành) và tránh sử dụng nếu có loại gây dị ứng.",
+      "Có những trường hợp không phù hợp với sản phẩm do thể trạng, hãy ngưng sử dụng trong những trường hợp ấy.",
+      "Sản phẩm sử dụng nguyên liệu có nguồn gốc thiên nhiên nên màu sắc và hương vị các viên có thể khác nhau, nhưng chất lượng sản phẩm không bị ảnh hưởng.",
+      "Duy trì chế độ ăn uống cân bằng trong các bữa ăn với món chính, món rau chính, món rau phụ.",
+      "Để sản phẩm ngoài tầm tay trẻ nhỏ. Không dùng sản phẩm đã quá hạn sử dụng."
+    ],
+    "legal": [
+      [
+        "Tên sản phẩm",
+        "Thực phẩm bảo vệ sức khỏe NMN Regene"
+      ],
+      [
+        "Quy cách",
+        "Lọ 90 viên nang, hộp 1 lọ 33,75 g"
+      ],
+      [
+        "Hạn sử dụng",
+        "24 tháng kể từ tháng tiếp theo tháng sản xuất"
+      ],
+      [
+        "Sản xuất bởi",
+        "Factory #1 of GENSEI CO., LTD – Nhật Bản"
+      ],
+      [
+        "Thương nhân chịu trách nhiệm",
+        "Công ty Cổ phần Clastive Nhật Việt"
       ],
       [
         "Xuất xứ",
         "Nhật Bản"
       ],
       [
-        "Thương hiệu",
-        "Clastive"
+        "Số ĐKSP",
+        "5585/2024/ĐKSP"
+      ],
+      [
+        "Số XNQC",
+        "1669/2024/XNQC-ATTP"
       ]
     ],
-    "usage": [
-      "Dùng theo liều ghi trên nhãn sản phẩm.",
-      "Uống cùng nước lọc hoặc nước ấm."
-    ],
     "homeSlot": 2,
-    "homeTag": "Sản phẩm 02 · Dòng sắc đẹp",
+    "homeTag": "Sản phẩm 02 · Hỗ trợ chống lão hóa da",
     "homeTitle": "NMN *Regene*",
-    "homeLead": "Mỗi khẩu phần chứa 320mg β-NMN, được định vị cho nhu cầu chăm sóc sắc đẹp và làn da.",
-    "forWho": "Phù hợp với người muốn kết hợp bổ sung NMN vào thói quen chăm sóc sắc đẹp hằng ngày.",
+    "homeLead": "Trong 3 viên nang chứa 400mg NMN, kết hợp tảo Euglena KINOKUNI, peptide cá thu, Coenzyme Q10 dạng khử và Resveratrol. Công dụng: hỗ trợ chống lão hóa da.",
+    "forWho": "Đối tượng sử dụng: người trưởng thành. Phụ nữ có thai, người đang cho con bú, trẻ sơ sinh và trẻ nhỏ không sử dụng.",
     "homeSpecs": [
       [
-        "β-NMN",
-        "320mg / khẩu phần"
+        "NMN",
+        "400mg / 3 viên"
       ],
       [
-        "Năng lượng",
-        "2,11 kcal"
+        "Quy cách",
+        "Lọ 90 viên nang"
       ],
       [
-        "Carbohydrate",
-        "0,49 g"
+        "Cách dùng",
+        "3 viên mỗi ngày"
       ],
       [
-        "Lipid · Protein",
-        "0,018 g · 0 g"
+        "Thành phần kèm",
+        "Tảo Euglena KINOKUNI, peptide cá thu, CoQ10, Resveratrol"
       ],
       [
         "Xuất xứ",
@@ -148,37 +329,70 @@
   {
     "slug": "bo-doi",
     "visible": true,
-    "name": "Bộ đôi PURE NMN + NMN Regene",
-    "tag": "Bộ đôi",
-    "short": "Gồm 1 PURE NMN 12000MG+ và 1 NMN Regene",
-    "price": 11900000,
-    "compareAt": null,
     "theme": "duo",
     "image": "",
     "gallery": [],
-    "desc": "Kết hợp hai dòng NMN: PURE NMN 12000MG+ cho nhu cầu bổ sung hằng ngày và NMN Regene cho nhu cầu chăm sóc sắc đẹp.",
+    "name": "Bộ đôi PURE NMN 12,000mg+ và NMN Regene",
+    "officialName": "",
+    "tag": "Bộ đôi",
+    "short": "1 lọ PURE NMN 12,000mg+ (60 viên) và 1 lọ NMN Regene (90 viên)",
+    "price": 11900000,
+    "compareAt": null,
+    "claim": "PURE NMN 12,000mg+: hỗ trợ làm đẹp da. NMN Regene: hỗ trợ chống lão hóa da.",
+    "target": "Người trưởng thành (xem lưu ý riêng của từng sản phẩm).",
+    "desc": "Gồm hai thực phẩm bảo vệ sức khỏe sản xuất tại Nhật Bản: PURE NMN 12,000mg+ (hỗ trợ làm đẹp da) và NMN Regene (hỗ trợ chống lão hóa da). Mỗi sản phẩm dùng theo hướng dẫn riêng trên nhãn.",
     "highlights": [
-      "1 lọ PURE NMN 12000MG+ (60 viên)",
-      "1 sản phẩm NMN Regene",
-      "Đặt một lần cho cả hai sản phẩm"
+      "1 lọ PURE NMN 12,000mg+ (60 viên nang cứng)",
+      "1 lọ NMN Regene (90 viên nang)",
+      "Xem thành phần, cách dùng và lưu ý tại trang của từng sản phẩm"
     ],
     "specs": [
       [
         "Gồm",
-        "1 PURE NMN 12000MG+ · 1 NMN Regene"
+        "1 PURE NMN 12,000mg+ · 1 NMN Regene"
+      ],
+      [
+        "Cách dùng",
+        "Theo hướng dẫn trên nhãn của từng sản phẩm"
       ],
       [
         "Xuất xứ",
         "Nhật Bản"
-      ],
-      [
-        "Thương hiệu",
-        "Clastive"
       ]
     ],
+    "ingredientsBasis": "",
+    "ingredients": [],
+    "excipients": "",
+    "ingredientNotes": [],
     "usage": [
-      "Dùng từng sản phẩm theo hướng dẫn trên nhãn.",
-      "Không dùng quá liều khuyến nghị của mỗi sản phẩm."
+      "PURE NMN 12,000mg+: uống 2 viên mỗi ngày với nước lọc hoặc nước ấm.",
+      "NMN Regene: uống 3 viên mỗi ngày với nước lọc hoặc nước ấm."
+    ],
+    "storage": "Bảo quản nơi khô ráo, thoáng mát, tránh nhiệt độ và độ ẩm cao, tránh ánh nắng trực tiếp (PURE NMN 12,000mg+: dưới 30°C).",
+    "warnings": [
+      "Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.",
+      "Không sử dụng cho người mẫn cảm, kiêng kị với bất kỳ thành phần nào của sản phẩm.",
+      "NMN Regene: phụ nữ có thai, người đang cho con bú, trẻ sơ sinh và trẻ nhỏ không sử dụng.",
+      "PURE NMN 12,000mg+: nếu đang mang thai, cho con bú, đang đi bệnh viện hoặc đang dùng thuốc, hãy hỏi ý kiến bác sĩ trước khi dùng.",
+      "Đọc kỹ thông tin và lưu ý trên nhãn của từng sản phẩm trước khi dùng. Để xa tầm tay trẻ em."
+    ],
+    "legal": [
+      [
+        "PURE NMN 12,000mg+",
+        "Số ĐKSP 581/2023/ĐKSP · Số XNQC 336/2023/XNQC-ATTP"
+      ],
+      [
+        "NMN Regene",
+        "Số ĐKSP 5585/2024/ĐKSP · Số XNQC 1669/2024/XNQC-ATTP"
+      ],
+      [
+        "Thương nhân chịu trách nhiệm",
+        "Công ty Cổ phần Clastive Nhật Việt"
+      ],
+      [
+        "Xuất xứ",
+        "Nhật Bản"
+      ]
     ],
     "homeSlot": 0,
     "homeTag": "",
