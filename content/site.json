@@ -12,10 +12,10 @@
   "freeShippingFrom": null,
   "orderEndpoint": "",
   "bank": {
-    "code": "",
-    "account": "",
-    "owner": "",
-    "name": "",
+    "code": "MB",
+    "account": "0985233655",
+    "owner": "LE QUY DUC MANH",
+    "name": "MB Bank",
     "autoConfirm": false
   },
   "perks": [
