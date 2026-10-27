@@ -92,7 +92,7 @@ function makeBottle(o){
   const holder = new THREE.Group(); holder.add(inner); return holder;
 }
 const bottleA = makeBottle({ glass: 0xf8f6f1, rough: .32, sheen: .4, cap: 0xc9a46c,
-  label: makeLabel({ bg1: '#fdfbf7', bg2: '#efe8db', accent: '#a3804c', ink: '#13202a', title: 'PURE NMN', titleSize: 124, sub: '12,000mg+', subSize: 92, line: '60 CAPSULES · NMN' }) });
+  label: makeLabel({ bg1: '#fdfbf7', bg2: '#efe8db', accent: '#a3804c', ink: '#13202a', title: 'PURE NMN', titleSize: 108, sub: '12,000mg+', subSize: 84, line: '60 CAPSULES · NMN' }) });
 const bottleB = makeBottle({ glass: 0x5c1a2c, rough: .12, cap: 0xe2bca2,
   label: makeLabel({ bg1: '#4a1424', bg2: '#2c0b16', accent: '#e6bfa6', ink: '#fbf0ea', title: 'NMN', titleSize: 176, sub: 'Regene', subSize: 116, line: '90 CAPSULES · NMN' }) });
 scene.add(bottleA, bottleB);
