@@ -105,5 +105,10 @@
         "Bạn có thể đặt hàng tại Cửa hàng trên website, nhắn Zalo hoặc gọi hotline. Chúng tôi liên hệ xác nhận trước khi giao và hỗ trợ thanh toán khi nhận hàng (COD)."
       ]
     ]
+  },
+  "upsell": {
+    "enabled": true,
+    "title": "Thêm vào đơn",
+    "max": 2
   }
 }

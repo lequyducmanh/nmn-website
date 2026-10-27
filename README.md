@@ -96,6 +96,7 @@ Khi có thay đổi địa giới mới: chạy `tools/build-vn-address.py` (hư
 ## Cửa hàng & nhận đơn
 
 - Giỏ hàng lưu trên trình duyệt của khách. Khi đặt hàng, website tạo **mã đơn** và trang xác nhận.
+- **Trang Đặt hàng:** khách sửa số lượng / xoá ngay trong phần Đơn hàng. Mục **“Thêm vào đơn”** gợi ý sản phẩm khách chưa chọn (mặc định hiện 2, còn lại sau nút *Xem thêm*); bấm vào thẻ hoặc tên sản phẩm mở **cửa sổ xem nhanh** (công dụng, số ĐKSP/XNQC, thành phần, cách dùng, lưu ý) để khách đọc và thêm vào đơn ngay. Bật/tắt, số sản phẩm hiển thị, tiêu đề: CMS → Cài đặt chung; chọn sản phẩm được gợi ý: CMS → Sản phẩm → “Gợi ý ở mục Thêm vào đơn”.
 - **Mặc định:** khách gửi đơn qua **Zalo** (nội dung đơn được chép sẵn) hoặc gọi hotline.
 - **Nhận đơn tự động vào Google Sheets:** làm theo mục dưới, rồi dán link vào CMS → Cài đặt chung → *Link nhận đơn tự động*.
 

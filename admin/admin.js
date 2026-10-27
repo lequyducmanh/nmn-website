@@ -128,7 +128,9 @@ function normalize(){
   const st = S.data.site;
   st.company = Object.assign({ name: "", taxCode: "", address: "", phone: "", email: "" }, st.company || {});
   st.contact = Object.assign({ eyebrow: "", title: "", lead: "", hours: "", showMap: true, mapQuery: "", formEndpoint: "", topics: [], consent: "", faq: [] }, st.contact || {});
+  st.upsell = Object.assign({ enabled: true, title: "Thêm vào đơn", max: 2 }, st.upsell || {});
   S.data.products.forEach(p => {
+    if (p.upsell === undefined) p.upsell = true;
     ["gallery", "highlights", "specs", "usage", "homeSpecs", "ingredients", "ingredientNotes", "warnings", "legal"].forEach(k => p[k] = Array.isArray(p[k]) ? p[k] : []);
     ["officialName", "claim", "target", "ingredientsBasis", "excipients", "storage"].forEach(k => p[k] = p[k] || "");
     if (p.visible === undefined) p.visible = true;
@@ -579,6 +581,10 @@ const SETTINGS_SECTIONS = [
     { k: "freeShippingFrom", t: "money", l: "Miễn phí giao hàng từ", nullable: 1, nullLabel: "Để trống = không áp dụng" },
     { k: "perks", t: "lines", l: "Cam kết hiển thị ở cửa hàng", hint: "Chỉ ghi điều bạn thực sự áp dụng." },
     { k: "orderEndpoint", t: "url", l: "Link nhận đơn tự động (Google Apps Script)", full: 1, hint: "Để trống: khách gửi đơn qua Zalo. Hướng dẫn trong README." } ] },
+  { h: "Gợi ý “Thêm vào đơn” ở trang Đặt hàng", d: `Hiện các sản phẩm khách chưa chọn ngay cạnh đơn hàng để khách thêm bằng một lần bấm. Sản phẩm vượt quá số lượng hiển thị sẽ nằm sau nút “Xem thêm”. Chọn sản phẩm được gợi ý trong <a href="#products">Sản phẩm</a> → “Gợi ý ở mục Thêm vào đơn”; thứ tự theo thứ tự sản phẩm.`, f: [
+    { k: "upsell.enabled", t: "toggle", l: "Bật mục gợi ý" },
+    { k: "upsell.max", t: "number", l: "Số sản phẩm hiển thị sẵn", hint: "nên để 2–3" },
+    { k: "upsell.title", t: "text", l: "Tiêu đề mục", ph: "Thêm vào đơn" } ] },
   { h: "Chuyển khoản ngân hàng", d: "Điền đủ Mã ngân hàng và Số tài khoản để bật “Chuyển khoản” kèm mã QR. Để trống = chỉ nhận COD.", f: [
     { k: "bank.code", t: "text", l: "Mã ngân hàng (VietQR)", ph: "VCB, MB, TCB, ACB…" },
     { k: "bank.name", t: "text", l: "Tên ngân hàng hiển thị", ph: "Vietcombank" },
@@ -635,6 +641,7 @@ const PRODUCT_SECTIONS = [
     { k: "price", t: "money", l: "Giá bán (đồng)", req: 1 },
     { k: "compareAt", t: "money", l: "Giá gốc (gạch ngang)", nullable: 1, nullLabel: "Để trống nếu không giảm giá" },
     { k: "visible", t: "toggle", l: "Hiển thị trên website" },
+    { k: "upsell", t: "toggle", l: "Gợi ý ở mục Thêm vào đơn" },
     { k: "theme", t: "select", l: "Màu nền hình minh họa", opts: [["pearl", "Ngọc trai (sáng)"], ["rose", "Hồng"], ["duo", "Bộ đôi"]] } ] },
   { h: "Hình ảnh", d: "Ảnh tự được nén (tối đa 1600px). Nếu không có ảnh, website dùng hình minh họa chai.", f: [
     { k: "image", t: "image", l: "Ảnh chính", folder: "products", empty: "Dùng hình minh họa" },
@@ -701,7 +708,7 @@ const COLL = {
     title: p => p.name,
     img: p => p.image || (p.gallery || [])[0],
     meta: p => [fmt(p.price), p.short, p.homeSlot ? `<span class="badge gold">Trang chủ · vị trí ${p.homeSlot}</span>` : "", p.visible === false ? '<span class="badge off">Đang ẩn</span>' : '<span class="badge on">Hiển thị</span>'],
-    make: () => ({ slug: "", visible: false, name: "Sản phẩm mới", officialName: "", tag: "", short: "", price: 0, compareAt: null, claim: "", target: "Người trưởng thành.", theme: "pearl", image: "", gallery: [], desc: "", highlights: [], specs: [["Xuất xứ", "Nhật Bản"]],
+    make: () => ({ slug: "", visible: false, upsell: true, name: "Sản phẩm mới", officialName: "", tag: "", short: "", price: 0, compareAt: null, claim: "", target: "Người trưởng thành.", theme: "pearl", image: "", gallery: [], desc: "", highlights: [], specs: [["Xuất xứ", "Nhật Bản"]],
       ingredientsBasis: "", ingredients: [], excipients: "", ingredientNotes: [], usage: [], storage: "",
       warnings: ["Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.", "Không sử dụng cho người mẫn cảm, kiêng kị với bất kỳ thành phần nào của sản phẩm.", "Để xa tầm tay trẻ em."],
       legal: [["Số ĐKSP", ""], ["Số XNQC", ""]], homeSlot: 0, homeTag: "", homeTitle: "", homeLead: "", forWho: "", homeSpecs: [] }),

@@ -186,7 +186,7 @@ window.SHOP = (function(){
   const zaloUrl = "https://zalo.me/" + encodeURIComponent(C.zalo);
   const hasBank = !!(C.bank && C.bank.account && C.bank.code);
   const MAXQ = 99, KEY = "nmn_cart_v1", ORDERS = "nmn_orders_v1", PROFILE = "nmn_profile_v1";
-  let addr = null;
+  let addr = null, upsellOpen = false;
   const store = {
     get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (_) { return d; } },
     set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }
@@ -466,18 +466,25 @@ window.SHOP = (function(){
     const box = $("#osum"); if (!box) return;
     const t = totals();
     // giữ vị trí con trỏ (bàn phím) sau khi vẽ lại
-    const a = document.activeElement, keep = a && box.contains(a) ? (a.dataset.oq ? `[data-oq="${a.dataset.oq}"][data-d="${a.dataset.d}"]` : a.dataset.oadd ? "[data-oadd]" : null) : null;
-    const more = P.filter(p => p.visible !== false && !cart.some(i => i.slug === p.slug));
+    const a = document.activeElement, keep = a && box.contains(a) ? (a.dataset.oq ? `[data-oq="${a.dataset.oq}"][data-d="${a.dataset.d}"]` : a.dataset.oadd ? "[data-oadd]" : a.dataset.qv ? `[data-qv="${a.dataset.qv}"]` : a.hasAttribute("data-oexp") ? "[data-oexp]" : null) : null;
+    // "Thêm vào đơn": chỉ hiện vài sản phẩm, phần còn lại ẩn sau nút Xem thêm
+    const U = Object.assign({ enabled: true, title: "Thêm vào đơn", max: 2 }, C.upsell || {});
+    const more = U.enabled === false ? [] : P.filter(p => p.visible !== false && p.upsell !== false && !cart.some(i => i.slug === p.slug));
+    const lim = Math.max(1, parseInt(U.max, 10) || 2), hidden = Math.max(0, more.length - lim);
+    const chips = upsellOpen ? more : more.slice(0, lim);
     const one = cart.length === 1;
     box.innerHTML = `<h3>Đơn hàng <small style="font-family:var(--sans);font-size:13px;color:var(--muted);font-weight:400">(${count()} sản phẩm)</small></h3>
-      ${cart.map(i => { const p = bySlug(i.slug), n = esc(p.name); return `<div class="oitem">${visual(p)}<div class="oi-main"><div class="n">${n}</div><div class="q">${fmt(p.price)} / sản phẩm</div>
+      ${cart.map(i => { const p = bySlug(i.slug), n = esc(p.name); return `<div class="oitem"><button type="button" class="oi-vis" data-qv="${esc(p.slug)}" aria-haspopup="dialog" aria-label="Xem chi tiết ${n}">${visual(p)}</button><div class="oi-main"><button type="button" class="n" data-qv="${esc(p.slug)}" aria-haspopup="dialog">${n}</button><div class="q">${fmt(p.price)} / sản phẩm</div>
         <div class="oi-ctl"><div class="qty sm" role="group" aria-label="Số lượng ${n}">
           <button type="button" data-oq="${esc(p.slug)}" data-d="-1" aria-label="Giảm số lượng ${n}"${i.qty <= 1 ? " disabled" : ""}>−</button>
           <input type="number" inputmode="numeric" min="1" max="${MAXQ}" value="${i.qty}" data-oqi="${esc(p.slug)}" aria-label="Số lượng ${n}">
           <button type="button" data-oq="${esc(p.slug)}" data-d="1" aria-label="Tăng số lượng ${n}"${i.qty >= MAXQ ? " disabled" : ""}>+</button></div>
           ${one ? "" : `<button type="button" class="oi-rm" data-orm="${esc(p.slug)}" aria-label="Xoá ${n} khỏi đơn">Xoá</button>`}</div></div>
         <div class="p">${fmt(p.price * i.qty)}</div></div>`; }).join("")}
-      ${more.length ? `<div class="omore"><span>Thêm vào đơn</span>${more.map(p => `<button type="button" class="ochip" data-oadd="${esc(p.slug)}">+ ${esc(p.name)} <small>${fmt(p.price)}</small></button>`).join("")}</div>` : ""}
+      ${more.length ? `<div class="omore" id="omore"><span>${esc(U.title || "Thêm vào đơn")}</span>${chips.map(p => `<div class="ocard">
+          <button type="button" class="ocard-main" data-qv="${esc(p.slug)}" aria-haspopup="dialog" aria-label="Xem chi tiết ${esc(p.name)}">${visual(p)}<span class="t"><b>${esc(p.name)}</b><small>${esc(p.claim ? p.claim.replace(/\.$/, "") : p.short || "")}</small><span class="pr">${fmt(p.price)}<i>Xem chi tiết ›</i></span></span></button>
+          <button type="button" class="ocard-add" data-oadd="${esc(p.slug)}" aria-label="Thêm ${esc(p.name)} vào đơn">+ Thêm</button></div>`).join("")}
+        ${hidden ? `<button type="button" class="omore-t" data-oexp aria-expanded="${upsellOpen}" aria-controls="omore">${upsellOpen ? "Thu gọn" : `Xem thêm ${hidden} sản phẩm`}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>` : ""}</div>` : ""}
       <div class="sums" aria-live="polite">
         <div class="sumrow"><span>Tạm tính</span><span>${fmt(t.sub)}</span></div>
         <div class="sumrow"><span>Phí giao hàng</span><span class="muted">${shipText(t.ship)}</span></div>
@@ -486,6 +493,78 @@ window.SHOP = (function(){
       <button class="btn btn-ink" type="submit" id="co-submit">Đặt hàng ${arrow}</button>
       <p class="fine">Bằng việc đặt hàng, bạn đồng ý để chúng tôi liên hệ qua số điện thoại đã cung cấp nhằm xác nhận và giao đơn hàng.</p>`;
     if (keep){ const el = box.querySelector(keep); if (el && !el.disabled) el.focus({ preventScroll: true }); else box.querySelector("[data-oqi]")?.focus({ preventScroll: true }); }
+  }
+
+  /* ---------- xem nhanh sản phẩm (popup) ---------- */
+  let qvOpener = null;
+  function quickView(slug, opener){
+    const p = bySlug(slug); if (!p) return;
+    let dlg = $("#qv");
+    if (!dlg){
+      dlg = document.createElement("dialog"); dlg.id = "qv"; dlg.className = "qv"; dlg.setAttribute("aria-labelledby", "qv-title");
+      document.body.appendChild(dlg);
+      dlg.addEventListener("click", e => {
+        if (e.target === dlg || e.target.closest("[data-qv-close]")) return dlg.close();
+        const st = e.target.closest("[data-qvs]");
+        if (st){ const i = $("#qv-q"); i.value = Math.max(1, Math.min(MAXQ, (parseInt(i.value, 10) || 1) + Number(st.dataset.qvs))); return; }
+        const go = e.target.closest("[data-qv-add]");
+        if (go){
+          const q = Math.max(1, Math.min(MAXQ, parseInt($("#qv-q").value, 10) || 1)), s2 = go.dataset.qvAdd;
+          add(s2, q); dlg.close(); toast(`Đã thêm ${q} × ${bySlug(s2).name} vào đơn`);
+        }
+      });
+      dlg.addEventListener("close", () => {
+        document.documentElement.classList.remove("qv-open");
+        const o = qvOpener; qvOpener = null;
+        const back = o && document.contains(o) ? o : (o && o.dataset && o.dataset.qv ? $(`#osum [data-qv="${o.dataset.qv}"]`) || $(`#osum [data-oadd="${o.dataset.qv}"]`) : null);
+        if (back) back.focus({ preventScroll: true });
+      });
+    }
+    const L = Object.fromEntries((p.legal || []).filter(r => r && r[0]).map(r => [r[0], r[1]]));
+    const allLegal = (p.legal || []).map(r => r[1]).join(" ");
+    const origin = L["Xuất xứ"] || ((p.specs || []).find(r => r[0] === "Xuất xứ") || [])[1];
+    const trust = [
+      origin && `Sản xuất tại ${origin}`,
+      L["Số ĐKSP"] ? `Số ĐKSP ${L["Số ĐKSP"]}` : /ĐKSP/.test(allLegal) && "Có số ĐKSP cho từng sản phẩm",
+      L["Số XNQC"] ? `Số XNQC ${L["Số XNQC"]}` : /XNQC/.test(allLegal) && "Có số XNQC cho từng sản phẩm",
+      ...(C.perks || []).filter(t => !/nhật bản/i.test(t))
+    ].filter(Boolean);
+    const inCart = cart.find(i => i.slug === slug);
+    const facts = (p.specs || []).filter(r => r && r[0] && r[0] !== "Xuất xứ").slice(0, 3);
+    dlg.innerHTML = `
+      <button type="button" class="qv-x" data-qv-close aria-label="Đóng"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <div class="qv-scroll">
+        <div class="qv-top">
+          <div class="qv-vis">${visual(p)}</div>
+          <div class="qv-head">
+            ${p.officialName ? `<p class="kind">${esc(p.officialName)}</p>` : ""}
+            <h2 id="qv-title">${esc(p.name)}</h2>
+            ${p.claim ? `<p class="qv-claim"><span>Công dụng</span>${esc(p.claim)}</p>` : ""}
+            ${priceHtml(p)}
+          </div>
+        </div>
+        ${trust.length ? `<ul class="qv-trust">${trust.map(t => `<li>${perkIcon}${esc(t)}</li>`).join("")}</ul>` : ""}
+        ${facts.length ? `<dl class="qv-facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
+        ${p.desc ? `<p class="qv-desc">${esc(p.desc)}</p>` : ""}
+        <div class="acc">${detailSections(p)}</div>
+        <p class="disc-line">${DISCLAIMER}</p>
+        <p class="qv-more"><a href="${location.pathname}#san-pham/${esc(p.slug)}" target="_blank" rel="noopener">Mở trang sản phẩm đầy đủ ↗</a></p>
+      </div>
+      <div class="qv-foot">
+        <div class="qty" role="group" aria-label="Số lượng">
+          <button type="button" data-qvs="-1" aria-label="Giảm số lượng">−</button>
+          <input id="qv-q" type="number" inputmode="numeric" min="1" max="${MAXQ}" value="1" aria-label="Số lượng">
+          <button type="button" data-qvs="1" aria-label="Tăng số lượng">+</button>
+        </div>
+        <button type="button" class="btn btn-ink" data-qv-add="${esc(p.slug)}">${inCart ? "Thêm nữa vào đơn" : "Thêm vào đơn"} ${arrow}</button>
+        ${inCart ? `<p class="qv-in">Đơn hàng đang có ${inCart.qty} sản phẩm này.</p>` : ""}
+      </div>`;
+    $("#qv-q").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); dlg.querySelector("[data-qv-add]").click(); } });
+    qvOpener = opener || document.activeElement;
+    document.documentElement.classList.add("qv-open");
+    if (!dlg.open) dlg.showModal();
+    dlg.querySelector(".qv-scroll").scrollTop = 0;
+    dlg.querySelector(".qv-x").focus({ preventScroll: true });
   }
 
   function fieldError(form, name, msg){
@@ -618,6 +697,9 @@ window.SHOP = (function(){
     if (oq){ const it = cart.find(i => i.slug === oq.dataset.oq); if (it) setQty(it.slug, Math.max(1, it.qty + Number(oq.dataset.d))); return; }
     const orm = t.closest("[data-orm]");
     if (orm){ if (cart.length > 1){ const p = bySlug(orm.dataset.orm); setQty(orm.dataset.orm, 0); toast(`Đã xoá ${p.name} khỏi đơn`); } return; }
+    const qvb = t.closest("[data-qv]");
+    if (qvb && !t.closest("#qv")){ quickView(qvb.dataset.qv, qvb); return; }
+    if (t.closest("[data-oexp]")){ upsellOpen = !upsellOpen; renderSummary(); return; }
     const oadd = t.closest("[data-oadd]");
     if (oadd){ add(oadd.dataset.oadd, 1); toast(`Đã thêm ${bySlug(oadd.dataset.oadd).name} vào đơn`); return; }
     const qb = t.closest("[data-q]");
