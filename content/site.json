@@ -10,7 +10,6 @@
   "postsPerPage": 6,
   "shippingFee": null,
   "freeShippingFrom": null,
-  "orderEndpoint": "",
   "bank": {
     "code": "MB",
     "account": "0985233655",
@@ -71,7 +70,6 @@
     "hours": "",
     "showMap": true,
     "mapQuery": "",
-    "formEndpoint": "",
     "topics": [
       "Tư vấn sản phẩm",
       "Đơn hàng & giao hàng",

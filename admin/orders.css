@@ -1,7 +1,7 @@
 /* NMN · Quản lý đơn hàng — bổ sung cho admin.css */
 .side nav button .cnt{margin-left:auto;font-size:11px;font-weight:600;background:var(--rose);color:#fff;border-radius:999px;padding:1px 8px}
 .side-foot a{text-decoration:none}
-.live{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--ok);background:rgba(47,122,79,.1);border-radius:999px;padding:5px 12px}
+.live{border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--ok);background:rgba(47,122,79,.1);border-radius:999px;padding:5px 12px}
 .live i{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:lv 1.8s infinite}
 .live.off{color:var(--rose);background:rgba(143,67,87,.1)} .live.off i{background:var(--rose);animation:none}
 @keyframes lv{0%{box-shadow:0 0 0 0 rgba(47,122,79,.5)}70%{box-shadow:0 0 0 8px rgba(47,122,79,0)}100%{box-shadow:0 0 0 0 rgba(47,122,79,0)}}
@@ -80,3 +80,9 @@
   .o-search{flex-wrap:wrap}
   .o-search input{flex-basis:100%}
 }
+.live.busy i{animation:none;background:var(--gold,#a3804c)}
+.side nav .navlink{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink-2);padding:10px 12px;border-radius:12px;font-size:15px}
+.side nav .navlink i{font-style:normal;width:20px;text-align:center;color:var(--gold)}
+.side nav .navlink:hover{background:rgba(19,32,42,.05)}
+.sp-st{display:grid;gap:6px;font-size:14px;margin:10px 0 4px}
+.sp-st b.on{color:var(--ok)} .sp-st b.off{color:var(--rose)}

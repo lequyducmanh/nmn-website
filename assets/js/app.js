@@ -1,9 +1,32 @@
 /* =====================================================================
    NMN website · app.js
-   Nội dung (cài đặt, trang chủ, sản phẩm, bài viết, sự kiện) nằm trong
-   thư mục content/ và được sửa qua trang quản trị /admin.
+   Nội dung (cài đặt, trang chủ, sản phẩm, bài viết, sự kiện) lưu trên
+   Google Sheets, đọc qua Apps Script (link trong assets/js/config.js) và
+   được sửa ở trang quản trị /admin. Thư mục content/ là bản dự phòng.
    File này chỉ chứa chức năng — không cần sửa khi đổi nội dung.
    ===================================================================== */
+/* ---------- kết nối Google Sheets (Apps Script Web App) ---------- */
+window.SHEETS = (function(){
+  const url = String(window.NMN_API || "").trim();
+  async function req(opts, query, timeout){
+    const ctl = window.AbortController ? new AbortController() : null;
+    const t = ctl && setTimeout(() => ctl.abort(), timeout || 15000);
+    try {
+      const qs = query ? "?" + new URLSearchParams(query).toString() : "";
+      // text/plain = "simple request" → không cần preflight CORS với Apps Script
+      const r = await fetch(url + qs, Object.assign({ cache: "no-store", redirect: "follow", signal: ctl ? ctl.signal : undefined }, opts));
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    } finally { if (t) clearTimeout(t); }
+  }
+  return {
+    on: /^https:\/\/script\.google(usercontent)?\.com\//.test(url) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url),
+    url,
+    get: (query, timeout) => req({ method: "GET" }, query, timeout),
+    post: (body, timeout) => req({ method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) }, null, timeout)
+  };
+})();
+
 window.NMN = (function(){
   const FILES = ["site", "products", "posts", "events"];
   const preview = new URLSearchParams(location.search).has("preview");
@@ -13,27 +36,45 @@ window.NMN = (function(){
   const emph = s => esc(s).replace(/\*([^*]+)\*/g, "<em>$1</em>");
   const fmt = n => new Intl.NumberFormat("vi-VN").format(Math.round(n || 0)) + "đ";
   const img = p => (p && draftImages[p]) || p || "";
-  const imgHtml = html => String(html || "").replace(/(src=")(images\/[^"]+)"/g, (m, a, p) => a + esc(img(p)) + '"');
+  const imgHtml = html => String(html || "").replace(/(src=")((?:images|upload)\/[^"]+)"/g, (m, a, p) => a + esc(img(p)) + '"');
 
   async function getJSON(name){
     const r = await fetch(`content/${name}.json?t=${Date.now()}`, { cache: "no-store" });
     if (!r.ok) throw new Error(`content/${name}.json → ${r.status}`);
     return r.json();
   }
-  /* Firebase Hosting tự cung cấp cấu hình tại /__/firebase/init.json (GitHub Pages / máy cục bộ → 404) */
-  const fbProbe = fetch("/__/firebase/init.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(c => c && c.projectId ? c : null).catch(() => null);
+  /* Nội dung từ Google Sheets: bản lưu trên máy (≤ 10 phút) hiển thị ngay rồi làm mới ngầm;
+     quá hạn → hỏi Sheet (tối đa 8 giây) → lỗi thì dùng bản lưu cũ → cuối cùng là thư mục content/ */
+  const CACHE = "nmn_content_v2", FRESH = 10 * 60e3;
+  const valid = d => !!(d && d.site && d.site.brand && Array.isArray(d.products) && d.products.length);
+  function readCache(){ try { const c = JSON.parse(localStorage.getItem(CACHE) || "null"); return c && valid(c.data) ? c : null; } catch (_) { return null; } }
+  function writeCache(gen, data){ try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), gen, data })); } catch (_) {} }
+  async function fromSheet(cached, timeout){
+    const j = await window.SHEETS.get({ action: "content", gen: cached ? cached.gen : "" }, timeout);
+    if (j && j.ok && j.same && cached){ writeCache(cached.gen, cached.data); return cached.data; }
+    if (j && j.ok && valid(j.data)){ writeCache(j.gen, j.data); return j.data; }
+    throw new Error(j && j.error || "Google Sheet chưa có nội dung (chạy “Cài đặt lần đầu”)");
+  }
   async function load(){
     let data = null;
     if (preview){
-      try { const d = JSON.parse(localStorage.getItem("nmn_cms_draft") || "null"); if (d && d.site){ data = d; draftImages = d.images || {}; } } catch (_) {}
+      try { const d = JSON.parse(localStorage.getItem("nmn_cms_draft") || "null"); if (d && d.site){ data = d; draftImages = d.images || {}; window.SOURCE = "preview"; } } catch (_) {}
+    }
+    if (!data && window.SHEETS.on){
+      const c = readCache();
+      if (c && Date.now() - c.t < FRESH){ data = c.data; window.SOURCE = "cache"; fromSheet(c, 20000).catch(() => {}); }
+      else {
+        try { data = await fromSheet(c, 8000); window.SOURCE = "sheet"; }
+        catch (e){ console.warn("Không đọc được Google Sheet:", e.message); if (c){ data = c.data; window.SOURCE = "cache"; } }
+      }
     }
     if (!data){
       try {
         const vals = await Promise.all(FILES.map(getJSON));
         data = Object.fromEntries(FILES.map((f, i) => [f, vals[i]]));
+        window.SOURCE = "static";
       } catch (e){ fail(e); return false; }
     }
-    window.FIREBASE = await fbProbe;
     window.CONFIG = data.site;
     window.ALL_PRODUCTS = data.products || [];
     window.PRODUCTS = window.ALL_PRODUCTS.filter(p => p.visible !== false);
@@ -180,15 +221,6 @@ window.SCENE3D = {
   window.NMN.ld();
 
 /* ---------- SHOP: cart, product pages, checkout ---------- */
-/* Firebase JS SDK — chỉ tải khi cần (trang chờ thanh toán) */
-window.FB = (function(){
-  const base = "https://www.gstatic.com/firebasejs/10.14.1/";
-  let appP, fsP;
-  const app = () => appP || (appP = import(base + "firebase-app.js").then(m => m.initializeApp(window.FIREBASE)));
-  const firestore = () => fsP || (fsP = Promise.all([app(), import(base + "firebase-firestore.js")]).then(([a, m]) => Object.assign({}, m, { db: m.getFirestore(a) })).catch(e => { fsP = null; throw e; }));
-  return { firestore };
-})();
-
 window.SHOP = (function(){
   const C = window.CONFIG, P = window.PRODUCTS;
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -197,10 +229,9 @@ window.SHOP = (function(){
   const bySlug = s => P.find(p => p.slug === s);
   const zaloUrl = "https://zalo.me/" + encodeURIComponent(C.zalo);
   const hasBank = !!(C.bank && C.bank.account && C.bank.code);
-  // xác nhận chuyển khoản tự động: cần link Apps Script (nhận đơn + đối soát SePay)
-  const API = window.FIREBASE ? "/api" : "";            // Cloud Functions qua Firebase Hosting
-  const autoPay = hasBank && !!C.bank.autoConfirm && (!!API || !!C.orderEndpoint);
-  let payStop = () => {};
+  // đơn hàng + xác nhận chuyển khoản tự động đi qua Google Sheets (Apps Script + SePay)
+  const API = window.SHEETS;
+  const autoPay = hasBank && !!C.bank.autoConfirm && API.on;
   const ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const rnd = n => { const a = new Uint32Array(n); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach((_, i) => a[i] = Math.random() * 4e9); return [...a].map(x => ABC[x % ABC.length]).join(""); };
   const payCode = code => String(code).toUpperCase().replace(/[^A-Z0-9]/g, "");   // nội dung CK: không dấu gạch (ngân hàng hay bỏ ký tự đặc biệt)
@@ -630,27 +661,23 @@ window.SHOP = (function(){
       items: cart.map(i => { const p = bySlug(i.slug); return { slug: p.slug, name: p.name, price: p.price, qty: i.qty, lineTotal: p.price * i.qty }; }),
       subtotal: t.sub, shipping: t.ship, total: t.total, sent: false
     };
-    if (API){
-      let r = null, j = {};
+    if (API.on){
+      let j = null;
       try {
-        r = await fetch(API + "/orders", { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code, payment: order.payment, total: order.total, customer: order.customer, items: cart.map(i => ({ slug: i.slug, qty: i.qty })) }) });
-        j = await r.json().catch(() => ({}));
+        j = await API.post({ action: "order", code, payment: order.payment, total: order.total, customer: order.customer, hp: d.hp || "",
+          items: cart.map(i => ({ slug: i.slug, qty: i.qty })) }, 25000);
       } catch (_) {}
-      if (r && r.ok && j.ok){
-        Object.assign(order, { code: j.code, payCode: j.payCode, subtotal: j.subtotal, shipping: j.shipping, total: j.total, sent: true, backend: "firebase" });
-      } else if (r && r.status >= 400 && r.status < 500){
+      if (j && j.ok){
+        // giá / phí ship theo Google Sheet là chuẩn
+        Object.assign(order, { code: j.code, payCode: j.payCode, subtotal: j.subtotal, shipping: j.shipping, total: j.total, sent: true });
+        if (Array.isArray(j.items) && j.items.length) order.items = j.items;
+      } else if (j && j.error){
         btn.disabled = false; btn.innerHTML = `Đặt hàng ${arrow}`;
-        toast(j.error || "Không đặt được hàng, vui lòng kiểm tra lại thông tin.");
-        const m = $("#co-err") || Object.assign(document.createElement("p"), { id: "co-err", className: "co-err" });
-        m.textContent = j.error || "Không đặt được hàng, vui lòng kiểm tra lại thông tin."; btn.after(m);
+        toast(j.error);
+        const m = $("#co-err") || Object.assign(document.createElement("p"), { id: "co-err", className: "co-err", role: "alert" });
+        m.textContent = j.error; btn.after(m);
         return;
       } // lỗi mạng / máy chủ → vẫn tạo đơn trên máy, khách gửi qua Zalo
-    } else if (C.orderEndpoint){
-      try {
-        await fetch(C.orderEndpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(order) });
-        order.sent = true;
-      } catch (_) { order.sent = false; }
     }
     const orders = store.get(ORDERS, []); orders.unshift(order); store.set(ORDERS, orders.slice(0, 10));
     page = "submitting"; cart = []; save();
@@ -740,17 +767,16 @@ window.SHOP = (function(){
   function saveOrder(o){ const list = store.get(ORDERS, []); const i = list.findIndex(x => x.code === o.code); if (i >= 0){ list[i] = o; store.set(ORDERS, list); } }
   function setPaySt(s, text){ const el = $("#pay-st"); if (el){ el.dataset.s = s; el.querySelector("span").textContent = text; } }
   function watchPay(o){
-    clearTimeout(payTimer); payStop(); payStop = () => {}; watchPay.check = null;
+    clearTimeout(payTimer); watchPay.check = null;
     if (!(o.payment === "bank" && autoPay && o.sent) || o.paid) return;
-    const pc = o.payCode || payCode(o.code), fire = o.backend === "firebase" && !!API;
-    const url = fire ? API + "/status?code=" + encodeURIComponent(pc) : C.orderEndpoint + (C.orderEndpoint.includes("?") ? "&" : "?") + "action=status&code=" + encodeURIComponent(o.code);
-    let lastPaid = o.paidAmount || 0, busy = false, live = false;
+    const ask = () => API.get({ action: "status", code: o.code }, 20000);
+    let lastPaid = o.paidAmount || 0, busy = false;
     const here = () => page === "done" && decodeURIComponent(location.hash) === "#don-hang/" + o.code;
     // j = { status: pending|partial|paid|off, paid, at } → cập nhật giao diện; true = xong
     function handle(j){
       if (!here()) return true;
       if (j.status === "paid"){
-        payStop(); clearTimeout(payTimer);
+        clearTimeout(payTimer);
         Object.assign(o, { paid: true, paidAmount: Number(j.paid) || o.total, paidAt: j.at || new Date().toISOString() }); saveOrder(o);
         renderDone(o.code); window.scrollTo({ top: 0, behavior: "smooth" }); toast("Đã nhận thanh toán — cảm ơn bạn!"); return true;
       }
@@ -758,36 +784,24 @@ window.SHOP = (function(){
         lastPaid = o.paidAmount = Number(j.paid); saveOrder(o); $("#pay-box").innerHTML = payBox(o, true);
       }
       if (j.status === "off"){ setPaySt("idle", "Chúng tôi sẽ kiểm tra và xác nhận thủ công"); return true; }
-      setPaySt("wait", j.status === "partial" ? "Đã nhận một phần — chờ phần còn lại" : live ? "Đang chờ thanh toán · tự cập nhật" : "Đang chờ thanh toán");
+      setPaySt("wait", j.status === "partial" ? "Đã nhận một phần — chờ phần còn lại" : "Đang chờ thanh toán · tự cập nhật");
       return false;
     }
     const started = Date.now();
     async function tick(force){
       clearTimeout(payTimer);
-      if (!here() || live) return;
+      if (!here()) return;
       if (document.hidden && !force){ payTimer = setTimeout(tick, 3000); return; }
       if (busy) return; busy = true;
-      try { const j = await fetch(url, { cache: "no-store" }).then(r => r.json()); if (handle(j)) return; }
+      try { const j = await ask(); if (handle(j)) return; }
       catch (_) { setPaySt("err", "Đang kết nối lại…"); }
       finally { busy = false; }
       const age = Date.now() - started, wait = age < 10 * 60e3 ? 4000 : age < 60 * 60e3 ? 15000 : 0;
       if (wait) payTimer = setTimeout(tick, wait);
       else setPaySt("idle", "Chưa thấy giao dịch — bấm “kiểm tra ngay” sau khi chuyển");
     }
-    watchPay.check = () => { if (live) fetch(url, { cache: "no-store" }).then(r => r.json()).then(handle).catch(() => {}); else tick(true); };
-    if (!fire) return tick();
-    // Firebase: nghe trực tiếp tài liệu status/{mã} — cập nhật ngay khi webhook SePay ghi vào
-    let alive = true, unsub = null;
-    payStop = () => { alive = false; if (unsub) unsub(); };
-    setPaySt("wait", "Đang chờ thanh toán");
-    window.FB.firestore().then(m => {
-      if (!alive || !here()) return;
-      unsub = m.onSnapshot(m.doc(m.db, "status", pc), snap => {
-        if (!snap.exists()) return;
-        live = true; const d = snap.data();
-        handle({ status: d.state === "paid" ? "paid" : d.paid > 0 ? "partial" : "pending", paid: d.paid || 0, at: d.paidAt && d.paidAt.toDate ? d.paidAt.toDate().toISOString() : null });
-      }, () => { live = false; tick(); });
-    }).catch(() => tick());
+    watchPay.check = () => tick(true);
+    tick();
   }
   document.addEventListener("visibilitychange", () => { if (!document.hidden && watchPay.check && page === "done") watchPay.check(); });
 
@@ -868,9 +882,9 @@ window.SHOP = (function(){
   return {
     priceOf: slug => { const p = bySlug(slug); return p ? fmt(p.price) : ""; },
     match: h => /^(cua-hang|thanh-toan|san-pham\/.+|don-hang\/.+)$/.test(h),
-    leave(){ page = null; clearTimeout(payTimer); payStop(); closeCart(); robots(false); },
+    leave(){ page = null; clearTimeout(payTimer); closeCart(); robots(false); },
     render(h){
-      closeCart(); robots(false); clearTimeout(payTimer); payStop();
+      closeCart(); robots(false); clearTimeout(payTimer);
       if (h === "cua-hang") renderList();
       else if (h === "thanh-toan") renderCheckout();
       else if (h.startsWith("san-pham/")) renderProduct(h.slice(9));
@@ -883,7 +897,7 @@ window.SHOP = (function(){
 /* =====================================================================
    LIÊN HỆ — #lien-he
    Kênh liên hệ, biểu mẫu gửi lời nhắn, thông tin doanh nghiệp, bản đồ, câu hỏi thường gặp.
-   Biểu mẫu: có "formEndpoint" → gửi thẳng (Google Apps Script); không có → chép nội dung + mở Zalo / email.
+   Biểu mẫu: có Google Sheets (config.js) → lưu vào trang tính "Liên hệ"; không có / lỗi mạng → chép nội dung + mở Zalo / email.
    ===================================================================== */
 window.CONTACT = (function(){
   const C = window.CONFIG, P = (window.PRODUCTS || []).filter(p => p.visible !== false && !p.unlisted);
@@ -1014,21 +1028,13 @@ window.CONTACT = (function(){
       type: "contact", code: "LH-" + now.toISOString().slice(2, 10).replace(/-/g, "") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase(),
       createdAt: now.toISOString(), name: d.name, phone, email: d.email, topic: d.topic || "", product: d.product || "", message: d.message, page: location.href, sent: false
     };
-    if (window.FIREBASE){
-      let r = null, j = {};
-      try {
-        r = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(msg) });
-        j = await r.json().catch(() => ({}));
-      } catch (_) {}
-      if (r && r.ok && j.ok) msg.sent = true;
-      else if (r && r.status >= 400 && r.status < 500){
-        btn.disabled = false; btn.innerHTML = `Gửi lời nhắn ${arrow}`; toast(j.error || "Không gửi được, vui lòng kiểm tra lại."); return;
-      }
-    } else if (K.formEndpoint){
-      try {
-        await fetch(K.formEndpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(msg) });
-        msg.sent = true;
-      } catch (_) { msg.sent = false; }
+    if (window.SHEETS.on){
+      let j = null;
+      try { j = await window.SHEETS.post(Object.assign({ action: "contact", hp: d.hp || "" }, msg), 20000); } catch (_) {}
+      if (j && j.ok) msg.sent = true;
+      else if (j && j.error){
+        btn.disabled = false; btn.innerHTML = `Gửi lời nhắn ${arrow}`; toast(j.error); return;
+      } // lỗi mạng → khách gửi qua Zalo / email
     }
     last = msg;
     done();

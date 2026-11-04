@@ -1,25 +1,22 @@
 /* =====================================================================
    NMN CMS · admin.js
-   Quản trị nội dung website, lưu trực tiếp vào repo GitHub (không cần máy chủ).
-   - Đọc/ghi các file content/*.json và ảnh trong images/
-   - Mỗi lần "Xuất bản" tạo đúng 1 commit chứa mọi thay đổi
+   Quản trị nội dung website — database là Google Sheets (qua Apps Script).
+   - Đọc/ghi trang tính Cài đặt, Sản phẩm, Bài viết, Sự kiện
+   - Ảnh tải lên Google Drive (công khai dạng xem), đường dẫn lưu trong Sheet
+   - Sửa thoải mái → Xem trước → "Xuất bản" lưu mọi thay đổi một lần; website cập nhật ngay
    ===================================================================== */
 (() => {
 "use strict";
 
-/* ---------- cấu hình mặc định ---------- */
-const DEFAULTS = { owner: "lequyducmanh", repo: "nmn-website", branch: "main" };
 const FILES = ["site", "products", "posts", "events"];
 const FILE_LABEL = { site: "Cài đặt & Trang chủ", products: "Sản phẩm", posts: "Bài viết", events: "Sự kiện" };
 const SITE_BASE = new URL("../", location.href).href;
-const API = "https://api.github.com";
+const API = window.ADMIN_API;
 const MAX_IMG = 1600;              // cạnh dài tối đa sau khi nén
 const MAX_FILE = 20 * 1024 * 1024; // 20MB
 
 /* ---------- helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
-let FIREBASE_ON = false;
-fetch("/__/firebase/init.json", { cache: "no-store" }).then(r => { FIREBASE_ON = r.ok; }).catch(() => {});
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = n => new Intl.NumberFormat("vi-VN").format(Math.round(Number(n) || 0)) + "đ";
@@ -38,13 +35,13 @@ function setP(o, path, v){ const ks = path.split("."); const last = ks.pop(); co
 
 /* ---------- state ---------- */
 const S = {
-  cfg: { ...DEFAULTS }, token: "",
-  data: {}, shas: {}, head: null,
-  images: [],                 // [{path,size}] đã có trong repo
-  dirty: new Set(),           // file JSON đã sửa
-  uploads: new Map(),         // path → {b64,dataUrl,size} ảnh mới chờ xuất bản
-  deletes: new Set(),         // path ảnh sẽ xoá
-  shown: new Map(),           // path → dataUrl (ảnh vừa xuất bản, chờ GitHub Pages cập nhật)
+  on: false,                  // đã đăng nhập
+  data: {}, revs: {}, info: {},
+  images: [],                 // [{path,size,id?,drive?,builtin?}] ảnh trên Drive + ảnh có sẵn trong website
+  dirty: new Set(),           // phần nội dung đã sửa
+  uploads: new Map(),         // đường dẫn tạm → {b64,dataUrl,size,mime,name,folder} ảnh mới chờ xuất bản
+  deletes: new Set(),         // đường dẫn ảnh Drive sẽ xoá
+  shown: new Map(),
   view: "overview", editing: null, ctx: null,
   autoSlug: new WeakSet(), readManual: new WeakSet()
 };
@@ -74,50 +71,24 @@ function promptModal(title, label, value = ""){
 }
 
 /* =====================================================================
-   GITHUB API
+   GOOGLE SHEETS (Apps Script)
    ===================================================================== */
-async function gh(path, opts = {}){
-  const r = await fetch(API + path, {
-    method: opts.method || "GET", cache: "no-store",
-    headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + S.token, "X-GitHub-Api-Version": "2022-11-28", ...(opts.body ? { "Content-Type": "application/json" } : {}) },
-    body: opts.body ? JSON.stringify(opts.body) : undefined
-  });
-  if (!r.ok){
-    let m = ""; try { m = (await r.json()).message || ""; } catch (_) {}
-    const e = new Error(m || r.statusText); e.status = r.status; throw e;
-  }
-  return r.status === 204 ? null : r.json();
+function apiError(e){ return (e && e.message) || "Đã có lỗi xảy ra."; }
+/* ảnh có sẵn trong website (thư mục images/ của repo) đang được nội dung dùng */
+function builtinImages(){
+  const set = new Set(), re = /images\/[\w\-./]+\.(?:jpe?g|png|webp|gif|avif|svg)/gi;
+  FILES.forEach(f => (JSON.stringify(S.data[f] || "").match(re) || []).forEach(p => set.add(p)));
+  return [...set].map(p => ({ path: p, size: 0, builtin: true }));
 }
-const repoPath = p => `/repos/${encodeURIComponent(S.cfg.owner)}/${encodeURIComponent(S.cfg.repo)}${p}`;
-const decodeB64 = b64 => new TextDecoder().decode(Uint8Array.from(atob(String(b64).replace(/\s/g, "")), c => c.charCodeAt(0)));
-function apiError(e){
-  if (e.status === 401) return "Mã truy cập không hợp lệ hoặc đã hết hạn.";
-  if (e.status === 403) return "Mã truy cập không đủ quyền (cần Contents: Read and write cho repo này)." + (e.message ? ` (${e.message})` : "");
-  if (e.status === 404) return `Không tìm thấy repo ${S.cfg.owner}/${S.cfg.repo} hoặc nhánh ${S.cfg.branch}, hoặc mã không được cấp quyền cho repo này.`;
-  if (e.status === 409 || e.status === 422) return "Repo vừa thay đổi trong lúc xuất bản. Vui lòng thử lại.";
-  if (e instanceof TypeError) return "Không kết nối được tới GitHub. Kiểm tra mạng rồi thử lại.";
-  return e.message || "Đã có lỗi xảy ra.";
-}
-
 async function loadAll(){
-  const repo = await gh(repoPath(""));
-  if (repo.permissions && repo.permissions.push === false) { const e = new Error("no push"); e.status = 403; throw e; }
-  const ref = await gh(repoPath(`/git/ref/heads/${encodeURIComponent(S.cfg.branch)}`));
-  const commit = await gh(repoPath(`/git/commits/${ref.object.sha}`));
-  const tree = await gh(repoPath(`/git/trees/${commit.tree.sha}?recursive=1`));
-  const data = {}, shas = {};
-  for (const f of FILES){
-    const ent = tree.tree.find(t => t.path === `content/${f}.json`);
-    if (!ent) { data[f] = f === "site" ? {} : []; shas[f] = null; continue; }
-    const blob = await gh(repoPath(`/git/blobs/${ent.sha}`));
-    data[f] = JSON.parse(decodeB64(blob.content));
-    shas[f] = ent.sha;
-  }
-  S.data = data; S.shas = shas; S.head = ref.object.sha;
-  S.lastCommit = { sha: ref.object.sha, date: commit.committer && commit.committer.date, msg: commit.message };
-  S.images = tree.tree.filter(t => t.type === "blob" && /^images\//.test(t.path) && /\.(jpe?g|png|webp|gif|avif|svg)$/i.test(t.path)).map(t => ({ path: t.path, size: t.size }));
+  const j = await API.call("content");
+  S.data = j.data; S.revs = j.revs || {};
+  S.info = { sheetUrl: j.sheetUrl, empty: j.empty, sepay: j.sepay, loadedAt: new Date().toISOString() };
   S.dirty.clear(); S.uploads.clear(); S.deletes.clear();
+  if (!S.data.site) S.data.site = {};
+  ["products", "posts", "events"].forEach(f => { if (!Array.isArray(S.data[f])) S.data[f] = []; });
   normalize();
+  S.images = (j.images || []).map(i => ({ path: i.url, size: i.size, id: i.id, name: i.name, drive: true })).concat(builtinImages());
 }
 /* đảm bảo mọi trường cần thiết đều có */
 function normalize(){
@@ -129,7 +100,8 @@ function normalize(){
   ["heroMeta", "marquee"].forEach(k => s.home[k] = Array.isArray(s.home[k]) ? s.home[k] : []);
   const st = S.data.site;
   st.company = Object.assign({ name: "", taxCode: "", address: "", phone: "", email: "" }, st.company || {});
-  st.contact = Object.assign({ eyebrow: "", title: "", lead: "", hours: "", showMap: true, mapQuery: "", formEndpoint: "", topics: [], consent: "", faq: [] }, st.contact || {});
+  st.contact = Object.assign({ eyebrow: "", title: "", lead: "", hours: "", showMap: true, mapQuery: "", topics: [], consent: "", faq: [] }, st.contact || {});
+  delete st.orderEndpoint; delete st.contact.formEndpoint;          // khoá của bản cũ
   st.bank = Object.assign({ code: "", account: "", owner: "", name: "", autoConfirm: false }, st.bank || {});
   st.upsell = Object.assign({ enabled: true, title: "Thêm vào đơn", max: 2 }, st.upsell || {});
   S.data.products.forEach(p => {
@@ -146,25 +118,25 @@ function normalize(){
    ĐĂNG NHẬP
    ===================================================================== */
 function readCfg(){
-  try { const c = JSON.parse(store.get("nmn_cms_cfg") || "null"); if (c && c.owner) S.cfg = { ...DEFAULTS, ...c }; } catch (_) {}
-  $("#cfg-owner").value = S.cfg.owner; $("#cfg-repo").value = S.cfg.repo; $("#cfg-branch").value = S.cfg.branch;
-  $("#howto-repo").textContent = S.cfg.repo;
+  const c = API.load(), def = API.defaultUrl();
+  $("#cfg-api").value = (c && c.api) || def;
+  if (!def) $("#adv").open = true;                     // config.js chưa có link → cần nhập
 }
-async function login(token, remember){
-  S.token = token;
-  busy(true, "Đang kết nối GitHub…");
+async function login(cfg, remember){
+  busy(true, "Đang kết nối Google Sheet…");
   try {
+    API.save(cfg, remember);
     await loadAll();
-    store.del("nmn_cms_token");
-    store.set("nmn_cms_token", token, remember ? localStorage : sessionStorage);
-    store.set("nmn_cms_cfg", JSON.stringify(S.cfg));
+    S.on = true;
     $("#login").hidden = true; $("#app").hidden = false;
-    $("#who").innerHTML = `Repo: <b>${esc(S.cfg.owner)}/${esc(S.cfg.repo)}</b> · nhánh ${esc(S.cfg.branch)}`;
+    $("#who").innerHTML = `Google Sheet: <a href="${esc(S.info.sheetUrl)}" target="_blank" rel="noopener">mở trang tính ↗</a>`;
     $("#site-link").href = SITE_BASE;
     go(location.hash.slice(1) || "overview");
+    if (S.info.empty) alertModal("Google Sheet chưa có nội dung", `Mở <a href="${esc(S.info.sheetUrl)}" target="_blank" rel="noopener">Google Sheet</a> → menu <b>NMN Website → ① Cài đặt lần đầu</b> để nhập nội dung hiện có của website, rồi tải lại trang này.`);
     return true;
   } catch (e){
-    S.token = "";
+    API.clear();
+    $("#login").hidden = false; $("#app").hidden = true;
     $("#login-err").textContent = apiError(e);
     return false;
   } finally { busy(false); }
@@ -172,14 +144,14 @@ async function login(token, remember){
 $("#login-form").addEventListener("submit", async e => {
   e.preventDefault();
   $("#login-err").textContent = "";
-  S.cfg = { owner: $("#cfg-owner").value.trim() || DEFAULTS.owner, repo: $("#cfg-repo").value.trim() || DEFAULTS.repo, branch: $("#cfg-branch").value.trim() || DEFAULTS.branch };
-  const tk = $("#tk").value.trim();
-  if (!tk) { $("#login-err").textContent = "Vui lòng nhập mã truy cập."; return; }
-  if (await login(tk, $("#remember").checked)) $("#tk").value = "";
+  const api = $("#cfg-api").value.trim() || API.defaultUrl(), key = $("#tk").value.trim();
+  if (!API.okUrl(api)){ $("#adv").open = true; $("#login-err").textContent = "Link Web App chưa đúng — dạng https://script.google.com/macros/s/…/exec"; return; }
+  if (!key){ $("#login-err").textContent = "Vui lòng nhập khoá quản trị."; return; }
+  if (await login({ api, key }, $("#remember").checked)) $("#tk").value = "";
 });
 $("#logout").addEventListener("click", async () => {
   if (changeCount() && !(await confirmModal("Đăng xuất?", "Các thay đổi chưa xuất bản sẽ bị mất.", "Đăng xuất", true))) return;
-  store.del("nmn_cms_token"); S.token = ""; S.dirty.clear(); S.uploads.clear(); S.deletes.clear();
+  API.clear(); S.on = false; S.dirty.clear(); S.uploads.clear(); S.deletes.clear();
   location.hash = ""; location.reload();
 });
 
@@ -190,7 +162,7 @@ const TITLES = { overview: "Tổng quan", settings: "Cài đặt chung", home: "
 $("#nav").addEventListener("click", e => { const b = e.target.closest("[data-view]"); if (b) { location.hash = b.dataset.view; document.body.classList.remove("nav-open"); } });
 $("#menu-btn").addEventListener("click", () => document.body.classList.toggle("nav-open"));
 $("#side-ov").addEventListener("click", () => document.body.classList.remove("nav-open"));
-addEventListener("hashchange", () => { if (S.token) go(location.hash.slice(1) || "overview"); });
+addEventListener("hashchange", () => { if (S.on) go(location.hash.slice(1) || "overview"); });
 function go(h){
   const [view, idx] = h.split("/");
   if (!TITLES[view]) return go("overview");
@@ -269,10 +241,11 @@ async function processImage(file, folder){
   const ext = blob.type === "image/webp" ? "webp" : "jpg";
   const d = new Date(), stamp = [d.getFullYear() % 100, d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2, "0")).join("");
   const base = slugify(file.name.replace(/\.[^.]+$/, "")) || "anh";
-  let path = `images/${folder}/${base}-${stamp}.${ext}`, i = 2;
-  while (S.uploads.has(path) || S.images.some(x => x.path === path)) path = `images/${folder}/${base}-${stamp}-${i++}.${ext}`;
+  // đường dẫn tạm (chờ xuất bản) — khi Xuất bản được thay bằng link ảnh trên Google Drive
+  let name = `${base}-${stamp}.${ext}`, path = `upload/${folder}/${name}`, i = 2;
+  while (S.uploads.has(path)) { name = `${base}-${stamp}-${i++}.${ext}`; path = `upload/${folder}/${name}`; }
   const dataUrl = await blobToDataURL(blob);
-  S.uploads.set(path, { b64: dataUrl.split(",")[1], dataUrl, size: blob.size });
+  S.uploads.set(path, { b64: dataUrl.split(",")[1], dataUrl, size: blob.size, mime: blob.type, name, folder });
   paintDirty();
   return path;
 }
@@ -284,7 +257,7 @@ async function uploadFlow(folder, multiple){
   try { for (const f of files) out.push(await processImage(f, folder)); }
   catch (e){ toast(e.message, true); }
   finally { busy(false); }
-  if (out.length) toast(`Đã thêm ${out.length} ảnh (sẽ tải lên khi Xuất bản)`);
+  if (out.length) toast(`Đã thêm ${out.length} ảnh (tải lên Google Drive khi Xuất bản)`);
   return out;
 }
 function allImages(){
@@ -334,7 +307,7 @@ function sanitize(root){
     }
     if (tag === "IMG"){
       const src = n.getAttribute("src") || "";
-      if (!/^(images\/|https:)/.test(src)) n.remove();
+      if (!/^(images\/|upload\/|https:)/.test(src)) n.remove();
       else if (!n.hasAttribute("alt")) n.setAttribute("alt", "");
     }
   });
@@ -343,7 +316,7 @@ function sanitize(root){
 function toEditor(html){
   const doc = new DOMParser().parseFromString(`<div>${html || ""}</div>`, "text/html");
   const box = doc.body.firstChild;
-  box.querySelectorAll("img").forEach(im => { const s = im.getAttribute("src") || ""; if (s.startsWith("images/")) { im.setAttribute("data-path", s); im.setAttribute("src", displayUrl(s)); } });
+  box.querySelectorAll("img").forEach(im => { const s = im.getAttribute("src") || ""; if (/^(images|upload)\//.test(s)) { im.setAttribute("data-path", s); im.setAttribute("src", displayUrl(s)); } });
   return box.innerHTML;
 }
 function fromEditor(el){
@@ -582,8 +555,7 @@ const SETTINGS_SECTIONS = [
     { k: "priceNote", t: "text", l: "Ghi chú dưới giá", full: 1 },
     { k: "shippingFee", t: "money", l: "Phí giao hàng", nullable: 1, nullLabel: "Để trống = “Báo khi xác nhận đơn”" },
     { k: "freeShippingFrom", t: "money", l: "Miễn phí giao hàng từ", nullable: 1, nullLabel: "Để trống = không áp dụng" },
-    { k: "perks", t: "lines", l: "Cam kết hiển thị ở cửa hàng", hint: "Chỉ ghi điều bạn thực sự áp dụng." },
-    { k: "orderEndpoint", t: "url", l: "Link nhận đơn tự động (Google Apps Script)", full: 1, hint: "Không cần khi website chạy trên Firebase (đơn tự lưu vào Firestore). Để trống trên GitHub Pages: khách gửi đơn qua Zalo." } ] },
+    { k: "perks", t: "lines", l: "Cam kết hiển thị ở cửa hàng", hint: "Chỉ ghi điều bạn thực sự áp dụng." } ] },
   { h: "Gợi ý “Thêm vào đơn” ở trang Đặt hàng", d: `Hiện các sản phẩm khách chưa chọn ngay cạnh đơn hàng để khách thêm bằng một lần bấm. Sản phẩm vượt quá số lượng hiển thị sẽ nằm sau nút “Xem thêm”. Chọn sản phẩm được gợi ý trong <a href="#products">Sản phẩm</a> → “Gợi ý ở mục Thêm vào đơn”; thứ tự theo thứ tự sản phẩm.`, f: [
     { k: "upsell.enabled", t: "toggle", l: "Bật mục gợi ý" },
     { k: "upsell.max", t: "number", l: "Số sản phẩm hiển thị sẵn", hint: "nên để 2–3" },
@@ -593,7 +565,7 @@ const SETTINGS_SECTIONS = [
     { k: "bank.name", t: "text", l: "Tên ngân hàng hiển thị", ph: "Vietcombank" },
     { k: "bank.account", t: "text", l: "Số tài khoản" },
     { k: "bank.owner", t: "text", l: "Chủ tài khoản", ph: "NGUYEN VAN A" },
-    { k: "bank.autoConfirm", t: "toggle", l: "Tự động xác nhận đã thanh toán (SePay)", hint: "Bật sau khi đã cài SePay: Firebase → <a href=\"orders.html#payments\">Quản lý đơn hàng → Thanh toán · SePay</a> (hoặc Apps Script + “Link nhận đơn tự động”)." } ] },
+    { k: "bank.autoConfirm", t: "toggle", l: "Tự động xác nhận đã thanh toán (SePay)", hint: "Bật sau khi đặt <code>SEPAY_TOKEN</code> trong Apps Script — xem <a href=\"orders.html#payments\">Quản lý đơn hàng → Thanh toán · SePay</a>." } ] },
   { h: "Tìm kiếm Google (SEO)", f: [
     { k: "seo.title", t: "text", l: "Tiêu đề trang chủ", full: 1 },
     { k: "seo.description", t: "textarea", l: "Mô tả ngắn", rows: 2 },
@@ -615,8 +587,7 @@ const CONTACT_SECTIONS = [
     { k: "contact.mapQuery", t: "text", l: "Địa điểm trên bản đồ", full: 1, hint: "để trống = dùng địa chỉ ở Cài đặt chung" } ] },
   { h: "Biểu mẫu gửi lời nhắn", f: [
     { k: "contact.topics", t: "lines", l: "Các chủ đề để khách chọn" },
-    { k: "contact.consent", t: "textarea", l: "Câu xin đồng ý liên hệ lại", rows: 2 },
-    { k: "contact.formEndpoint", t: "url", l: "Link nhận lời nhắn tự động (Google Apps Script)", full: 1, hint: "Để trống: khách gửi qua Zalo/email. Có thể dùng chung link nhận đơn — xem README." } ] },
+    { k: "contact.consent", t: "textarea", l: "Câu xin đồng ý liên hệ lại", rows: 2, hint: "Lời nhắn được lưu vào trang tính “Liên hệ” và hiện ở Quản lý đơn hàng → Lời nhắn." } ] },
   { h: "Câu hỏi thường gặp", d: "Câu trả lời phải đúng hồ sơ công bố; không ghi công dụng khác. Bộ kiểm tra câu từ sẽ dò cả phần này.", f: [
     { k: "contact.faq", t: "pairs", l: "Hỏi & đáp", ph1: "Câu hỏi", ph2: "Câu trả lời" } ] }
 ];
@@ -755,7 +726,6 @@ function viewOverview(){
   S.dirty.forEach(f => ch.push(`Đã sửa: ${FILE_LABEL[f]}`));
   if (S.uploads.size) ch.push(`${S.uploads.size} ảnh mới chờ tải lên`);
   if (S.deletes.size) ch.push(`${S.deletes.size} ảnh sẽ bị xoá`);
-  const lc = S.lastCommit || {};
   view.innerHTML = `
     <div class="stats">
       <div class="stat"><b>${S.data.products.length}</b><span>Sản phẩm (${S.data.products.filter(p => p.visible !== false).length} đang hiển thị)</span></div>
@@ -767,7 +737,7 @@ function viewOverview(){
       ${n ? `<ul class="changes">${ch.map(c => `<li>${esc(c)}</li>`).join("")}</ul>
         <p class="muted small" style="margin-top:12px">Bấm <b>Xem trước</b> để kiểm tra trên website, rồi <b>Xuất bản</b> để cập nhật cho khách.</p>
         <div style="margin-top:12px"><button class="btn btn-danger btn-sm" id="discard">Huỷ mọi thay đổi</button></div>`
-        : `<p class="muted">Không có thay đổi nào. Website đang hiển thị đúng nội dung trong repo.</p>`}
+        : `<p class="muted">Không có thay đổi nào. Website đang hiển thị đúng nội dung trên Google Sheet.</p>`}
     </section>
     ${(() => { const cw = complianceScan(); return `<section class="card"><h2>Kiểm tra câu từ quảng cáo</h2>
       <p class="muted small">Theo thông báo nội dung quảng cáo của Công ty (CV 2110/2026/CV-CVJ). Website là thực phẩm bảo vệ sức khỏe:</p>
@@ -791,16 +761,34 @@ function viewOverview(){
         <li><a href="#media">Thư viện ảnh</a> — tải lên, xem, xoá ảnh.</li>
       </ul>
     </section>
-    <section class="card"><h2>Thông tin</h2>
-      <p class="muted small">Repo <b>${esc(S.cfg.owner)}/${esc(S.cfg.repo)}</b> · nhánh <b>${esc(S.cfg.branch)}</b><br>
-      Cập nhật gần nhất: ${lc.date ? esc(new Date(lc.date).toLocaleString("vi-VN")) : "—"} — “${esc((lc.msg || "").split("\n")[0])}”<br>
-      <a href="https://github.com/${esc(S.cfg.owner)}/${esc(S.cfg.repo)}/commits/${esc(S.cfg.branch)}" target="_blank" rel="noopener">Lịch sử thay đổi trên GitHub ↗</a> · <a href="${esc(SITE_BASE)}" target="_blank" rel="noopener">Mở website ↗</a></p>
+    <section class="card"><h2>Dữ liệu</h2>
+      <p class="muted small">Nội dung, đơn hàng và lời nhắn lưu trên <a href="${esc(S.info.sheetUrl)}" target="_blank" rel="noopener"><b>Google Sheet</b> ↗</a>. Có thể sửa nhanh giá, ẩn/hiện sản phẩm ngay trên Sheet — website cập nhật trong vài giây (CMS cần bấm <b>Tải lại</b> để thấy).<br>
+      Cập nhật gần nhất: ${esc(lastRev())} · <a href="${esc(SITE_BASE)}" target="_blank" rel="noopener">Mở website ↗</a></p>
+      <div class="acts" style="justify-content:flex-start;flex-wrap:wrap;margin-top:12px">
+        <button class="btn btn-line btn-sm" id="reload">Tải lại từ Google Sheet</button>
+        <button class="btn btn-line btn-sm" id="backup">Tải bản sao lưu (JSON)</button></div>
+      <p class="muted small" style="margin-top:8px">Bản sao lưu gồm 4 file <code>site.json</code>, <code>products.json</code>, <code>posts.json</code>, <code>events.json</code> — chép vào thư mục <code>content/</code> của website để làm bản dự phòng khi Google Sheet tạm thời không truy cập được.</p>
     </section>`;
-  const d = $("#discard");
-  if (d) d.addEventListener("click", async () => {
-    if (!(await confirmModal("Huỷ mọi thay đổi?", "Nội dung sẽ được tải lại từ GitHub. Mọi chỉnh sửa và ảnh mới chưa xuất bản sẽ mất.", "Huỷ thay đổi", true))) return;
-    busy(true, "Đang tải lại…"); try { await loadAll(); render(); toast("Đã tải lại nội dung từ GitHub"); } catch (e){ toast(apiError(e), true); } finally { busy(false); }
-  });
+  const reload = async (ask) => {
+    if (ask && !(await confirmModal("Huỷ mọi thay đổi?", "Nội dung sẽ được tải lại từ Google Sheet. Mọi chỉnh sửa và ảnh mới chưa xuất bản sẽ mất.", "Huỷ thay đổi", true))) return;
+    if (!ask && changeCount() && !(await confirmModal("Tải lại từ Google Sheet?", "Các thay đổi chưa xuất bản sẽ mất.", "Tải lại", true))) return;
+    busy(true, "Đang tải lại…"); try { await loadAll(); render(); toast("Đã tải lại nội dung từ Google Sheet"); } catch (e){ toast(apiError(e), true); } finally { busy(false); }
+  };
+  const d = $("#discard"); if (d) d.addEventListener("click", () => reload(true));
+  $("#reload").addEventListener("click", () => reload(false));
+  $("#backup").addEventListener("click", backup);
+}
+function lastRev(){
+  const t = Math.max(0, ...FILES.map(f => Number(S.revs[f]) || 0));
+  return t ? new Date(t).toLocaleString("vi-VN") : "—";
+}
+function backup(){
+  FILES.forEach((f, i) => setTimeout(() => {
+    const blob = new Blob([JSON.stringify(S.data[f], null, 2) + "\n"], { type: "application/json" });
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: f + ".json" });
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }, i * 400));
+  toast("Đang tải 4 file JSON…");
 }
 function viewForm(file, obj, sections){
   bindCtx(file, obj, sections);
@@ -861,7 +849,7 @@ function viewMedia(){
   const imgs = allImages();
   view.innerHTML = `
     <div class="lhead">
-      <div class="muted small">Ảnh tự được nén về tối đa ${MAX_IMG}px (định dạng WebP). Ảnh mới sẽ tải lên GitHub khi bấm Xuất bản.</div>
+      <div class="muted small">Ảnh tự được nén về tối đa ${MAX_IMG}px (định dạng WebP) và tải lên <b>Google Drive</b> khi bấm Xuất bản (thư mục “NMN website · ảnh”, chia sẻ dạng xem).</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <select id="up-folder" class="search" style="max-width:180px;min-width:0"><option value="misc">Thư mục: chung</option><option value="products">Sản phẩm</option><option value="posts">Bài viết</option><option value="events">Sự kiện</option></select>
         <button class="btn btn-ink" id="up-many">+ Tải ảnh lên</button>
@@ -869,15 +857,15 @@ function viewMedia(){
     </div>
     ${imgs.length ? `<div class="media">${imgs.map(m => { const u = usage(m.path); return `
       <div class="mi">${thumbHtml(m.path)}
-        <div class="mm"><div class="nm">${esc(m.path.replace(/^images\//, ""))}</div>
-          <div class="row"><span>${kb(m.size)}${m.pending ? " · <b style='color:var(--rose)'>chờ xuất bản</b>" : ""}</span><span>${u ? `dùng ${u} nơi` : "chưa dùng"}</span></div>
-          <div class="row"><button class="link" data-copy="${esc(m.path)}">Sao chép đường dẫn</button><button class="link" data-rmimg="${esc(m.path)}" style="color:var(--rose)">Xoá</button></div>
+        <div class="mm"><div class="nm">${esc(m.name || m.path.split("/").pop())}</div>
+          <div class="row"><span>${m.builtin ? "có sẵn trong website" : kb(m.size)}${m.pending ? " · <b style='color:var(--rose)'>chờ xuất bản</b>" : ""}</span><span>${u ? `dùng ${u} nơi` : "chưa dùng"}</span></div>
+          <div class="row"><button class="link" data-copy="${esc(m.path)}">Sao chép đường dẫn</button>${m.builtin ? "" : `<button class="link" data-rmimg="${esc(m.path)}" style="color:var(--rose)">Xoá</button>`}</div>
         </div></div>`; }).join("")}</div>` : `<div class="empty card">Thư viện chưa có ảnh nào.</div>`}`;
   $("#up-many").addEventListener("click", async () => { const ps = await uploadFlow($("#up-folder").value, true); if (ps.length) viewMedia(); });
   view.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => { try { await navigator.clipboard.writeText(b.dataset.copy); toast("Đã sao chép: " + b.dataset.copy); } catch (_) { toast(b.dataset.copy); } }));
   view.querySelectorAll("[data-rmimg]").forEach(b => b.addEventListener("click", async () => {
     const p = b.dataset.rmimg, u = usage(p);
-    if (!(await confirmModal("Xoá ảnh?", `${esc(p)}${u ? `<br><b style="color:var(--rose)">Ảnh đang được dùng ở ${u} nơi</b> — những chỗ đó sẽ mất ảnh.` : ""}`, "Xoá ảnh", true))) return;
+    if (!(await confirmModal("Xoá ảnh?", `${esc(p.split("/").pop())}${u ? `<br><b style="color:var(--rose)">Ảnh đang được dùng ở ${u} nơi</b> — những chỗ đó sẽ mất ảnh.` : ""}<br>Ảnh trên Drive được chuyển vào Thùng rác (khôi phục được trong 30 ngày).`, "Xoá ảnh", true))) return;
     if (S.uploads.has(p)) S.uploads.delete(p); else S.deletes.add(p);
     paintDirty(); viewMedia();
   }));
@@ -906,7 +894,7 @@ function validate(){
   });
   [1, 2].forEach(slot => { if (!S.data.products.some(p => Number(p.homeSlot) === slot && p.visible !== false)) warns.push(`Trang chủ: chưa có sản phẩm (đang hiển thị) ở vị trí ${slot}`); });
   const b = s.bank || {};
-  if (b.autoConfirm && !s.orderEndpoint && !FIREBASE_ON) warns.push("Chuyển khoản: đã bật tự động xác nhận nhưng chưa có “Link nhận đơn tự động” — khách sẽ không thấy trạng thái thanh toán.");
+  if (b.autoConfirm && S.info.sepay === false) warns.push("Chuyển khoản: đã bật tự động xác nhận nhưng Apps Script chưa có SEPAY_TOKEN — khách sẽ thấy “xác nhận thủ công”.");
   if (b.autoConfirm && !(b.code && b.account)) warns.push("Chuyển khoản: đã bật tự động xác nhận nhưng chưa nhập Mã ngân hàng / Số tài khoản.");
   if ((b.code || b.account) && !(b.code && b.account)) warns.push("Chuyển khoản: cần nhập đủ cả Mã ngân hàng và Số tài khoản.");
   complianceScan().forEach(w => warns.push(w));
@@ -926,7 +914,7 @@ const BANNED = [
   ["ung thư"], ["tiểu đường"], ["huyết áp"], ["tim mạch"], ["đột quỵ"], ["mỡ máu"], ["miễn dịch"], ["sinh lý"], ["nội tiết"], ["giảm cân"],
   ["trước và sau", "trước – sau", "trước - sau", "trước/sau"], ["chứng thực"], ["bác sĩ khuyên"], ["thử nghiệm trên chuột", "trên chuột"]
 ];
-const SKIP_KEYS = new Set(["warnings", "legal", "slug", "image", "gallery", "cover", "theme", "registerUrl", "orderEndpoint", "bank"]);
+const SKIP_KEYS = new Set(["warnings", "legal", "slug", "image", "gallery", "cover", "theme", "registerUrl", "bank"]);
 function textsOf(v, key, out){
   if (SKIP_KEYS.has(key)) return out;
   if (typeof v === "string") out.push(v);
@@ -963,9 +951,21 @@ $("#preview-btn").addEventListener("click", () => {
 });
 
 /* =====================================================================
-   XUẤT BẢN — 1 commit cho mọi thay đổi
+   XUẤT BẢN — tải ảnh lên Drive, lưu mọi phần đã sửa vào Google Sheet
    ===================================================================== */
 $("#publish-btn").addEventListener("click", publish);
+/* thay đường dẫn tạm của ảnh bằng link Drive trong mọi chuỗi (kể cả HTML bài viết) */
+function swapPath(from, to){
+  const walk = v => typeof v === "string" ? (v.includes(from) ? v.split(from).join(to) : v)
+    : Array.isArray(v) ? v.map(walk) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)])) : v;
+  FILES.forEach(f => {
+    if (!JSON.stringify(S.data[f]).includes(from)) return;
+    const next = walk(S.data[f]);
+    if (Array.isArray(next)) next.forEach((it, i) => Object.keys(S.data[f][i]).forEach(k => S.data[f][i][k] = it[k]));
+    else Object.keys(next).forEach(k => S.data[f][k] = next[k]);
+    S.dirty.add(f);
+  });
+}
 async function publish(){
   if (!changeCount()) return;
   const { issues, warns } = validate();
@@ -976,52 +976,52 @@ async function publish(){
   const parts = [...S.dirty].map(f => FILE_LABEL[f]);
   if (S.uploads.size) parts.push(`${S.uploads.size} ảnh mới`);
   if (S.deletes.size) parts.push(`xoá ${S.deletes.size} ảnh`);
-  const ok = await confirmModal("Xuất bản thay đổi?", `Sẽ cập nhật: <b>${esc(parts.join(", "))}</b>.${warns.length ? `<br><br><span style="color:var(--rose)">${warns.map(esc).join("<br>")}</span>` : ""}<br><br>Website sẽ hiển thị nội dung mới sau khoảng 1 phút.`, "Xuất bản");
+  const ok = await confirmModal("Xuất bản thay đổi?", `Sẽ cập nhật: <b>${esc(parts.join(", "))}</b>.${warns.length ? `<br><br><span style="color:var(--rose)">${warns.map(esc).join("<br>")}</span>` : ""}<br><br>Website hiển thị nội dung mới ngay sau khi lưu.`, "Xuất bản");
   if (!ok) return;
-  busy(true, "Đang kiểm tra repo…");
   try {
-    const ref = await gh(repoPath(`/git/ref/heads/${encodeURIComponent(S.cfg.branch)}`));
-    const head = ref.object.sha;
-    const commit = await gh(repoPath(`/git/commits/${head}`));
-    if (head !== S.head){
-      const tree = await gh(repoPath(`/git/trees/${commit.tree.sha}?recursive=1`));
-      const changed = [...S.dirty].filter(f => { const e = tree.tree.find(t => t.path === `content/${f}.json`); return (e ? e.sha : null) !== S.shas[f]; });
-      if (changed.length){
+    /* 1. ảnh mới → Google Drive */
+    let step = 0; const nUp = S.uploads.size;
+    for (const [p, u] of [...S.uploads]){
+      busy(true, `Đang tải ảnh lên Google Drive (${++step}/${nUp})…`);
+      const r = await API.call("upload", { name: u.name, mime: u.mime, b64: u.b64, folder: u.folder }, { timeout: 120000 });
+      swapPath(p, r.url);
+      S.shown.set(r.url, u.dataUrl);
+      S.images.unshift({ path: r.url, size: r.size, id: r.id, name: u.name, drive: true });
+      S.uploads.delete(p);
+    }
+    /* 2. nội dung → Google Sheet (kiểm tra xung đột với chỉnh sửa trên Sheet / máy khác) */
+    if (S.dirty.size){
+      busy(true, "Đang lưu vào Google Sheet…");
+      const files = [...S.dirty], body = { revs: {}, data: {} };
+      files.forEach(f => { body.revs[f] = S.revs[f]; body.data[f] = S.data[f]; });
+      let r;
+      try { r = await API.call("save", body); }
+      catch (e){
+        if (!e.conflict) throw e;
         busy(false);
-        const go = await confirmModal("Nội dung vừa được sửa ở nơi khác", `Phần <b>${esc(changed.map(f => FILE_LABEL[f]).join(", "))}</b> đã thay đổi trên GitHub sau khi bạn mở trang quản trị. Xuất bản sẽ <b>ghi đè</b> thay đổi đó.`, "Vẫn ghi đè", true);
+        const go = await confirmModal("Nội dung vừa được sửa ở nơi khác", `Phần <b>${esc(e.conflict.map(f => FILE_LABEL[f]).join(", "))}</b> đã thay đổi trên Google Sheet (hoặc từ máy khác) sau khi bạn mở trang quản trị.<br><br><b>Ghi đè</b> = lấy nội dung bạn đang soạn. Hoặc Huỷ → “Tải lại từ Google Sheet” ở Tổng quan để lấy bản mới.`, "Vẫn ghi đè", true);
         if (!go) return;
-        busy(true);
+        busy(true, "Đang lưu vào Google Sheet…");
+        r = await API.call("save", { ...body, force: true });
       }
+      Object.assign(S.revs, r.revs);
+      S.dirty.clear();
     }
-    const entries = [], newShas = {};
-    let step = 0; const total = S.dirty.size + S.uploads.size;
-    for (const f of S.dirty){
-      busy(true, `Đang lưu nội dung (${++step}/${total})…`);
-      const b = await gh(repoPath("/git/blobs"), { method: "POST", body: { content: JSON.stringify(S.data[f], null, 2) + "\n", encoding: "utf-8" } });
-      entries.push({ path: `content/${f}.json`, mode: "100644", type: "blob", sha: b.sha }); newShas[f] = b.sha;
+    /* 3. xoá ảnh (vào Thùng rác Drive) */
+    for (const p of [...S.deletes]){
+      const im = S.images.find(x => x.path === p);
+      busy(true, "Đang xoá ảnh…");
+      if (im && im.id) await API.call("deleteImage", { id: im.id }).catch(() => {});
+      S.images = S.images.filter(x => x.path !== p); S.deletes.delete(p);
     }
-    for (const [p, u] of S.uploads){
-      busy(true, `Đang tải ảnh (${++step}/${total})…`);
-      const b = await gh(repoPath("/git/blobs"), { method: "POST", body: { content: u.b64, encoding: "base64" } });
-      entries.push({ path: p, mode: "100644", type: "blob", sha: b.sha });
-    }
-    S.deletes.forEach(p => entries.push({ path: p, mode: "100644", type: "blob", sha: null }));
-    busy(true, "Đang tạo phiên bản mới…");
-    const tree = await gh(repoPath("/git/trees"), { method: "POST", body: { base_tree: commit.tree.sha, tree: entries } });
-    const nc = await gh(repoPath("/git/commits"), { method: "POST", body: { message: `CMS: cập nhật ${parts.join(", ")}`, tree: tree.sha, parents: [head] } });
-    await gh(repoPath(`/git/refs/heads/${encodeURIComponent(S.cfg.branch)}`), { method: "PATCH", body: { sha: nc.sha } });
-    /* cập nhật trạng thái cục bộ */
-    S.head = nc.sha; S.lastCommit = { sha: nc.sha, date: new Date().toISOString(), msg: `CMS: cập nhật ${parts.join(", ")}` };
-    Object.assign(S.shas, newShas);
-    S.uploads.forEach((u, p) => { S.shown.set(p, u.dataUrl); S.images.push({ path: p, size: u.size }); });
-    S.images = S.images.filter(x => !S.deletes.has(x.path));
-    S.dirty.clear(); S.uploads.clear(); S.deletes.clear();
     store.del("nmn_cms_draft");
+    try { localStorage.removeItem("nmn_content_v2"); } catch (_) {}     // trình duyệt này thấy bản mới ngay
     busy(false); render();
-    alertModal("Đã xuất bản 🎉", `Thay đổi đã được lưu vào GitHub. Website sẽ cập nhật sau khoảng <b>1 phút</b>.<br><br><a href="${esc(SITE_BASE)}" target="_blank" rel="noopener">Mở website ↗</a>`);
+    alertModal("Đã xuất bản 🎉", `Thay đổi đã được lưu vào Google Sheet và hiển thị trên website ngay.<br><br><a href="${esc(SITE_BASE)}" target="_blank" rel="noopener">Mở website ↗</a> · <a href="${esc(S.info.sheetUrl)}" target="_blank" rel="noopener">Mở Google Sheet ↗</a>`);
   } catch (e){
-    busy(false);
-    toast(apiError(e), true);
+    busy(false); render();
+    if (e.auth) toast("Khoá quản trị không còn đúng — vui lòng đăng nhập lại.", true);
+    else toast(apiError(e), true);
   }
 }
 
@@ -1029,6 +1029,6 @@ async function publish(){
    KHỞI ĐỘNG
    ===================================================================== */
 readCfg();
-const saved = store.get("nmn_cms_token") || store.get("nmn_cms_token", sessionStorage);
-if (saved) login(saved, !!store.get("nmn_cms_token")).then(ok => { if (!ok) store.del("nmn_cms_token"); });
+const saved = API.load();
+if (saved && saved.key && saved.api) login(saved, saved.remember);
 })();

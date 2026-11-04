@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=20261027i">
+<link rel="stylesheet" href="admin.css?v=20261104c">
 </head>
 <body>
 
@@ -18,34 +18,29 @@
   <div class="login-card">
     <div class="brand"><span class="dot"></span><span>NMN <small>QUẢN TRỊ NỘI DUNG</small></span></div>
     <h1>Đăng nhập</h1>
-    <p class="muted">Nội dung website được lưu trong repo GitHub. Nhập <b>mã truy cập GitHub</b> có quyền ghi vào repo để bắt đầu.</p>
+    <p class="muted">Nội dung website, đơn hàng và lời nhắn được lưu trên <b>Google Sheets</b>. Nhập <b>Khoá quản trị</b> để bắt đầu.</p>
     <form id="login-form" autocomplete="off">
-      <label class="fl">Mã truy cập (token)
-        <input id="tk" type="password" required spellcheck="false" autocomplete="off" placeholder="github_pat_…">
+      <label class="fl">Khoá quản trị
+        <input id="tk" type="password" required spellcheck="false" autocomplete="off" placeholder="nmn_…">
       </label>
       <label class="chk"><input type="checkbox" id="remember"> Ghi nhớ trên máy này</label>
-      <details class="adv">
-        <summary>Nâng cao</summary>
-        <div class="grid3">
-          <label class="fl">Chủ repo<input id="cfg-owner" spellcheck="false"></label>
-          <label class="fl">Tên repo<input id="cfg-repo" spellcheck="false"></label>
-          <label class="fl">Nhánh<input id="cfg-branch" spellcheck="false"></label>
-        </div>
+      <details class="adv" id="adv">
+        <summary>Link Google Apps Script</summary>
+        <label class="fl">Link Web App (kết thúc bằng /exec)<input id="cfg-api" type="url" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec"></label>
+        <p class="muted small">Mặc định lấy từ <code>assets/js/config.js</code> của website.</p>
       </details>
       <button class="btn btn-ink wide" id="login-btn" type="submit">Đăng nhập</button>
       <p class="err" id="login-err" role="alert"></p>
     </form>
-    <p class="muted small" style="margin:-4px 0 14px">Chỉ cần xem và xử lý đơn hàng? <a href="orders.html">Đăng nhập Quản lý đơn hàng bằng Google →</a></p>
-    <details class="howto" open>
-      <summary>Cách tạo mã truy cập (làm một lần)</summary>
+    <p class="muted small" style="margin:-4px 0 14px">Chỉ cần xem và xử lý đơn hàng? <a href="orders.html">Quản lý đơn hàng →</a> (dùng chung khoá)</p>
+    <details class="howto">
+      <summary>Lấy khoá quản trị ở đâu?</summary>
       <ol>
-        <li>Mở <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Fine-grained token mới</a> (đăng nhập tài khoản sở hữu repo).</li>
-        <li><b>Token name</b>: ví dụ <code>NMN CMS</code>. <b>Expiration</b>: chọn thời hạn (ví dụ 90 ngày).</li>
-        <li><b>Repository access</b>: chọn <i>Only select repositories</i> → chọn repo <code id="howto-repo">nmn-website</code>.</li>
-        <li><b>Permissions → Repository permissions → Contents</b>: chọn <i>Read and write</i>.</li>
-        <li>Bấm <b>Generate token</b>, sao chép mã và dán vào ô phía trên.</li>
+        <li>Mở Google Sheet làm database của website.</li>
+        <li>Menu <b>NMN Website → Thông tin kết nối</b> → sao chép <b>Khoá quản trị</b> (và Link Web App nếu cần).</li>
+        <li>Chưa có Google Sheet? Làm theo README → <b>Google Sheets (database)</b> — khoảng 5 phút.</li>
       </ol>
-      <p class="muted small">Mã chỉ được lưu trên trình duyệt của bạn và chỉ gửi tới GitHub. Không chia sẻ mã cho người khác; nếu lộ mã, hãy xoá nó trong GitHub Settings.</p>
+      <p class="muted small">Khoá chỉ lưu trên trình duyệt của bạn và chỉ gửi tới Apps Script của bạn. Nếu lộ khoá: menu <b>NMN Website → Tạo khoá quản trị mới</b>.</p>
     </details>
   </div>
 </section>
@@ -92,6 +87,8 @@
 <div class="busy" id="busy" hidden><div class="spin"></div><span id="busy-text">Đang xử lý…</span></div>
 <input type="file" id="file-pick" accept="image/*" hidden>
 
-<script src="admin.js?v=20261027i"></script>
+<script src="../assets/js/config.js?v=20261104c"></script>
+<script src="api.js?v=20261104c"></script>
+<script src="admin.js?v=20261104c"></script>
 </body>
 </html>
