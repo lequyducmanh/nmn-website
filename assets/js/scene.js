@@ -103,11 +103,11 @@ function makeBottle(o){
 const bottleA = makeBottle({ glass: 0xf2f2f1, rough: .42, clear: .4, sheen: .5, bodyR: .83,
   profile: [[0, 0], [0.223, 0.002], [0.53, 0.022], [0.654, 0.042], [0.717, 0.063], [0.751, 0.083], [0.794, 0.123], [0.816, 0.164], [0.828, 0.224], [0.822, 2.163], [0.802, 2.244], [0.753, 2.345], [0.646, 2.486], [0.633, 2.526], [0.632, 2.587], [0.639, 2.607], [0.667, 2.627], [0.677, 2.648], [0.68, 2.668], [0.68, 2.7], [0, 2.7]], lbl: [0.273, 2.042], cap: [2.67, 3.205], capR: 0.741,
   capMat: { color: 0x0d0d0f, roughness: .16, metalness: 0, clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: 1.2 },
-  labelMat: photoLabel('assets/img/label-pure.webp?v=20261104', makeLabel({ bg1: '#f7f7f9', bg2: '#eeeef1', accent: '#13202a', ink: '#13202a', title: 'PURE NMN', titleSize: 108, sub: '12,000mg+', subSize: 84, line: '60 CAPSULES · NMN' })) });
+  labelMat: photoLabel('assets/img/label-pure.webp?v=20261104b', makeLabel({ bg1: '#f7f7f9', bg2: '#eeeef1', accent: '#13202a', ink: '#13202a', title: 'PURE NMN', titleSize: 108, sub: '12,000mg+', subSize: 84, line: '60 CAPSULES · NMN' })) });
 const bottleB = makeBottle({ glass: 0xdfe3e9, rough: .3, clear: .8, sheen: .25, bodyR: .83,
   profile: [[0, 0], [0.271, 0.002], [0.639, 0.024], [0.724, 0.046], [0.763, 0.068], [0.804, 0.111], [0.827, 0.177], [0.83, 1.881], [0.825, 1.99], [0.802, 2.099], [0.756, 2.186], [0.699, 2.252], [0.654, 2.296], [0.637, 2.317], [0.618, 2.361], [0.614, 2.405], [0.616, 2.427], [0.644, 2.448], [0.66, 2.47], [0.662, 2.492], [0.662, 2.563], [0, 2.563]], lbl: [0.26, 1.916], cap: [2.533, 3.029], capR: 0.718,
   capMat: { color: 0xeef0f3, roughness: .07, metalness: 1, clearcoat: .8, clearcoatRoughness: .05, envMapIntensity: 1.6 },
-  labelMat: photoLabel('assets/img/label-regene.webp?v=20261104', makeLabel({ bg1: '#a6a9b8', bg2: '#8f93a4', accent: '#111', ink: '#111', title: 'NMN', titleSize: 176, sub: 'Regene', subSize: 116, line: '90 CAPSULES · NMN' })) });
+  labelMat: photoLabel('assets/img/label-regene.webp?v=20261104b', makeLabel({ bg1: '#a6a9b8', bg2: '#8f93a4', accent: '#111', ink: '#111', title: 'NMN', titleSize: 176, sub: 'Regene', subSize: 116, line: '90 CAPSULES · NMN' })) });
 scene.add(bottleA, bottleB);
 
 /* ---------- pearl cell ---------- */
@@ -216,9 +216,10 @@ function loop(){
   const s = sSmooth;
 
   place(bottleA, 'A', s, k); place(bottleB, 'B', s, k);
-  const turn = s * Math.PI * 2; // one full turn per section; label faces the viewer at each section
-  bottleA.rotation.set(.08 + Math.sin(t * .6) * .035 * motion, -.3 + Math.sin(t * .45) * .28 * motion + turn, -.05);
-  bottleB.rotation.set(.08 + Math.cos(t * .6) * .035 * motion, .3 + Math.sin(t * .45 + 1.4) * .28 * motion - turn, .05);
+  // xoay nhẹ khi cuộn (tối đa ~±40°) để mặt nhãn luôn hướng về người xem — không quay ra mặt sau
+  const turn = Math.sin(s * Math.PI * 2) * .32;
+  bottleA.rotation.set(.08 + Math.sin(t * .6) * .035 * motion, -.2 + Math.sin(t * .45) * .16 * motion + turn, -.05);
+  bottleB.rotation.set(.08 + Math.cos(t * .6) * .035 * motion, .2 + Math.sin(t * .45 + 1.4) * .16 * motion - turn, .05);
   bottleA.position.y += Math.sin(t * 1.1) * .05 * motion;
   bottleB.position.y += Math.cos(t * 1.1) * .05 * motion;
 
