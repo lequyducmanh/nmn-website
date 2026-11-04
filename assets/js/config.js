@@ -4,4 +4,4 @@
    Cách lấy link: README → "Google Sheets (database)".
    Để trống = website đọc nội dung từ thư mục content/ và khách gửi đơn qua Zalo.
    ===================================================================== */
-window.NMN_API = "";
+window.NMN_API = "https://script.google.com/macros/s/AKfycbz54ckH9ZnbvB5px4PkrYHGoeA-UPM18dqYluAigXScJaMELCWKm9Zj4aIg6NIHUpH3/exec";
