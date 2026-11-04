@@ -30,6 +30,9 @@
  *  ADMIN_KEY do script tự tạo — xem bằng menu "Thông tin kết nối". Không dán khoá này vào website.
  */
 
+/** ① CÀI ĐẶT LẦN ĐẦU — chọn hàm "setup" ở thanh trên rồi bấm ▷ Chạy (hoặc menu NMN Website trên Google Sheet) */
+function setup(){ return setupSheet_(); }
+
 const VERSION = '2026.11.04';
 const DEFAULT_SITE_URL = 'https://lequyducmanh.github.io/nmn-website/';
 const TZ = 'Asia/Ho_Chi_Minh';
@@ -50,56 +53,56 @@ const METHOD = { bank: 'Chuyển khoản', cod: 'COD' };
    t: text · number · bool · date (yyyy-MM-dd) · datetime · json · lines (mỗi dòng 1 mục) · pairs ("A | B" mỗi dòng)
    d: giá trị khi ô trống
    --------------------------------------------------------------------- */
-const F = (k, l, t, d, w) => ({ k: k, l: l, t: t || 'text', d: d, w: w });
+const field_ = (k, l, t, d, w) => ({ k: k, l: l, t: t || 'text', d: d, w: w });
 const SCHEMA = {
   products: [
-    F('slug', 'Đường dẫn (slug)', 'text', '', 150), F('name', 'Tên hiển thị', 'text', '', 200), F('price', 'Giá bán (đ)', 'number', 0, 110),
-    F('compareAt', 'Giá gốc gạch ngang (đ)', 'number', null, 110), F('visible', 'Hiển thị', 'bool', true, 80), F('unlisted', 'Link riêng (ẩn khỏi danh sách)', 'bool', false, 90),
-    F('upsell', 'Gợi ý “Thêm vào đơn”', 'bool', true, 90), F('officialName', 'Tên theo hồ sơ công bố', 'text', '', 240), F('claim', 'Công dụng (đúng hồ sơ)', 'text', '', 200),
-    F('target', 'Đối tượng sử dụng', 'text', '', 160), F('tag', 'Nhãn ngắn', 'text', '', 140), F('short', 'Mô tả một dòng', 'text', '', 240),
-    F('theme', 'Màu nền minh hoạ (pearl/rose/duo)', 'text', 'pearl', 100), F('image', 'Ảnh chính', 'text', '', 200), F('gallery', 'Ảnh phụ (mỗi dòng 1 ảnh)', 'lines', [], 200),
-    F('desc', 'Mô tả', 'text', '', 280), F('highlights', 'Điểm nổi bật', 'lines', [], 240), F('specs', 'Thông số nhanh (Tên | Giá trị)', 'pairs', [], 220),
-    F('ingredientsBasis', 'Đơn vị tính thành phần', 'text', '', 180), F('ingredients', 'Thành phần & hàm lượng', 'pairs', [], 240), F('excipients', 'Phụ liệu', 'text', '', 200),
-    F('ingredientNotes', 'Giới thiệu thành phần', 'pairs', [], 240), F('usage', 'Hướng dẫn sử dụng', 'lines', [], 240), F('storage', 'Bảo quản', 'text', '', 200),
-    F('warnings', 'Lưu ý', 'lines', [], 260), F('legal', 'Thông tin pháp lý', 'pairs', [], 240), F('homeSlot', 'Vị trí trang chủ (0 = không, 1, 2)', 'number', 0, 90),
-    F('homeTag', 'Trang chủ · nhãn nhỏ', 'text', '', 160), F('homeTitle', 'Trang chủ · tiêu đề', 'text', '', 180), F('homeLead', 'Trang chủ · đoạn giới thiệu', 'text', '', 240),
-    F('homeSpecs', 'Trang chủ · thông số', 'pairs', [], 200), F('forWho', 'Phù hợp với ai', 'text', '', 220)
+    field_('slug', 'Đường dẫn (slug)', 'text', '', 150), field_('name', 'Tên hiển thị', 'text', '', 200), field_('price', 'Giá bán (đ)', 'number', 0, 110),
+    field_('compareAt', 'Giá gốc gạch ngang (đ)', 'number', null, 110), field_('visible', 'Hiển thị', 'bool', true, 80), field_('unlisted', 'Link riêng (ẩn khỏi danh sách)', 'bool', false, 90),
+    field_('upsell', 'Gợi ý “Thêm vào đơn”', 'bool', true, 90), field_('officialName', 'Tên theo hồ sơ công bố', 'text', '', 240), field_('claim', 'Công dụng (đúng hồ sơ)', 'text', '', 200),
+    field_('target', 'Đối tượng sử dụng', 'text', '', 160), field_('tag', 'Nhãn ngắn', 'text', '', 140), field_('short', 'Mô tả một dòng', 'text', '', 240),
+    field_('theme', 'Màu nền minh hoạ (pearl/rose/duo)', 'text', 'pearl', 100), field_('image', 'Ảnh chính', 'text', '', 200), field_('gallery', 'Ảnh phụ (mỗi dòng 1 ảnh)', 'lines', [], 200),
+    field_('desc', 'Mô tả', 'text', '', 280), field_('highlights', 'Điểm nổi bật', 'lines', [], 240), field_('specs', 'Thông số nhanh (Tên | Giá trị)', 'pairs', [], 220),
+    field_('ingredientsBasis', 'Đơn vị tính thành phần', 'text', '', 180), field_('ingredients', 'Thành phần & hàm lượng', 'pairs', [], 240), field_('excipients', 'Phụ liệu', 'text', '', 200),
+    field_('ingredientNotes', 'Giới thiệu thành phần', 'pairs', [], 240), field_('usage', 'Hướng dẫn sử dụng', 'lines', [], 240), field_('storage', 'Bảo quản', 'text', '', 200),
+    field_('warnings', 'Lưu ý', 'lines', [], 260), field_('legal', 'Thông tin pháp lý', 'pairs', [], 240), field_('homeSlot', 'Vị trí trang chủ (0 = không, 1, 2)', 'number', 0, 90),
+    field_('homeTag', 'Trang chủ · nhãn nhỏ', 'text', '', 160), field_('homeTitle', 'Trang chủ · tiêu đề', 'text', '', 180), field_('homeLead', 'Trang chủ · đoạn giới thiệu', 'text', '', 240),
+    field_('homeSpecs', 'Trang chủ · thông số', 'pairs', [], 200), field_('forWho', 'Phù hợp với ai', 'text', '', 220)
   ],
   posts: [
-    F('slug', 'Đường dẫn (slug)', 'text', '', 180), F('title', 'Tiêu đề', 'text', '', 260), F('date', 'Ngày đăng (yyyy-mm-dd)', 'date', '', 110),
-    F('published', 'Đã đăng', 'bool', true, 80), F('type', 'Chuyên mục (kien-thuc/nghien-cuu/tin-tuc)', 'text', 'kien-thuc', 120), F('featured', 'Nổi bật', 'bool', false, 80),
-    F('sample', 'Nhãn “Mẫu”', 'bool', false, 80), F('read', 'Số phút đọc', 'number', 1, 80), F('image', 'Ảnh bìa', 'text', '', 200),
-    F('excerpt', 'Tóm tắt', 'text', '', 260), F('body', 'Nội dung (HTML)', 'text', '', 320)
+    field_('slug', 'Đường dẫn (slug)', 'text', '', 180), field_('title', 'Tiêu đề', 'text', '', 260), field_('date', 'Ngày đăng (yyyy-mm-dd)', 'date', '', 110),
+    field_('published', 'Đã đăng', 'bool', true, 80), field_('type', 'Chuyên mục (kien-thuc/nghien-cuu/tin-tuc)', 'text', 'kien-thuc', 120), field_('featured', 'Nổi bật', 'bool', false, 80),
+    field_('sample', 'Nhãn “Mẫu”', 'bool', false, 80), field_('read', 'Số phút đọc', 'number', 1, 80), field_('image', 'Ảnh bìa', 'text', '', 200),
+    field_('excerpt', 'Tóm tắt', 'text', '', 260), field_('body', 'Nội dung (HTML)', 'text', '', 320)
   ],
   events: [
-    F('slug', 'Đường dẫn (slug)', 'text', '', 180), F('title', 'Tên sự kiện', 'text', '', 240), F('date', 'Ngày (yyyy-mm-dd)', 'date', '', 110),
-    F('time', 'Giờ', 'text', '', 110), F('place', 'Địa điểm', 'text', '', 200), F('city', 'Tỉnh / thành phố', 'text', '', 130), F('seats', 'Số chỗ', 'text', '', 90),
-    F('published', 'Đã đăng', 'bool', true, 80), F('sample', 'Nhãn “Mẫu”', 'bool', false, 80), F('image', 'Ảnh bìa', 'text', '', 200),
-    F('registerUrl', 'Link đăng ký', 'text', '', 200), F('desc', 'Mô tả (HTML)', 'text', '', 320)
+    field_('slug', 'Đường dẫn (slug)', 'text', '', 180), field_('title', 'Tên sự kiện', 'text', '', 240), field_('date', 'Ngày (yyyy-mm-dd)', 'date', '', 110),
+    field_('time', 'Giờ', 'text', '', 110), field_('place', 'Địa điểm', 'text', '', 200), field_('city', 'Tỉnh / thành phố', 'text', '', 130), field_('seats', 'Số chỗ', 'text', '', 90),
+    field_('published', 'Đã đăng', 'bool', true, 80), field_('sample', 'Nhãn “Mẫu”', 'bool', false, 80), field_('image', 'Ảnh bìa', 'text', '', 200),
+    field_('registerUrl', 'Link đăng ký', 'text', '', 200), field_('desc', 'Mô tả (HTML)', 'text', '', 320)
   ],
   orders: [
-    F('code', 'Mã đơn', 'text', '', 150), F('createdAt', 'Thời gian', 'datetime', '', 140), F('status', 'Xử lý', 'text', FUL.new, 110),
-    F('payState', 'Thanh toán', 'text', PAY.cod, 120), F('method', 'Hình thức', 'text', METHOD.cod, 100), F('total', 'Tổng (đ)', 'number', 0, 110),
-    F('paid', 'Đã nhận (đ)', 'number', 0, 110), F('name', 'Khách hàng', 'text', '', 160), F('phone', 'SĐT', 'text', '', 110), F('email', 'Email', 'text', '', 170),
-    F('address', 'Địa chỉ giao hàng', 'text', '', 280), F('itemsText', 'Sản phẩm', 'text', '', 240), F('note', 'Ghi chú của khách', 'text', '', 200),
-    F('adminNote', 'Ghi chú nội bộ', 'text', '', 200), F('payCode', 'Nội dung CK', 'text', '', 140), F('paidAt', 'Thời điểm thanh toán', 'datetime', '', 140),
-    F('subtotal', 'Tạm tính (đ)', 'number', 0, 110), F('shipping', 'Phí ship (trống = báo sau)', 'number', null, 110), F('province', 'Tỉnh/TP', 'text', '', 130),
-    F('ward', 'Phường/Xã', 'text', '', 130), F('street', 'Số nhà, đường', 'text', '', 180), F('items', 'Chi tiết (JSON)', 'json', [], 160),
-    F('check', 'Kiểm tra', 'text', '', 200), F('updatedAt', 'Cập nhật lúc', 'datetime', '', 140)
+    field_('code', 'Mã đơn', 'text', '', 150), field_('createdAt', 'Thời gian', 'datetime', '', 140), field_('status', 'Xử lý', 'text', FUL.new, 110),
+    field_('payState', 'Thanh toán', 'text', PAY.cod, 120), field_('method', 'Hình thức', 'text', METHOD.cod, 100), field_('total', 'Tổng (đ)', 'number', 0, 110),
+    field_('paid', 'Đã nhận (đ)', 'number', 0, 110), field_('name', 'Khách hàng', 'text', '', 160), field_('phone', 'SĐT', 'text', '', 110), field_('email', 'Email', 'text', '', 170),
+    field_('address', 'Địa chỉ giao hàng', 'text', '', 280), field_('itemsText', 'Sản phẩm', 'text', '', 240), field_('note', 'Ghi chú của khách', 'text', '', 200),
+    field_('adminNote', 'Ghi chú nội bộ', 'text', '', 200), field_('payCode', 'Nội dung CK', 'text', '', 140), field_('paidAt', 'Thời điểm thanh toán', 'datetime', '', 140),
+    field_('subtotal', 'Tạm tính (đ)', 'number', 0, 110), field_('shipping', 'Phí ship (trống = báo sau)', 'number', null, 110), field_('province', 'Tỉnh/TP', 'text', '', 130),
+    field_('ward', 'Phường/Xã', 'text', '', 130), field_('street', 'Số nhà, đường', 'text', '', 180), field_('items', 'Chi tiết (JSON)', 'json', [], 160),
+    field_('check', 'Kiểm tra', 'text', '', 200), field_('updatedAt', 'Cập nhật lúc', 'datetime', '', 140)
   ],
   payments: [
-    F('id', 'Mã giao dịch SePay', 'text', '', 120), F('date', 'Thời gian giao dịch', 'text', '', 150), F('amount', 'Số tiền (đ)', 'number', 0, 110),
-    F('content', 'Nội dung', 'text', '', 300), F('orderCode', 'Đơn khớp', 'text', '', 150), F('bank', 'Ngân hàng', 'text', '', 110),
-    F('account', 'Tài khoản', 'text', '', 120), F('ref', 'Số tham chiếu', 'text', '', 140), F('createdAt', 'Ghi nhận lúc', 'datetime', '', 140)
+    field_('id', 'Mã giao dịch SePay', 'text', '', 120), field_('date', 'Thời gian giao dịch', 'text', '', 150), field_('amount', 'Số tiền (đ)', 'number', 0, 110),
+    field_('content', 'Nội dung', 'text', '', 300), field_('orderCode', 'Đơn khớp', 'text', '', 150), field_('bank', 'Ngân hàng', 'text', '', 110),
+    field_('account', 'Tài khoản', 'text', '', 120), field_('ref', 'Số tham chiếu', 'text', '', 140), field_('createdAt', 'Ghi nhận lúc', 'datetime', '', 140)
   ],
   contacts: [
-    F('id', 'Mã', 'text', '', 130), F('createdAt', 'Thời gian', 'datetime', '', 140), F('handled', 'Đã xử lý', 'bool', false, 80),
-    F('name', 'Họ tên', 'text', '', 160), F('phone', 'SĐT', 'text', '', 110), F('email', 'Email', 'text', '', 170), F('topic', 'Chủ đề', 'text', '', 150),
-    F('product', 'Sản phẩm', 'text', '', 150), F('message', 'Nội dung', 'text', '', 360), F('page', 'Trang gửi', 'text', '', 200)
+    field_('id', 'Mã', 'text', '', 130), field_('createdAt', 'Thời gian', 'datetime', '', 140), field_('handled', 'Đã xử lý', 'bool', false, 80),
+    field_('name', 'Họ tên', 'text', '', 160), field_('phone', 'SĐT', 'text', '', 110), field_('email', 'Email', 'text', '', 170), field_('topic', 'Chủ đề', 'text', '', 150),
+    field_('product', 'Sản phẩm', 'text', '', 150), field_('message', 'Nội dung', 'text', '', 360), field_('page', 'Trang gửi', 'text', '', 200)
   ],
   images: [
-    F('id', 'Mã file Drive', 'text', '', 160), F('url', 'Đường dẫn ảnh', 'text', '', 300), F('name', 'Tên file', 'text', '', 200),
-    F('folder', 'Thư mục', 'text', '', 90), F('size', 'Dung lượng (byte)', 'number', 0, 110), F('createdAt', 'Tải lên lúc', 'datetime', '', 140)
+    field_('id', 'Mã file Drive', 'text', '', 160), field_('url', 'Đường dẫn ảnh', 'text', '', 300), field_('name', 'Tên file', 'text', '', 200),
+    field_('folder', 'Thư mục', 'text', '', 90), field_('size', 'Dung lượng (byte)', 'number', 0, 110), field_('createdAt', 'Tải lên lúc', 'datetime', '', 140)
   ]
 };
 const CHOICES = { orders: { status: Object.keys(FUL).map(k => FUL[k]), payState: Object.keys(PAY).map(k => PAY[k]), method: [METHOD.bank, METHOD.cod] } };
@@ -765,7 +768,7 @@ function onEdit(e){
 function ui_(){ try { return SpreadsheetApp.getUi(); } catch (e) { return null; } }
 function say_(title, msg){ const ui = ui_(); if (ui) ui.alert(title, msg, ui.ButtonSet.OK); else console.log(title + '\n' + msg); }
 
-function setup(){
+function setupSheet_(){
   const ss = ss_();
   try { ss.setSpreadsheetTimeZone(TZ); } catch (e) {}
   const P = props_();
