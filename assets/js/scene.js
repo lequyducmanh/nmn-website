@@ -73,28 +73,41 @@ function makeLabel(o){
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   return t;
 }
+/* Chai 3D dựng theo ảnh thật: dáng chai đo từ ảnh, nhãn "trải phẳng" từ ảnh sản phẩm (assets/img/label-*.webp) */
+const texLoader = new THREE.TextureLoader();
+function photoLabel(url, fallback){
+  const t = texLoader.load(url, tx => { tx.needsUpdate = true; }, undefined, () => { mat.map = fallback; mat.needsUpdate = true; });
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  const mat = new THREE.MeshPhysicalMaterial({ map: t, roughness: .42, clearcoat: .35, clearcoatRoughness: .3 });
+  return mat;
+}
 function makeBottle(o){
   const inner = new THREE.Group();
-  const prof = [[0,0],[.62,0],[.77,.05],[.83,.18],[.83,2.33],[.79,2.55],[.62,2.74],[.46,2.84],[.43,2.9],[.43,3.08],[0,3.08]].map(p => new THREE.Vector2(p[0], p[1]));
+  const prof = o.profile.map(p => new THREE.Vector2(p[0], p[1]));
   inner.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 128), new THREE.MeshPhysicalMaterial({
-    color: o.glass, roughness: o.rough, metalness: 0, clearcoat: 1, clearcoatRoughness: .06, sheen: o.sheen || 0, sheenColor: new THREE.Color(0xffffff), envMapIntensity: 1.1 })));
-  const label = new THREE.Mesh(new THREE.CylinderGeometry(.836, .836, 1.66, 128, 1, true, Math.PI, Math.PI * 2),
-    new THREE.MeshPhysicalMaterial({ map: o.label, roughness: .5, clearcoat: .5, clearcoatRoughness: .35 }));
-  label.position.y = 1.25; inner.add(label);
-  const metal = new THREE.MeshPhysicalMaterial({ color: o.cap, metalness: 1, roughness: .22, clearcoat: .6, clearcoatRoughness: .2, envMapIntensity: 1.4 });
-  const cap = new THREE.Mesh(new THREE.CylinderGeometry(.5, .5, .62, 128), metal); cap.position.y = 3.2; inner.add(cap);
-  const lip = new THREE.Mesh(new THREE.TorusGeometry(.445, .055, 24, 128), metal); lip.rotation.x = Math.PI / 2; lip.position.y = 3.51; inner.add(lip);
-  for (let i = 0; i < 4; i++){ const r = new THREE.Mesh(new THREE.TorusGeometry(.503, .01, 8, 128), metal); r.rotation.x = Math.PI / 2; r.position.y = 2.96 + i * .1; inner.add(r); }
-  const band = new THREE.Mesh(new THREE.TorusGeometry(.44, .018, 12, 128), metal); band.rotation.x = Math.PI / 2; band.position.y = 2.87; inner.add(band);
+    color: o.glass, roughness: o.rough, metalness: 0, clearcoat: o.clear, clearcoatRoughness: .12, sheen: o.sheen || 0, sheenColor: new THREE.Color(0xffffff), envMapIntensity: 1.1 })));
+  const lh = o.lbl[1] - o.lbl[0];
+  const label = new THREE.Mesh(new THREE.CylinderGeometry(o.bodyR * 1.006, o.bodyR * 1.006, lh, 128, 1, true, Math.PI, Math.PI * 2), o.labelMat);
+  label.position.y = o.lbl[0] + lh / 2; inner.add(label);
+  // nắp: trụ + mép bo tròn
+  const ch = o.cap[1] - o.cap[0], cr = o.capR;
+  const capMat = new THREE.MeshPhysicalMaterial(o.capMat);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(cr, cr, ch - .04, 128), capMat); cap.position.y = o.cap[0] + (ch - .04) / 2; inner.add(cap);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(cr - .04, .04, 24, 128), capMat); rim.rotation.x = Math.PI / 2; rim.position.y = o.cap[1] - .04; inner.add(rim);
+  const lid = new THREE.Mesh(new THREE.CircleGeometry(cr - .04, 96), capMat); lid.rotation.x = -Math.PI / 2; lid.position.y = o.cap[1]; inner.add(lid);
   const sh = new THREE.Mesh(new THREE.CircleGeometry(1.35, 48), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
   sh.rotation.x = -Math.PI / 2; sh.position.y = -.01; inner.add(sh);
-  inner.position.y = -1.75;
+  inner.scale.setScalar(1.09); inner.position.y = -o.cap[1] * 1.09 / 2;   // chai thật thấp hơn mẫu cũ → phóng nhẹ cho cân khung
   const holder = new THREE.Group(); holder.add(inner); return holder;
 }
-const bottleA = makeBottle({ glass: 0xf8f6f1, rough: .32, sheen: .4, cap: 0xc9a46c,
-  label: makeLabel({ bg1: '#fdfbf7', bg2: '#efe8db', accent: '#a3804c', ink: '#13202a', title: 'PURE NMN', titleSize: 108, sub: '12,000mg+', subSize: 84, line: '60 CAPSULES · NMN' }) });
-const bottleB = makeBottle({ glass: 0x5c1a2c, rough: .12, cap: 0xe2bca2,
-  label: makeLabel({ bg1: '#4a1424', bg2: '#2c0b16', accent: '#e6bfa6', ink: '#fbf0ea', title: 'NMN', titleSize: 176, sub: 'Regene', subSize: 116, line: '90 CAPSULES · NMN' }) });
+const bottleA = makeBottle({ glass: 0xf2f2f1, rough: .42, clear: .4, sheen: .5, bodyR: .83,
+  profile: [[0, 0], [0.223, 0.002], [0.53, 0.022], [0.654, 0.042], [0.717, 0.063], [0.751, 0.083], [0.794, 0.123], [0.816, 0.164], [0.828, 0.224], [0.822, 2.163], [0.802, 2.244], [0.753, 2.345], [0.646, 2.486], [0.633, 2.526], [0.632, 2.587], [0.639, 2.607], [0.667, 2.627], [0.677, 2.648], [0.68, 2.668], [0.68, 2.7], [0, 2.7]], lbl: [0.273, 2.042], cap: [2.67, 3.205], capR: 0.741,
+  capMat: { color: 0x0d0d0f, roughness: .16, metalness: 0, clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: 1.2 },
+  labelMat: photoLabel('assets/img/label-pure.webp?v=20261104', makeLabel({ bg1: '#f7f7f9', bg2: '#eeeef1', accent: '#13202a', ink: '#13202a', title: 'PURE NMN', titleSize: 108, sub: '12,000mg+', subSize: 84, line: '60 CAPSULES · NMN' })) });
+const bottleB = makeBottle({ glass: 0xdfe3e9, rough: .3, clear: .8, sheen: .25, bodyR: .83,
+  profile: [[0, 0], [0.271, 0.002], [0.639, 0.024], [0.724, 0.046], [0.763, 0.068], [0.804, 0.111], [0.827, 0.177], [0.83, 1.881], [0.825, 1.99], [0.802, 2.099], [0.756, 2.186], [0.699, 2.252], [0.654, 2.296], [0.637, 2.317], [0.618, 2.361], [0.614, 2.405], [0.616, 2.427], [0.644, 2.448], [0.66, 2.47], [0.662, 2.492], [0.662, 2.563], [0, 2.563]], lbl: [0.26, 1.916], cap: [2.533, 3.029], capR: 0.718,
+  capMat: { color: 0xeef0f3, roughness: .07, metalness: 1, clearcoat: .8, clearcoatRoughness: .05, envMapIntensity: 1.6 },
+  labelMat: photoLabel('assets/img/label-regene.webp?v=20261104', makeLabel({ bg1: '#a6a9b8', bg2: '#8f93a4', accent: '#111', ink: '#111', title: 'NMN', titleSize: 176, sub: 'Regene', subSize: 116, line: '90 CAPSULES · NMN' })) });
 scene.add(bottleA, bottleB);
 
 /* ---------- pearl cell ---------- */
