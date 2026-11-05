@@ -548,7 +548,16 @@ function status_(code){
 /* =====================================================================
    SEPAY — đối soát giao dịch (API chính thức, chỉ tiền vào thật mới tính)
    ===================================================================== */
-function syncPayments(){ return syncPayments_(true); }                  // Trigger mỗi phút
+function syncPayments(){                                               // Trigger mỗi phút
+  try { watchSheet_(); } catch (e) { console.warn('watchSheet', e); }
+  return syncPayments_(true);
+}
+/** Sheet vừa được sửa (bằng tay, qua CMS, qua API…) → làm mới nội dung website (chậm nhất ~1 phút) */
+function watchSheet_(){
+  const t = DriveApp.getFileById(ss_().getId()).getLastUpdated().getTime();
+  const P = props_(), last = Number(P.getProperty('SHEET_MTIME') || 0);
+  if (t > last){ P.setProperty('SHEET_MTIME', String(t)); bump_(CONTENT); }
+}
 function payCandidates_(code, content){
   const out = [], push = c => { if (c && out.indexOf(c) < 0) out.push(c); };
   if (code) push(payCode_(code));
