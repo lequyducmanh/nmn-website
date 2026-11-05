@@ -2,7 +2,7 @@
 
 Website giới thiệu **PURE NMN 12,000mg+** và **NMN Regene**: trang chủ có hiệu ứng 3D khi cuộn, **Cửa hàng – giỏ hàng – đặt hàng – chuyển khoản VietQR**, **Tin tức & Sự kiện**, trang **Liên hệ**, cùng **trang quản trị nội dung (CMS)** và **Quản lý đơn hàng**. Toàn bộ dữ liệu nằm trên **một Google Sheet**.
 
-- Website: https://lequyducmanh.github.io/nmn-website/ (GitHub Pages)
+- Website: **https://clastive.vn/** (GitHub Pages, tên miền ở AZDIGI: 4 bản ghi A 185.199.108–111.153, `www` CNAME `lequyducmanh.github.io`)
 - Quản trị nội dung: **/admin/** · Quản lý đơn hàng: **/admin/orders.html**
 - Database: **Google Sheets** + Google Apps Script (xem mục *Google Sheets (database)*)
 
