@@ -18,6 +18,16 @@ Website giới thiệu **PURE NMN 12,000mg+** và **NMN Regene**: trang chủ c�
  Google Drive ◀── ảnh tải lên từ CMS (chia sẻ dạng xem, link lh3.googleusercontent.com)
 ```
 
+## Nhận diện thương hiệu
+
+Thương hiệu chính của website là **Clastive Nhật Việt** (doanh nghiệp); PURE NMN 12,000mg+ và NMN Regene là thương hiệu sản phẩm.
+
+- **Logo**: chữ **C** kết từ 9 cánh hoa/lá (sắc xanh teal → xanh navy) ôm lấy **mặt trời vàng** — sản phẩm từ Nhật Bản được Clastive chọn lọc, chăm chút cho người Việt; giữ tinh thần "vòng tròn nét ngắn" của logo cũ nhưng gọn, rõ ở cỡ nhỏ. Chữ CLASTIVE (Poppins Medium) + NHẬT VIỆT (Inter Display, vàng).
+- **Khẩu hiệu**: *Từ Nhật Bản, vì sức khỏe người Việt* (ngắn, đúng sự thật, không tuyệt đối hóa công dụng). Phương châm đầy đủ trong hồ sơ: *Chất lượng Nhật Bản – Chăm sóc Sức khỏe Việt* (trang Giới thiệu).
+- **Màu**: navy `#1d3567` · teal `#2c6a6d` · vàng `#c39a55` · mực `#13202a` · nền `#f4f0e9`.
+- **Tệp** (`assets/brand/`): `clastive-logo.svg` (nền sáng), `clastive-logo-white.svg` (nền tối), `clastive-logo-slogan.svg` / `-white.svg`, `clastive-mark.svg` (biểu tượng), `clastive-mark-mono.svg` (1 màu), `favicon.svg`, `icon-512.png`, `apple-touch-icon.png`, `clastive-logo.png` (PNG nền trong suốt), `og-image.png` (ảnh chia sẻ Facebook/Zalo 1200×630). Chữ trong SVG đã chuyển thành nét vẽ — mở ở đâu cũng đúng font.
+- **Trang Giới thiệu** `#gioi-thieu`: câu chuyện, lĩnh vực, năng lực, tầm nhìn – sứ mệnh, định hướng, phương châm — sửa ở CMS → **Giới thiệu** (mặc định theo hồ sơ trong `assets/js/defaults.js`).
+
 ## Cấu trúc
 
 ```
@@ -164,6 +174,7 @@ Nội dung chuyển khoản là mã đơn **không dấu gạch** (ví dụ `NMN
 | `#tin-tuc` | Tin tức & Sự kiện |
 | `#bai/<đường-dẫn>`, `#su-kien/<đường-dẫn>` | Một bài viết / sự kiện |
 | `#lien-he` | Liên hệ |
+| `#gioi-thieu` | Giới thiệu doanh nghiệp |
 
 ## Khi sửa code (CSS/JS)
 

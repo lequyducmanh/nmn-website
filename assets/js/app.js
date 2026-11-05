@@ -1092,6 +1092,102 @@ window.CONTACT = (function(){
   };
 })();
 
+
+/* =====================================================================
+   GIỚI THIỆU DOANH NGHIỆP — #gioi-thieu
+   Nội dung: CMS → "Giới thiệu" (site.about); chưa có thì dùng assets/js/defaults.js
+   ===================================================================== */
+window.ABOUT = (function(){
+  const C = window.CONFIG, D = (window.NMN_DEFAULTS || {}).about || {};
+  const $ = s => document.querySelector(s);
+  const { esc, emph } = window.NMN;
+  const A = Object.assign({}, D, C.about || {});
+  const list = v => (Array.isArray(v) ? v : []).filter(x => Array.isArray(x) ? x[0] : x);
+  const key = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const arrow = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.4"/></svg>';
+  const ICONS = [
+    '<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l3 16 3-16"/>',
+    '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+    '<path d="M4 20h16"/><path d="M6 16l4-5 3 3 5-7"/><path d="M15 7h3v3"/>',
+    '<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+    '<path d="M3 11l4-4 4 3 3-2 7 5"/><path d="M7 14l3 3c.6.6 1.5.6 2 0l1-1"/><path d="M12 16l2 2c.6.6 1.5.6 2 0l2-2"/>'
+  ];
+  const ic = (i, cls) => `<span class="${cls || "ic"}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[i % ICONS.length]}</svg></span>`;
+  function productLink(name){
+    const p = (window.PRODUCTS || []).find(x => x.visible !== false && !x.unlisted && key(x.name) === key(name));
+    return p ? `<a class="ab-chip" href="#san-pham/${esc(p.slug)}">${esc(name)} ${arrow}</a>` : `<span class="ab-chip">${esc(name)}</span>`;
+  }
+  function render(){
+    const facts = list(A.facts), story = list(A.story), fields = list(A.fields), brands = list(A.brands);
+    const strengths = list(A.strengths), dirs = list(A.directions);
+    const slogan = C.brandTagline || (window.NMN_DEFAULTS || {}).slogan || "";
+    $("#gioithieu-root").innerHTML = `
+      <section class="nhero ab-hero">
+        <div class="nwrap">
+          <div>
+            <div class="eyebrow reveal">${esc(A.eyebrow || "Về chúng tôi")}</div>
+            <h1 class="reveal">${emph(A.title || "")}</h1>
+            ${A.lead ? `<p class="reveal">${esc(A.lead)}</p>` : ""}
+            ${slogan ? `<p class="ab-slogan reveal">${esc(slogan)}</p>` : ""}
+            <div class="cta-row reveal"><a class="btn btn-ink" href="#cua-hang">Xem sản phẩm ${arrow}</a><a class="btn btn-line" href="#lien-he">Liên hệ hợp tác</a></div>
+          </div>
+          <div class="ab-emblem" aria-hidden="true"><img src="assets/brand/clastive-mark.svg" alt="" width="256" height="256"></div>
+        </div>
+      </section>
+      <div class="nwrap ab">
+        ${facts.length || A.founder ? `<div class="ab-facts reveal">
+          ${facts.map(([b, t]) => `<div class="ab-fact glass"><b>${esc(b)}</b><span>${esc(t)}</span></div>`).join("")}
+          ${A.founder ? `<div class="ab-fact ab-founder glass"><span>${esc(A.founderRole || "Nhà sáng lập")}</span><b>${esc(A.founder)}</b></div>` : ""}
+        </div>` : ""}
+        ${story.length ? `<section class="ab-story">
+          <div class="reveal"><div class="eyebrow">Câu chuyện</div><h2>Hành trình <em>Clastive Nhật Việt</em></h2></div>
+          <div class="ab-prose reveal">${story.map(t => `<p>${esc(t)}</p>`).join("")}</div>
+        </section>` : ""}
+        ${fields.length || brands.length ? `<section class="ab-block">
+          <div class="sec-head reveal"><div><div class="eyebrow">01 · Lĩnh vực hoạt động</div><h2>Chăm sóc sức khỏe &amp; <em>sắc đẹp từ Nhật Bản</em></h2></div></div>
+          <div class="ab-fields glass reveal">
+            <div class="ab-prose">${fields.map(t => `<p>${esc(t)}</p>`).join("")}</div>
+            ${brands.length ? `<div class="ab-brands"><h3>Dòng sản phẩm tiêu biểu</h3><div class="ab-chips">${brands.map(productLink).join("")}</div></div>` : ""}
+          </div>
+        </section>` : ""}
+        ${strengths.length ? `<section class="ab-block">
+          <div class="sec-head reveal"><div><div class="eyebrow">02 · Năng lực</div><h2>Năng lực &amp; <em>lợi thế cạnh tranh</em></h2></div>
+            <p>Lấy chất lượng sản phẩm và sự tin tưởng của khách hàng làm nền tảng.</p></div>
+          <div class="ab-grid">${strengths.map(([h, t], i) => `<article class="ab-card glass reveal">${ic(i)}<h3>${esc(h)}</h3><p>${esc(t)}</p></article>`).join("")}</div>
+        </section>` : ""}
+        ${A.vision || A.mission ? `<section class="ab-block">
+          <div class="sec-head reveal"><div><div class="eyebrow">03 · Tầm nhìn &amp; sứ mệnh</div><h2>Điều chúng tôi <em>hướng tới</em></h2></div></div>
+          <div class="ab-vm">
+            ${A.vision ? `<article class="ab-vcard glass reveal"><span class="ab-k">Tầm nhìn</span><p>${esc(A.vision)}</p></article>` : ""}
+            ${A.mission ? `<article class="ab-vcard dark reveal"><span class="ab-k">Sứ mệnh</span><p>${esc(A.mission)}</p></article>` : ""}
+          </div>
+        </section>` : ""}
+        ${dirs.length ? `<section class="ab-block">
+          <div class="sec-head reveal"><div><div class="eyebrow">04 · Định hướng phát triển</div><h2>Ba trọng tâm <em>giai đoạn tới</em></h2></div></div>
+          <ol class="ab-dirs">${dirs.map(([h, t], i) => `<li class="reveal"><span class="n">${String(i + 1).padStart(2, "0")}</span><div><h3>${esc(h)}</h3><p>${esc(t)}</p></div></li>`).join("")}</ol>
+        </section>` : ""}
+        <section class="band ab-motto reveal">
+          <div>
+            <h2>“${esc(A.motto || "")}”</h2>
+            ${A.closing ? `<p>${esc(A.closing)}</p>` : ""}
+          </div>
+          <div class="btns"><a class="btn btn-gold" href="#lien-he">Trở thành đại lý ${arrow}</a><a class="btn btn-out" href="#cua-hang">Cửa hàng</a></div>
+        </section>
+        <p class="disc-line">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>
+      </div>`;
+    const CO = C.company || {};
+    window.NMN.ld({ "@context": "https://schema.org", "@type": "Organization", name: CO.name || C.shopName, url: location.origin + location.pathname,
+      logo: new URL("assets/brand/icon-512.png", location.href).href, foundingDate: "2022-02-16", slogan: slogan || undefined,
+      founder: A.founder ? { "@type": "Person", name: String(A.founder).replace(/^(Bà|Ông)\s+/i, "") } : undefined,
+      taxID: CO.taxCode || undefined, telephone: CO.phone || undefined, email: CO.email || undefined,
+      address: CO.address ? { "@type": "PostalAddress", streetAddress: CO.address, addressCountry: "VN" } : undefined });
+  }
+  return {
+    match: h => h === "gioi-thieu",
+    render(){ render(); document.title = "Giới thiệu · " + (C.brand || "Clastive Nhật Việt"); window.scrollTo({ top: 0, left: 0, behavior: "instant" }); }
+  };
+})();
+
 /* ---------- UI ---------- */
 (function(){
   const C = window.CONFIG, POSTS = window.POSTS, EVENTS = window.EVENTS;
@@ -1104,6 +1200,7 @@ window.CONTACT = (function(){
   $$("[data-price]").forEach(el => el.textContent = window.SHOP.priceOf(el.dataset.price));
   $$("[data-price-note]").forEach(el => el.textContent = C.priceNote);
   $$("[data-shop-name]").forEach(el => el.textContent = "© " + new Date().getFullYear() + " " + C.shopName);
+  $$("[data-slogan]").forEach(el => el.textContent = C.brandTagline || (window.NMN_DEFAULTS || {}).slogan || "");
   $$('[data-link="phone"]').forEach(el => el.href = "tel:" + C.phone.replace(/\s+/g, ""));
   $$('[data-link="zalo"]').forEach(el => { el.href = zaloUrl; el.target = "_blank"; el.rel = "noopener"; });
 
@@ -1132,10 +1229,11 @@ window.CONTACT = (function(){
 
   /* ---------- header / progress / active links ---------- */
   const header = $("#top"), bar = $("#progress");
-  const homeLinks = $$("nav.main a, .side a, .menu a.m").filter(a => (a.getAttribute("href") || "").startsWith("#") && !["#tin-tuc", "#cua-hang", "#lien-he"].includes(a.getAttribute("href")));
+  const homeLinks = $$("nav.main a, .side a, .menu a.m").filter(a => (a.getAttribute("href") || "").startsWith("#") && !["#tin-tuc", "#cua-hang", "#lien-he", "#gioi-thieu"].includes(a.getAttribute("href")));
   const newsLinks = $$('nav.main a[href="#tin-tuc"], .menu a.m[href="#tin-tuc"]');
   const shopLinks = $$('nav.main a[href="#cua-hang"], .menu a.m[href="#cua-hang"]');
   const contactLinks = $$('nav.main a[href="#lien-he"], .menu a.m[href="#lien-he"]');
+  const aboutLinks = $$('nav.main a[href="#gioi-thieu"], .menu a.m[href="#gioi-thieu"]');
   let ticking = false;
   function ui(){
     ticking = false;
@@ -1381,16 +1479,17 @@ window.CONTACT = (function(){
      ROUTER — "#tin-tuc", "#bai/<slug>", "#su-kien/<slug>" → news view; anything else → home
      ===================================================================== */
   let view = "home";
-  const homeEl = $("#home"), newsEl = $("#news"), shopEl = $("#shop"), contactEl = $("#lienhe");
+  const homeEl = $("#home"), newsEl = $("#news"), shopEl = $("#shop"), contactEl = $("#lienhe"), aboutEl = $("#gioithieu");
   function setView(v){
     if (v === view) return false;
     if (view === "shop") window.SHOP.leave();
     view = v;
     document.body.dataset.view = v;
-    homeEl.hidden = v !== "home"; newsEl.hidden = v !== "news"; shopEl.hidden = v !== "shop"; contactEl.hidden = v !== "contact";
+    homeEl.hidden = v !== "home"; newsEl.hidden = v !== "news"; shopEl.hidden = v !== "shop"; contactEl.hidden = v !== "contact"; aboutEl.hidden = v !== "about";
     newsLinks.forEach(a => a.classList.toggle("active", v === "news"));
     shopLinks.forEach(a => a.classList.toggle("active", v === "shop"));
     contactLinks.forEach(a => a.classList.toggle("active", v === "contact"));
+    aboutLinks.forEach(a => a.classList.toggle("active", v === "about"));
     if (v !== "home") homeLinks.forEach(a => a.classList.remove("active"));
     window.dispatchEvent(new CustomEvent("viewchange", { detail: v }));
     return true;
@@ -1404,6 +1503,12 @@ window.CONTACT = (function(){
       if (changed){ renderNews(); jumpTo(0); $("#loader").classList.add("hide"); }
       if (isItem){ if (!openItem(h)) { history.replaceState(null, "", "#tin-tuc"); closeReader(); } }
       else { closeReader(); document.title = "Tin tức & Sự kiện · " + C.brand; }
+    } else if (window.ABOUT.match(h)){
+      closeReader();
+      setView("about");
+      $("#loader").classList.add("hide");
+      window.ABOUT.render();
+      observe();
     } else if (window.CONTACT.match(h)){
       closeReader();
       setView("contact");

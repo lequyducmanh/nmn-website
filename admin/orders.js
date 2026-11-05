@@ -98,7 +98,7 @@ function counts(){
   const c = S.contacts.filter(x => !x.handled).length;
   const set = (id, v) => { const el = $(id); el.textContent = v; el.hidden = !v; };
   set("#cnt-orders", n); set("#cnt-contacts", c);
-  document.title = (n ? `(${n}) ` : "") + "Quản lý đơn hàng · NMN";
+  document.title = (n ? `(${n}) ` : "") + "Quản lý đơn hàng · Clastive";
 }
 /* cập nhật 1 đơn ngay trên màn hình (không chờ lần tải sau) */
 function patchOrder(o){ const i = S.orders.findIndex(x => x.id === o.id); if (i >= 0) S.orders[i] = o; counts(); renderTab(); if (S.open === o.id) renderDetail(o.id); }
