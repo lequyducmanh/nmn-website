@@ -62,7 +62,17 @@ window.NMN = (function(){
     }
     if (!data && window.SHEETS.on){
       const c = readCache();
-      if (c && Date.now() - c.t < FRESH){ data = c.data; window.SOURCE = "cache"; fromSheet(c, 20000).catch(() => {}); }
+      if (c && Date.now() - c.t < FRESH){
+        data = c.data; window.SOURCE = "cache";
+        // làm mới ngầm; nếu Sheet đã đổi và khách chưa thao tác gì → tải lại trang 1 lần để hiện bản mới ngay
+        const t0 = Date.now(); let touched = false;
+        ["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => addEventListener(ev, () => { touched = true; }, { once: true, passive: true }));
+        fromSheet(c, 20000).then(d => {
+          if (d === c.data || touched || Date.now() - t0 > 8000) return;
+          try { if (sessionStorage.getItem("nmn_reloaded") === String(c.gen)) return; sessionStorage.setItem("nmn_reloaded", String(c.gen)); } catch (_) { return; }
+          location.reload();
+        }).catch(() => {});
+      }
       else {
         try { data = await fromSheet(c, 8000); window.SOURCE = "sheet"; }
         catch (e){ console.warn("Không đọc được Google Sheet:", e.message); if (c){ data = c.data; window.SOURCE = "cache"; } }
