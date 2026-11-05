@@ -955,6 +955,9 @@ html.qv-open{overflow:hidden}
 
 /* ===================== THƯƠNG HIỆU (logo) ===================== */
 .foot-logo{display:block;height:44px;width:auto;margin-bottom:8px}
+.foot h5[data-shop-name]{text-transform:none;letter-spacing:.02em;font-size:13px;font-weight:500}
+.foot .bct{display:inline-block;margin-top:18px;line-height:0}
+.foot .bct img{width:150px;height:auto}
 .foot-slogan{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-2);margin-bottom:18px}
 @media (max-width:640px){ .brand-logo{height:34px} }
 @media (max-width:360px){ .brand-logo{height:30px} }

@@ -1,6 +1,6 @@
 /* =====================================================================
    Nội dung mặc định của doanh nghiệp (theo hồ sơ giới thiệu Công ty Cổ phần Clastive Nhật Việt).
-   Website dùng khi Google Sheet chưa có các mục này; sửa trong CMS → "Giới thiệu" (lưu vào Sheet).
+   Website dùng khi Google Sheet chưa có các mục này; sửa trong CMS → "Về chúng tôi" (lưu vào Sheet).
    ===================================================================== */
 window.NMN_DEFAULTS = {
   slogan: "Từ Nhật Bản, vì sức khỏe người Việt",

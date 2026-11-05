@@ -22,11 +22,11 @@ Website giới thiệu **PURE NMN 12,000mg+** và **NMN Regene**: trang chủ c�
 
 Thương hiệu chính của website là **Clastive Nhật Việt** (doanh nghiệp); PURE NMN 12,000mg+ và NMN Regene là thương hiệu sản phẩm.
 
-- **Logo**: chữ **C** kết từ 9 cánh hoa/lá (sắc xanh teal → xanh navy) ôm lấy **mặt trời vàng** — sản phẩm từ Nhật Bản được Clastive chọn lọc, chăm chút cho người Việt; giữ tinh thần "vòng tròn nét ngắn" của logo cũ nhưng gọn, rõ ở cỡ nhỏ. Chữ CLASTIVE (Poppins Medium) + NHẬT VIỆT (Inter Display, vàng).
-- **Khẩu hiệu**: *Từ Nhật Bản, vì sức khỏe người Việt* (ngắn, đúng sự thật, không tuyệt đối hóa công dụng). Phương châm đầy đủ trong hồ sơ: *Chất lượng Nhật Bản – Chăm sóc Sức khỏe Việt* (trang Giới thiệu).
-- **Màu**: navy `#1d3567` · teal `#2c6a6d` · vàng `#c39a55` · mực `#13202a` · nền `#f4f0e9`.
+- **Logo**: giữ đúng biểu tượng gốc của Clastive — vòng 12 cánh xoay, xanh dương `#4fa6e2` xen xanh lá `#9bc33b` — dựng lại thành bản vector sắc nét; chữ CLASTIVE (Poppins Medium, xám `#5d6670`) + NHẬT VIỆT (Inter Display, xanh `#3f97d6`).
+- **Khẩu hiệu**: *Từ Nhật Bản, vì sức khỏe người Việt* (ngắn, đúng sự thật, không tuyệt đối hóa công dụng). Phương châm đầy đủ trong hồ sơ: *Chất lượng Nhật Bản – Chăm sóc Sức khỏe Việt* (trang Về chúng tôi).
+- **Màu logo**: xanh dương `#4fa6e2` · xanh lá `#9bc33b` · xám chữ `#5d6670`. Màu giao diện website: mực `#13202a` · vàng `#a3804c` · teal `#2c6a6d` · nền `#f4f0e9`.
 - **Tệp** (`assets/brand/`): `clastive-logo.svg` (nền sáng), `clastive-logo-white.svg` (nền tối), `clastive-logo-slogan.svg` / `-white.svg`, `clastive-mark.svg` (biểu tượng), `clastive-mark-mono.svg` (1 màu), `favicon.svg`, `icon-512.png`, `apple-touch-icon.png`, `clastive-logo.png` (PNG nền trong suốt), `og-image.png` (ảnh chia sẻ Facebook/Zalo 1200×630). Chữ trong SVG đã chuyển thành nét vẽ — mở ở đâu cũng đúng font.
-- **Trang Giới thiệu** `#gioi-thieu`: câu chuyện, lĩnh vực, năng lực, tầm nhìn – sứ mệnh, định hướng, phương châm — sửa ở CMS → **Giới thiệu** (mặc định theo hồ sơ trong `assets/js/defaults.js`).
+- **Trang Về chúng tôi** `#ve-chung-toi` (tab cạnh Liên hệ): câu chuyện, lĩnh vực, năng lực, tầm nhìn – sứ mệnh, định hướng, phương châm — sửa ở CMS → **Về chúng tôi** (mặc định theo hồ sơ trong `assets/js/defaults.js`).
 
 ## Cấu trúc
 
@@ -122,7 +122,7 @@ Theo thông báo nội dung quảng cáo của Công ty (CV số 2110/2026/CV-CV
 - Lấy nghiên cứu trên tế bào, động vật hoặc nghiên cứu chung về NMN để nói người dùng sản phẩm có tác dụng tương tự.
 - Cam kết hiệu quả tuyệt đối, tức thì; so sánh “tốt nhất / số 1 / duy nhất”; lời chứng thực, ảnh trước – sau.
 
-**Bắt buộc:** luôn có câu *“Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.”* (đã có ở chân trang, trang chủ, trang sản phẩm).
+**Bắt buộc:** luôn có câu *“Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.”* — hiển thị ở **chân trang** (mọi trang) và trong mục **Lưu ý** của từng sản phẩm.
 
 CMS có **bộ dò từ khoá**: thẻ *Kiểm tra câu từ quảng cáo* ở trang Tổng quan, và cảnh báo khi bấm Xuất bản. Bộ dò chỉ hỗ trợ — nội dung mới vẫn cần người phụ trách duyệt theo hồ sơ xác nhận quảng cáo.
 
@@ -174,7 +174,7 @@ Nội dung chuyển khoản là mã đơn **không dấu gạch** (ví dụ `NMN
 | `#tin-tuc` | Tin tức & Sự kiện |
 | `#bai/<đường-dẫn>`, `#su-kien/<đường-dẫn>` | Một bài viết / sự kiện |
 | `#lien-he` | Liên hệ |
-| `#gioi-thieu` | Giới thiệu doanh nghiệp |
+| `#ve-chung-toi` | Về chúng tôi (giới thiệu doanh nghiệp) |
 
 ## Khi sửa code (CSS/JS)
 

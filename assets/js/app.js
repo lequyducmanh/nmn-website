@@ -147,8 +147,7 @@ window.NMN = (function(){
             <a class="btn btn-line" href="#san-pham/${esc(p.slug)}">Chi tiết</a>
           </div>
         </div>
-        ${p.forWho ? `<div class="for reveal d3">${esc(p.forWho)}</div>` : ""}
-        <p class="disc-line reveal d3">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>`;
+        ${p.forWho ? `<div class="for reveal d3">${esc(p.forWho)}</div>` : ""}`;
     });
   }
 
@@ -394,8 +393,7 @@ window.SHOP = (function(){
         <div class="glass"><b>i.</b><h3>Chọn sản phẩm</h3><p>Thêm sản phẩm vào giỏ hàng, điều chỉnh số lượng tuỳ ý.</p></div>
         <div class="glass"><b>ii.</b><h3>Điền thông tin</h3><p>Nhập họ tên, số điện thoại, địa chỉ nhận hàng và chọn cách thanh toán.</p></div>
         <div class="glass"><b>iii.</b><h3>Xác nhận đơn</h3><p>Chúng tôi liên hệ qua điện thoại hoặc Zalo để xác nhận và giao hàng.</p></div>
-      </div>
-      <p class="disclaimer" style="margin-top:28px;text-align:center">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>`;
+      </div>`;
   }
 
   /* Thông tin chi tiết theo hồ sơ công bố của từng sản phẩm */
@@ -465,7 +463,6 @@ window.SHOP = (function(){
             <button class="btn btn-line" data-buy="${esc(p.slug)}" data-qty-from="#pd-qty">Mua ngay</button>
           </div>
           ${perks("minis")}
-          <p class="disc-line">${esc(DISCLAIMER)}</p>
           <div class="acc">${detailSections(p)}</div>
         </div>
       </div>
@@ -606,7 +603,6 @@ window.SHOP = (function(){
         ${facts.length ? `<dl class="qv-facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
         ${p.desc ? `<p class="qv-desc">${esc(p.desc)}</p>` : ""}
         <div class="acc">${detailSections(p)}</div>
-        <p class="disc-line">${DISCLAIMER}</p>
         <p class="qv-more"><a href="${location.pathname}#san-pham/${esc(p.slug)}" target="_blank" rel="noopener">Mở trang sản phẩm đầy đủ ↗</a></p>
       </div>
       <div class="qv-foot">
@@ -989,7 +985,6 @@ window.CONTACT = (function(){
         <div class="chans">${channels()}</div>
         <div class="cgrid" id="ct-main">${form()}${info()}</div>
         ${faq()}
-        <p class="disc-line">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>
       </div>`;
     bind();
     document.title = "Liên hệ · " + (C.brand || "");
@@ -1094,8 +1089,8 @@ window.CONTACT = (function(){
 
 
 /* =====================================================================
-   GIỚI THIỆU DOANH NGHIỆP — #gioi-thieu
-   Nội dung: CMS → "Giới thiệu" (site.about); chưa có thì dùng assets/js/defaults.js
+   VỀ CHÚNG TÔI — #ve-chung-toi (link cũ #gioi-thieu vẫn mở được)
+   Nội dung: CMS → "Về chúng tôi" (site.about); chưa có thì dùng assets/js/defaults.js
    ===================================================================== */
 window.ABOUT = (function(){
   const C = window.CONFIG, D = (window.NMN_DEFAULTS || {}).about || {};
@@ -1173,7 +1168,6 @@ window.ABOUT = (function(){
           </div>
           <div class="btns"><a class="btn btn-gold" href="#lien-he">Trở thành đại lý ${arrow}</a><a class="btn btn-out" href="#cua-hang">Cửa hàng</a></div>
         </section>
-        <p class="disc-line">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>
       </div>`;
     const CO = C.company || {};
     window.NMN.ld({ "@context": "https://schema.org", "@type": "Organization", name: CO.name || C.shopName, url: location.origin + location.pathname,
@@ -1183,8 +1177,8 @@ window.ABOUT = (function(){
       address: CO.address ? { "@type": "PostalAddress", streetAddress: CO.address, addressCountry: "VN" } : undefined });
   }
   return {
-    match: h => h === "gioi-thieu",
-    render(){ render(); document.title = "Giới thiệu · " + (C.brand || "Clastive Nhật Việt"); window.scrollTo({ top: 0, left: 0, behavior: "instant" }); }
+    match: h => h === "ve-chung-toi" || h === "gioi-thieu",
+    render(){ render(); document.title = "Về chúng tôi · " + (C.brand || "Clastive Nhật Việt"); window.scrollTo({ top: 0, left: 0, behavior: "instant" }); }
   };
 })();
 
@@ -1199,7 +1193,7 @@ window.ABOUT = (function(){
   $$("[data-brand]").forEach(el => { el.textContent = C.brand; const s = document.createElement("small"); s.textContent = C.brandTagline; el.append(s); });
   $$("[data-price]").forEach(el => el.textContent = window.SHOP.priceOf(el.dataset.price));
   $$("[data-price-note]").forEach(el => el.textContent = C.priceNote);
-  $$("[data-shop-name]").forEach(el => el.textContent = "© " + new Date().getFullYear() + " " + C.shopName);
+  $$("[data-shop-name]").forEach(el => el.textContent = "© " + new Date().getFullYear() + " Bản quyền thuộc về " + ((C.company || {}).name || C.shopName || "Công ty Cổ phần Clastive Nhật Việt"));
   $$("[data-slogan]").forEach(el => el.textContent = C.brandTagline || (window.NMN_DEFAULTS || {}).slogan || "");
   $$('[data-link="phone"]').forEach(el => el.href = "tel:" + C.phone.replace(/\s+/g, ""));
   $$('[data-link="zalo"]').forEach(el => { el.href = zaloUrl; el.target = "_blank"; el.rel = "noopener"; });
@@ -1229,11 +1223,11 @@ window.ABOUT = (function(){
 
   /* ---------- header / progress / active links ---------- */
   const header = $("#top"), bar = $("#progress");
-  const homeLinks = $$("nav.main a, .side a, .menu a.m").filter(a => (a.getAttribute("href") || "").startsWith("#") && !["#tin-tuc", "#cua-hang", "#lien-he", "#gioi-thieu"].includes(a.getAttribute("href")));
+  const homeLinks = $$("nav.main a, .side a, .menu a.m").filter(a => (a.getAttribute("href") || "").startsWith("#") && !["#tin-tuc", "#cua-hang", "#lien-he", "#ve-chung-toi"].includes(a.getAttribute("href")));
   const newsLinks = $$('nav.main a[href="#tin-tuc"], .menu a.m[href="#tin-tuc"]');
   const shopLinks = $$('nav.main a[href="#cua-hang"], .menu a.m[href="#cua-hang"]');
   const contactLinks = $$('nav.main a[href="#lien-he"], .menu a.m[href="#lien-he"]');
-  const aboutLinks = $$('nav.main a[href="#gioi-thieu"], .menu a.m[href="#gioi-thieu"]');
+  const aboutLinks = $$('nav.main a[href="#ve-chung-toi"], .menu a.m[href="#ve-chung-toi"]');
   let ticking = false;
   function ui(){
     ticking = false;

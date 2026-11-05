@@ -159,7 +159,7 @@ $("#logout").addEventListener("click", async () => {
 /* =====================================================================
    ĐIỀU HƯỚNG
    ===================================================================== */
-const TITLES = { overview: "Tổng quan", settings: "Cài đặt chung", home: "Trang chủ", about: "Giới thiệu", contact: "Trang Liên hệ", products: "Sản phẩm", posts: "Bài viết", events: "Sự kiện", media: "Thư viện ảnh" };
+const TITLES = { overview: "Tổng quan", settings: "Cài đặt chung", home: "Trang chủ", about: "Về chúng tôi", contact: "Trang Liên hệ", products: "Sản phẩm", posts: "Bài viết", events: "Sự kiện", media: "Thư viện ảnh" };
 $("#nav").addEventListener("click", e => { const b = e.target.closest("[data-view]"); if (b) { location.hash = b.dataset.view; document.body.classList.remove("nav-open"); } });
 $("#menu-btn").addEventListener("click", () => document.body.classList.toggle("nav-open"));
 $("#side-ov").addEventListener("click", () => document.body.classList.remove("nav-open"));
@@ -547,7 +547,7 @@ view.addEventListener("mouseup", e => { if (e.target.closest && e.target.closest
 const SETTINGS_SECTIONS = [
   { h: "Thương hiệu & liên hệ", d: "Hiển thị ở logo, chân trang, nút gọi và nút Zalo trên toàn website.", f: [
     { k: "brand", t: "text", l: "Tên thương hiệu", req: 1, hint: "hiện ở tiêu đề tab trình duyệt, ví dụ “Cửa hàng · Clastive Nhật Việt”" },
-    { k: "brandTagline", t: "text", l: "Khẩu hiệu (slogan)", ph: "Từ Nhật Bản, vì sức khỏe người Việt", hint: "hiện ở trang Giới thiệu và chân trang" },
+    { k: "brandTagline", t: "text", l: "Khẩu hiệu (slogan)", ph: "Từ Nhật Bản, vì sức khỏe người Việt", hint: "hiện ở trang Về chúng tôi và chân trang" },
     { k: "shopName", t: "text", l: "Tên cửa hàng / công ty", req: 1, full: 1 },
     { k: "phone", t: "tel", l: "Hotline", req: 1, ph: "0912 345 678" },
     { k: "zalo", t: "tel", l: "Số Zalo", req: 1, ph: "0912345678" },
@@ -594,7 +594,7 @@ const CONTACT_SECTIONS = [
     { k: "contact.faq", t: "pairs", l: "Hỏi & đáp", ph1: "Câu hỏi", ph2: "Câu trả lời" } ] }
 ];
 const ABOUT_SECTIONS = [
-  { h: "Phần đầu trang", d: `Trang <b>#gioi-thieu</b> — giới thiệu doanh nghiệp. Nội dung theo hồ sơ giới thiệu Công ty; không ghi công dụng sản phẩm ở đây.`, f: [
+  { h: "Phần đầu trang", d: `Trang <b>Về chúng tôi</b> (#ve-chung-toi) — giới thiệu doanh nghiệp. Nội dung theo hồ sơ giới thiệu Công ty; không ghi công dụng sản phẩm ở đây.`, f: [
     { k: "about.eyebrow", t: "text", l: "Dòng chữ nhỏ", full: 1 },
     { k: "about.title", t: "emph", l: "Tiêu đề", full: 1 },
     { k: "about.lead", t: "textarea", l: "Đoạn giới thiệu ngắn", rows: 3 } ] },
@@ -780,7 +780,7 @@ function viewOverview(){
       <ul class="tips">
         <li><a href="#settings">Cài đặt chung</a> — hotline, Zalo, tên cửa hàng, phí giao hàng, tài khoản ngân hàng.</li>
         <li><a href="#home">Trang chủ</a> — tiêu đề, đoạn giới thiệu, dải chữ chạy, phần liên hệ.</li>
-        <li><a href="#about">Giới thiệu</a> — câu chuyện, năng lực, tầm nhìn – sứ mệnh của Công ty.</li>
+        <li><a href="#about">Về chúng tôi</a> — câu chuyện, năng lực, tầm nhìn – sứ mệnh của Công ty.</li>
         <li><a href="#products">Sản phẩm</a> — giá, ảnh, mô tả, sản phẩm hiển thị ở trang chủ.</li>
         <li><a href="#posts">Bài viết</a> & <a href="#events">Sự kiện</a> — soạn bài có ảnh, lên lịch sự kiện.</li>
         <li><a href="#media">Thư viện ảnh</a> — tải lên, xem, xoá ảnh.</li>
@@ -972,7 +972,7 @@ function preview(hash = ""){
 }
 $("#preview-btn").addEventListener("click", () => {
   const v = S.view, ed = S.editing != null && COLL[v] ? COLL[v].find(S.editing) : null;
-  preview(ed ? COLL[v].preview(ed) : v === "products" ? "#cua-hang" : v === "contact" ? "#lien-he" : v === "about" ? "#gioi-thieu" : v === "posts" || v === "events" ? "#tin-tuc" : "");
+  preview(ed ? COLL[v].preview(ed) : v === "products" ? "#cua-hang" : v === "contact" ? "#lien-he" : v === "about" ? "#ve-chung-toi" : v === "posts" || v === "events" ? "#tin-tuc" : "");
 });
 
 /* =====================================================================
