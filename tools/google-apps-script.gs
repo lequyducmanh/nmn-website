@@ -33,7 +33,7 @@
 /** ① CÀI ĐẶT LẦN ĐẦU — chọn hàm "setup" ở thanh trên rồi bấm ▷ Chạy (hoặc menu NMN Website trên Google Sheet) */
 function setup(){ return setupSheet_(); }
 
-const VERSION = '2026.11.04';
+const VERSION = '2026.11.05';
 const DEFAULT_SITE_URL = 'https://lequyducmanh.github.io/nmn-website/';
 const TZ = 'Asia/Ho_Chi_Minh';
 const CONTENT = ['site', 'products', 'posts', 'events'];
@@ -133,6 +133,7 @@ const str_ = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u0009\u000
 const line_ = (v, max) => str_(v, max).replace(/\s*\n\s*/g, ' ');
 const payCode_ = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const phoneOk_ = p => /^(0|\+?84)(3|5|7|8|9)\d{8}$/.test(p);
+const phoneAny_ = p => /^(0|\+?84)\d{9,10}$/.test(p);                       // lời nhắn: nhận cả số máy bàn (024…)
 const emailOk_ = e => !e || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 const iso_ = d => d instanceof Date && !isNaN(d) ? d.toISOString() : d ? String(d) : null;
 const ymd_ = d => Utilities.formatDate(d, TZ, 'yyyy-MM-dd');
@@ -171,7 +172,10 @@ function enc_(t, v){
     s = plain ? a.map(p => p[0] + ' | ' + p[1]).join('\n') : JSON.stringify(a);
   } else s = v == null ? '' : String(v);
   if (s.length > MAX_CELL) throw new Error('Nội dung quá dài cho 1 ô Google Sheet (tối đa ' + MAX_CELL + ' ký tự).');
-  return s;
+  // Định dạng "Văn bản thuần" KHÔNG chặn công thức khi ghi bằng script: "=…", "+…", "-…", "@…" vẫn bị
+  // hiểu là công thức (lỗi #ERROR!, hoặc bị chèn công thức độc hại từ ô họ tên/ghi chú của khách).
+  // Dấu ' đứng đầu buộc Sheets lưu nguyên văn; Sheets tự bỏ dấu này khi đọc ra nên không cần giải mã.
+  return /^[=+\-@']/.test(s) ? "'" + s : s;
 }
 function dec_(t, v, d){
   const empty = v === '' || v == null;
@@ -507,7 +511,7 @@ function createContact_(b){
   if (b.hp) return { ok: true, ignored: true };
   const name = line_(b.name, 80), phone = str_(b.phone, 20).replace(/[\s.\-()]/g, ''), email = str_(b.email, 120), message = str_(b.message, 1500);
   if (name.length < 2) return fail_('Thiếu họ tên.');
-  if (!phoneOk_(phone)) return fail_('Số điện thoại không hợp lệ.');
+  if (!phoneAny_(phone)) return fail_('Số điện thoại không hợp lệ.');
   if (!emailOk_(email)) return fail_('Email không hợp lệ.');
   if (message.length < 5) return fail_('Thiếu nội dung.');
   const c = { id: /^LH-[A-Z0-9-]{4,24}$/.test(String(b.code || '')) ? String(b.code) : 'LH-' + Utilities.formatDate(new Date(), TZ, 'yyMMdd') + '-' + newCode_().slice(-5),

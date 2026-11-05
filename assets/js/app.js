@@ -132,10 +132,13 @@ window.NMN = (function(){
   const abs = p => p ? new URL(img(p), location.href).href : undefined;
 
   /* ---------- fill the home page from content/site.json + products.json ---------- */
+  // tiêu đề trang chủ luôn có tên thương hiệu (SEO), kể cả khi tiêu đề trên Sheet không ghi
+  window.homeTitle = () => { const C = window.CONFIG, t = String((C.seo && C.seo.title) || "").trim(), b = C.brand || "";
+    return !t ? b : b && !t.toLowerCase().includes(b.toLowerCase()) ? t + " · " + b : t; };
   function applyHome(){
     const C = window.CONFIG, H = C.home || {};
     const $ = s => document.querySelector(s);
-    document.title = (C.seo && C.seo.title) || C.brand;
+    document.title = window.homeTitle();
     const md = document.querySelector('meta[name="description"]'); if (md && C.seo && C.seo.description) md.content = C.seo.description;
     const set = (sel, html) => { const el = $(sel); if (el && html != null) el.innerHTML = html; };
     set("#hero .eyebrow", esc(H.heroEyebrow));
@@ -643,7 +646,9 @@ window.SHOP = (function(){
     const f = form.querySelector(`[name="${name}"]`).closest(".f");
     f.classList.add("err"); f.querySelector(".msg").textContent = msg;
   }
+  let sending = false;                                                  // chặn bấm/gửi 2 lần → 2 đơn
   async function submit(form){
+    if (sending) return;
     if (!cart.length) return renderCheckout();
     const d = Object.fromEntries(new FormData(form));
     Object.keys(d).forEach(k => d[k] = String(d[k]).trim());
@@ -663,7 +668,7 @@ window.SHOP = (function(){
     const a = addr.get();
     if (d.remember){ try { localStorage.removeItem(PROFILE + "_off"); } catch (_) {} } if (d.remember) store.set(PROFILE, { name: d.name, phone: d.phone, email: d.email, provinceCode: a.provinceCode, wardCode: a.wardCode, street: a.street });
     else { try { localStorage.removeItem(PROFILE); } catch (_) {} store.set(PROFILE + "_off", 1); }
-    const btn = $("#co-submit"); btn.disabled = true; btn.textContent = "Đang gửi đơn…";
+    const btn = $("#co-submit"); btn.disabled = true; btn.textContent = "Đang gửi đơn…"; sending = true;
     const now = new Date(), t = totals();
     const code = "NMN-" + String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0") + "-" + rnd(5);
     const order = {
@@ -685,7 +690,7 @@ window.SHOP = (function(){
         Object.assign(order, { code: j.code, payCode: j.payCode, subtotal: j.subtotal, shipping: j.shipping, total: j.total, sent: true });
         if (Array.isArray(j.items) && j.items.length) order.items = j.items;
       } else if (j && j.error){
-        btn.disabled = false; btn.innerHTML = `Đặt hàng ${arrow}`;
+        sending = false; btn.disabled = false; btn.innerHTML = `Đặt hàng ${arrow}`;
         toast(j.error);
         const m = $("#co-err") || Object.assign(document.createElement("p"), { id: "co-err", className: "co-err", role: "alert" });
         m.textContent = j.error; btn.after(m);
@@ -693,7 +698,7 @@ window.SHOP = (function(){
       } // lỗi mạng / máy chủ → vẫn tạo đơn trên máy, khách gửi qua Zalo
     }
     const orders = store.get(ORDERS, []); orders.unshift(order); store.set(ORDERS, orders.slice(0, 10));
-    page = "submitting"; cart = []; save();
+    page = "submitting"; cart = []; save(); sending = false;
     location.hash = "#don-hang/" + order.code;
   }
 
@@ -1022,19 +1027,21 @@ window.CONTACT = (function(){
 
   function err(id, msg){ const box = $("#" + id).closest(".f"); box.classList.add("err"); box.querySelector(".msg").textContent = msg; return box; }
 
+  let sending = false;
   async function submit(f){
+    if (sending) return;
     const d = Object.fromEntries(new FormData(f).entries());
     d.name = (d.name || "").trim(); d.message = (d.message || "").trim(); d.email = (d.email || "").trim();
     const phone = tel(d.phone);
     const bad = [];
     if (d.name.length < 2) bad.push(err("ct-name", "Vui lòng nhập họ tên"));
-    if (!/^(\+?84|0)\d{8,10}$/.test(phone)) bad.push(err("ct-phone", "Số điện thoại chưa đúng"));
-    if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) bad.push(err("ct-email", "Email chưa đúng"));
-    if (d.message.length < 5) bad.push(err("ct-msg", "Vui lòng nhập nội dung"));
+    if (!/^(0|\+?84)\d{9,10}$/.test(phone)) bad.push(err("ct-phone", "Số điện thoại chưa đúng (di động hoặc máy bàn, ví dụ 0912 345 678)"));
+    if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) bad.push(err("ct-email", "Email chưa đúng"));
+    if (d.message.length < 5) bad.push(err("ct-msg", d.message ? "Nội dung hơi ngắn, bạn viết thêm giúp nhé (ít nhất 5 ký tự)" : "Vui lòng nhập nội dung"));
     if (!d.consent) bad.push(err("ct-consent", "Vui lòng đánh dấu đồng ý để chúng tôi liên hệ lại"));
     if (bad.length){ const el = bad[0].querySelector("input,textarea"); el && el.focus({ preventScroll: true }); bad[0].scrollIntoView({ block: "center", behavior: "smooth" }); return; }
 
-    const btn = $("#ct-submit"); btn.disabled = true; btn.textContent = "Đang gửi…";
+    const btn = $("#ct-submit"); btn.disabled = true; btn.textContent = "Đang gửi…"; sending = true;
     const now = new Date();
     const msg = {
       type: "contact", code: "LH-" + now.toISOString().slice(2, 10).replace(/-/g, "") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase(),
@@ -1045,10 +1052,10 @@ window.CONTACT = (function(){
       try { j = await window.SHEETS.post(Object.assign({ action: "contact", hp: d.hp || "" }, msg), 20000); } catch (_) {}
       if (j && j.ok) msg.sent = true;
       else if (j && j.error){
-        btn.disabled = false; btn.innerHTML = `Gửi lời nhắn ${arrow}`; toast(j.error); return;
+        sending = false; btn.disabled = false; btn.innerHTML = `Gửi lời nhắn ${arrow}`; toast(j.error); return;
       } // lỗi mạng → khách gửi qua Zalo / email
     }
-    last = msg;
+    sending = false; last = msg;
     done();
   }
 
@@ -1547,7 +1554,7 @@ window.ABOUT = (function(){
     } else {
       closeReader();
       const changed = setView("home");
-      document.title = (C.seo && C.seo.title) || C.brand;
+      document.title = window.homeTitle();
       window.NMN.ld();
       if (changed){
         const target = h && document.getElementById(h);

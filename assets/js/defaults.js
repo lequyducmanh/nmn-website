@@ -19,7 +19,7 @@ window.NMN_DEFAULTS = {
       "Kinh doanh và phân phối các sản phẩm chăm sóc sức khỏe, sắc đẹp có nguồn gốc từ Nhật Bản; phát triển danh mục đa dạng, tập trung vào nhóm sản phẩm hỗ trợ chăm sóc sức khỏe chủ động, bổ sung dinh dưỡng và chăm sóc sắc đẹp từ bên trong.",
       "Xây dựng thương hiệu, phát triển hệ thống đại lý và đối tác kinh doanh; cung cấp thông tin, kiến thức về sản phẩm để khách hàng hiểu đúng và có cơ sở lựa chọn giải pháp chăm sóc sức khỏe phù hợp."
     ],
-    brands: ["PURE NMN 12000mg+", "NMN Regene", "Hakko Washoku 1", "Smoothies Unimat Riken"],
+    brands: ["PURE NMN 12,000mg+", "NMN Regene", "Hakko Washoku 1", "Smoothies Unimat Riken"],
     strengths: [
       ["Lợi thế về nguồn sản phẩm", "Tập trung khai thác các sản phẩm có nguồn gốc từ Nhật Bản, chú trọng tiêu chuẩn chất lượng, thông tin xuất xứ và giá trị sử dụng của sản phẩm."],
       ["Danh mục sản phẩm đa dạng", "Phát triển nhiều dòng sản phẩm thuộc lĩnh vực chăm sóc sức khỏe và sắc đẹp, đáp ứng những nhu cầu khác nhau của khách hàng."],
