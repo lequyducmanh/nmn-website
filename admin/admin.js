@@ -1040,7 +1040,8 @@ async function publish(){
       S.images = S.images.filter(x => x.path !== p); S.deletes.delete(p);
     }
     store.del("nmn_cms_draft");
-    try { localStorage.removeItem("nmn_content_v2"); } catch (_) {}     // trình duyệt này thấy bản mới ngay
+    S.autoSlug = new WeakSet();                                         // đã xuất bản → đường dẫn cố định (link đã chia sẻ không bị hỏng khi sửa tiêu đề)
+    try { localStorage.removeItem("nmn_content_v2"); localStorage.setItem("nmn_content_bump", String(Date.now())); } catch (_) {}     // các tab website đang mở cập nhật ngay
     busy(false); render();
     alertModal("Đã xuất bản 🎉", `Thay đổi đã được lưu vào Google Sheet và hiển thị trên website ngay.<br><br><a href="${esc(SITE_BASE)}" target="_blank" rel="noopener">Mở website ↗</a> · <a href="${esc(S.info.sheetUrl)}" target="_blank" rel="noopener">Mở Google Sheet ↗</a>`);
   } catch (e){

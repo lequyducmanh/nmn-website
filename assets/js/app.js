@@ -62,6 +62,7 @@ window.NMN = (function(){
     if (j && j.ok && valid(j.data)){ writeCache(j.gen, j.data); return j.data; }
     throw new Error(j && j.error || "Google Sheet chưa có nội dung (chạy “Cài đặt lần đầu”)");
   }
+  let shownGen = null;                                                  // bản nội dung đang hiển thị
   async function load(){
     let data = null;
     if (preview){
@@ -70,7 +71,7 @@ window.NMN = (function(){
     if (!data && window.SHEETS.on){
       const c = readCache();
       if (c && Date.now() - c.t < FRESH){
-        data = c.data; window.SOURCE = "cache";
+        data = c.data; window.SOURCE = "cache"; shownGen = c.gen;
         // làm mới ngầm; nếu Sheet đã đổi và khách chưa thao tác gì → tải lại trang 1 lần để hiện bản mới ngay
         const t0 = Date.now(); let touched = false;
         ["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => addEventListener(ev, () => { touched = true; }, { once: true, passive: true }));
@@ -81,8 +82,8 @@ window.NMN = (function(){
         }).catch(() => {});
       }
       else {
-        try { data = await fromSheet(c, 8000); window.SOURCE = "sheet"; }
-        catch (e){ console.warn("Không đọc được Google Sheet:", e.message); if (c){ data = c.data; window.SOURCE = "cache"; } }
+        try { data = await fromSheet(c, 8000); window.SOURCE = "sheet"; const n = readCache(); shownGen = n ? n.gen : null; }
+        catch (e){ console.warn("Không đọc được Google Sheet:", e.message); if (c){ data = c.data; window.SOURCE = "cache"; shownGen = c.gen; } }
       }
     }
     if (!data){
@@ -99,6 +100,57 @@ window.NMN = (function(){
     window.EVENTS = (data.events || []).filter(e => e.published !== false);
     if (preview) banner();
     return true;
+  }
+  /* ---------- cập nhật gần như tức thì cho trang ĐANG MỞ ----------
+     Hỏi Sheet mỗi phút khi tab đang hiện + ngay khi khách quay lại tab + ngay khi CMS trên cùng trình duyệt
+     vừa Xuất bản (CMS xoá bản lưu → sự kiện "storage"). Có bản mới:
+       • tab đang ẩn / khách không thao tác ≥ 20 giây → tải lại tại đúng vị trí đang xem;
+       • khách đang thao tác, đang nhập form, mở giỏ hàng, đang đặt hàng → hiện nút "Cập nhật" nhỏ, không làm gián đoạn. */
+  function live(){
+    if (preview || !window.SHEETS.on || window.NMN_LIVE === false) return;
+    const EVERY = window.NMN_LIVE_MS || 60e3, IDLE = window.NMN_LIVE_IDLE || 20e3;
+    let lastAct = Date.now(), busy = false, pending = false, pill = null;
+    ["pointerdown", "keydown", "wheel", "touchstart", "input"].forEach(ev => addEventListener(ev, () => { lastAct = Date.now(); }, { passive: true, capture: true }));
+    const unsafe = () => {
+      const b = document.body.classList, a = document.activeElement;
+      const typed = [...document.querySelectorAll("#ct-form input[type=text], #ct-form input[type=tel], #ct-form input[type=email], #ct-form textarea")].some(i => i.value.trim());
+      return /^#thanh-toan\b/.test(location.hash) || typed || b.contains("cart-open") || b.contains("menu-open") || b.contains("lock")
+        || document.documentElement.classList.contains("qv-open") || !!(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+    };
+    const reloadHere = () => {
+      try { sessionStorage.setItem("nmn_live_pos", JSON.stringify({ h: location.hash, y: Math.round(scrollY), t: Date.now() })); } catch (_) {}
+      location.reload();
+    };
+    const showPill = () => {
+      if (pill) return;
+      pill = document.createElement("button");
+      pill.type = "button"; pill.className = "live-pill"; pill.setAttribute("role", "status");
+      pill.innerHTML = "<span></span>Nội dung vừa được cập nhật · <b>Xem bản mới</b>";
+      pill.addEventListener("click", reloadHere);
+      document.body.appendChild(pill);
+    };
+    const decide = () => {
+      if (!pending) return;
+      if (document.hidden || (!unsafe() && Date.now() - lastAct >= IDLE)) reloadHere(); else showPill();
+    };
+    async function check(){
+      if (busy) return; busy = true;
+      try {
+        await fromSheet(readCache(), 15000);
+        const n = readCache();
+        if (n && n.gen !== shownGen) pending = true;
+      } catch (_) {} finally { busy = false; }
+      decide();
+    }
+    setInterval(() => { if (!document.hidden) check(); else decide(); }, EVERY);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) check(); });
+    addEventListener("storage", e => { if (e.key === CACHE && !e.newValue || e.key === "nmn_content_bump") setTimeout(check, 300); });
+    addEventListener("hashchange", () => setTimeout(decide, 50));
+    // vừa tải lại vì có bản mới → về đúng chỗ đang xem
+    try {
+      const p = JSON.parse(sessionStorage.getItem("nmn_live_pos") || "null"); sessionStorage.removeItem("nmn_live_pos");
+      if (p && p.h === location.hash && Date.now() - p.t < 30e3) [60, 400, 1200].forEach(t => setTimeout(() => scrollTo(0, p.y), t));
+    } catch (_) {}
   }
   function fail(e){
     console.error(e);
@@ -171,7 +223,7 @@ window.NMN = (function(){
     });
   }
 
-  return { load, applyHome, esc, emph, fmt, img, imgHtml, ld, abs, preview };
+  return { load, live, applyHome, esc, emph, fmt, img, imgHtml, ld, abs, preview };
 })();
 
 /* ---------- 3D choreography: [x, y, z, scale] per home section ---------- */
@@ -1570,5 +1622,6 @@ window.ABOUT = (function(){
 
   /* never leave the loader up (e.g. 3D blocked or very slow network) */
   setTimeout(() => $("#loader").classList.add("hide"), 4500);
+  window.NMN.live();
 })();
 })();

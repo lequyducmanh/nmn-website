@@ -374,6 +374,15 @@ main{position:relative;z-index:5}
 .tbl th{font-weight:500;color:var(--ink);background:rgba(255,255,255,.6)}
 .sheet-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:34px;padding-top:22px;border-top:1px solid var(--line)}
 .toast{position:fixed;left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 32px);bottom:calc(24px + env(safe-area-inset-bottom));z-index:70;transform:translateY(20px);opacity:0;background:var(--ink);color:#f7f2e8;font-size:14px;padding:12px 20px;border-radius:999px;transition:.4s;pointer-events:none;overflow-wrap:anywhere}
+/* có nội dung mới từ CMS / Google Sheet (trang đang mở) */
+.live-pill{position:fixed;left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 32px);bottom:calc(20px + env(safe-area-inset-bottom));z-index:65;display:flex;align-items:center;gap:8px;background:var(--ink);color:#f7f2e8;border:0;font:inherit;font-size:14px;line-height:1.3;padding:11px 18px;border-radius:999px;box-shadow:0 10px 30px rgba(20,18,15,.22);cursor:pointer;animation:live-in .45s cubic-bezier(.2,.8,.2,1)}
+.live-pill span{width:8px;height:8px;border-radius:50%;background:#9bc33b;box-shadow:0 0 0 0 rgba(155,195,59,.6);animation:live-dot 1.6s infinite;flex:none}
+.live-pill b{font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.live-pill:hover{background:#3f97d6}
+body.cart-open .live-pill{display:none}
+@keyframes live-in{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes live-dot{70%{box-shadow:0 0 0 8px rgba(155,195,59,0)}100%{box-shadow:0 0 0 0 rgba(155,195,59,0)}}
+@media (prefers-reduced-motion:reduce){.live-pill,.live-pill span{animation:none}}
 .toast.show{opacity:1;transform:none}
 
 /* =====================================================================
