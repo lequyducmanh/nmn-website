@@ -5,6 +5,13 @@
    được sửa ở trang quản trị /admin. Thư mục content/ là bản dự phòng.
    File này chỉ chứa chức năng — không cần sửa khi đổi nội dung.
    ===================================================================== */
+/* số điện thoại hiển thị: di động 0868 964 410 · máy bàn 024 3851 5515 */
+window.nicePhone = s => {
+  const d = String(s || "").replace(/[^\d]/g, "");
+  if (/^02\d{9}$/.test(d)) return d.replace(/(\d{3})(\d{4})(\d{4})/, "$1 $2 $3");
+  if (/^0\d{9}$/.test(d)) return d.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
+  return s || "";
+};
 /* ---------- kết nối Google Sheets (Apps Script Web App) ---------- */
 window.SHEETS = (function(){
   const url = String(window.NMN_API || "").trim();
@@ -713,7 +720,7 @@ window.SHOP = (function(){
     const o = store.get(ORDERS, []).find(x => x.code === code);
     document.title = "Đơn hàng " + code + " · " + C.brand;
     if (!o){
-      root.innerHTML = `<div class="done"><h1>Không tìm thấy đơn hàng</h1><p>Đơn hàng ${esc(code)} không có trên thiết bị này. Nếu cần hỗ trợ, vui lòng liên hệ hotline.</p><div class="cta-row"><a class="btn btn-ink" href="#cua-hang">Về cửa hàng</a><a class="btn btn-line" href="tel:${esc(C.phone)}">Gọi ${esc(C.phone)}</a></div></div>`;
+      root.innerHTML = `<div class="done"><h1>Không tìm thấy đơn hàng</h1><p>Đơn hàng ${esc(code)} không có trên thiết bị này. Nếu cần hỗ trợ, vui lòng liên hệ hotline.</p><div class="cta-row"><a class="btn btn-ink" href="#cua-hang">Về cửa hàng</a><a class="btn btn-line" href="tel:${esc(C.phone)}">Gọi ${esc(window.nicePhone(C.phone))}</a></div></div>`;
       return;
     }
     const txt = orderText(o);
@@ -730,7 +737,7 @@ window.SHOP = (function(){
         <div class="ok">${check}</div>
         ${head}
         <div class="code">${esc(o.code)}</div>
-        ${o.sent ? "" : `<div class="cta-row"><button class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi đơn qua Zalo ${arrow}</button><a class="btn btn-line" href="tel:${esc(C.phone.replace(/\s+/g, ""))}">Gọi ${esc(C.phone)}</a></div>`}
+        ${o.sent ? "" : `<div class="cta-row"><button class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi đơn qua Zalo ${arrow}</button><a class="btn btn-line" href="tel:${esc(C.phone.replace(/\s+/g, ""))}">Gọi ${esc(window.nicePhone(C.phone))}</a></div>`}
         ${bank ? `<div class="box glass pay-box" id="pay-box">${payBox(o, auto)}</div>` : ""}
         <div class="box glass">
           <h3>Nội dung đơn hàng</h3>
@@ -914,7 +921,7 @@ window.CONTACT = (function(){
   const address = C.address || CO.address || "";
   const email = C.email || CO.email || "";
   const tel = s => String(s || "").replace(/[^\d+]/g, "");
-  const nicePhone = s => { const d = tel(s); return d.length === 10 ? d.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3") : (s || ""); };
+  const nicePhone = window.nicePhone;
   const zaloUrl = "https://zalo.me/" + encodeURIComponent(tel(C.zalo));
   const mapsUrl = q => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
   const arrow = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 8h13M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.4"/></svg>';
@@ -1208,7 +1215,7 @@ window.ABOUT = (function(){
   $$("[data-slogan]").forEach(el => el.textContent = slogan);
   $$("[data-foot-company]").forEach(el => {
     const CO = C.company || {}, tel = String(CO.phone || "").replace(/[^\d+]/g, "");
-    const nice = tel.length === 10 ? tel.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3") : CO.phone;
+    const nice = window.nicePhone(CO.phone);
     const e = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
     el.innerHTML = [
       CO.name && `<li><b>${e(CO.name)}</b></li>`,
