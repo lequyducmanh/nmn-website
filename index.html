@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=20261105c">
+<link rel="stylesheet" href="assets/css/site.css?v=20261105d">
 </head>
 <body data-view="home">
 <svg class="svg-defs" aria-hidden="true" focusable="false"><defs>
@@ -345,23 +345,40 @@
 
 <footer class="site">
   <div class="foot">
-    <div>
+    <div class="fcol fbrand">
       <img class="foot-logo" src="assets/brand/clastive-logo.svg" alt="Clastive Nhật Việt" width="243" height="64" loading="lazy">
       <p class="foot-slogan" data-slogan></p>
-      <h5 data-shop-name></h5>
-      <p>Thương nhân chịu trách nhiệm về sản phẩm: Công ty Cổ phần Clastive Nhật Việt. Sản xuất tại Nhật Bản bởi GENSEI CO., LTD.</p>
-      <p style="margin-top:6px">PURE NMN 12,000mg+: Số ĐKSP 581/2023/ĐKSP · Số XNQC 336/2023/XNQC-ATTP.<br>NMN Regene: Số ĐKSP 5585/2024/ĐKSP · Số XNQC 1669/2024/XNQC-ATTP.</p>
-      <p style="margin-top:6px">Hình ảnh sản phẩm 3D mang tính minh họa; thông tin sản phẩm theo hồ sơ công bố — vui lòng đối chiếu nhãn sản phẩm thực tế.</p>
-      <p style="margin-top:10px"><b>Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</b></p>
-      <div class="links"><a href="#hero">Trang chủ</a><a href="#cua-hang">Cửa hàng</a><a href="#tin-tuc">Tin tức &amp; Sự kiện</a><a href="#ve-chung-toi">Về chúng tôi</a><a href="#lien-he">Liên hệ</a></div>
+      <p class="fdesc">Phân phối các sản phẩm chăm sóc sức khỏe và sắc đẹp có nguồn gốc từ Nhật Bản.</p>
       <a class="bct" href="https://online.gov.vn/Home/WebDetails/118924" target="_blank" rel="noopener" title="Website đã thông báo với Bộ Công Thương"><img src="https://fileserver.online.gov.vn/uploads/Resources/iconxacnhan/DaThongBao.png" alt="Đã thông báo Bộ Công Thương" width="150" height="56" loading="lazy"></a>
     </div>
-    <div>
-      <h5>Tài liệu tham khảo</h5>
-      <ol>
-        <li>Yi L. và cộng sự. Thử nghiệm lâm sàng ngẫu nhiên, mù đôi về NMN ở người trung niên khỏe mạnh. <em>GeroScience</em>, 2022. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9735188" target="_blank" rel="noopener">PMC9735188</a></li>
-      </ol>
+    <nav class="fcol" aria-label="Liên kết chân trang">
+      <h5>Khám phá</h5>
+      <ul class="flinks">
+        <li><a href="#hero">Trang chủ</a></li>
+        <li><a href="#cua-hang">Cửa hàng</a></li>
+        <li><a href="#tin-tuc">Tin tức &amp; Sự kiện</a></li>
+        <li><a href="#ve-chung-toi">Về chúng tôi</a></li>
+        <li><a href="#lien-he">Liên hệ</a></li>
+      </ul>
+    </nav>
+    <div class="fcol">
+      <h5>Thông tin doanh nghiệp</h5>
+      <ul class="finfo" data-foot-company></ul>
     </div>
+    <div class="fcol">
+      <h5>Thông tin sản phẩm</h5>
+      <ul class="finfo">
+        <li>Thương nhân chịu trách nhiệm: Công ty Cổ phần Clastive Nhật Việt</li>
+        <li>Sản xuất tại Nhật Bản bởi GENSEI CO., LTD.</li>
+        <li><b>PURE NMN 12,000mg+</b><br>ĐKSP 581/2023/ĐKSP · XNQC 336/2023/XNQC-ATTP</li>
+        <li><b>NMN Regene</b><br>ĐKSP 5585/2024/ĐKSP · XNQC 1669/2024/XNQC-ATTP</li>
+        <li class="fnote">Hình ảnh 3D mang tính minh họa; thông tin theo hồ sơ công bố — vui lòng đối chiếu nhãn sản phẩm thực tế. Tham khảo: Yi L. và cộng sự, <em>GeroScience</em> 2022 (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9735188" target="_blank" rel="noopener">PMC9735188</a>).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="fbottom">
+    <p class="fwarn">Thực phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh.</p>
+    <p class="fcopy" data-shop-name></p>
   </div>
 </footer>
 
@@ -383,7 +400,7 @@
 <script src="assets/js/vn-address.js?v=20261027i"></script>
 <script src="assets/js/config.js?v=20261104d"></script>
 <script src="assets/js/defaults.js?v=20261105a"></script>
-<script src="assets/js/app.js?v=20261105c"></script>
+<script src="assets/js/app.js?v=20261105d"></script>
 
 <script type="importmap">
 { "imports": {

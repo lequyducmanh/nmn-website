@@ -379,14 +379,27 @@ main{position:relative;z-index:5}
 /* =====================================================================
    FOOTER
    ===================================================================== */
-footer.site{position:relative;z-index:5;padding:52px var(--gutter) calc(40px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(244,240,233,.9)}
-.foot{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr);gap:36px;font-size:12px;color:var(--muted)}
-.foot h5{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);margin-bottom:12px;font-weight:500}
-.foot ol{padding-left:18px}
-.foot li{margin-bottom:6px;overflow-wrap:anywhere}
+footer.site{position:relative;z-index:5;padding:64px var(--gutter) calc(26px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#efe9df}
+.foot{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.7fr) minmax(0,1.1fr) minmax(0,1.25fr);gap:40px 48px;font-size:13px;line-height:1.65;color:var(--muted)}
+.foot h5{font-family:var(--sans);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);margin:6px 0 16px;font-weight:600}
+.foot-logo{display:block;height:46px;width:auto;margin-bottom:12px}
+.foot-slogan{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ink-2);margin-bottom:10px}
+.fdesc{max-width:300px;margin-bottom:20px}
+.foot .bct{display:inline-block;line-height:0;border-radius:8px}
+.foot .bct img{width:140px;height:auto}
+.flinks,.finfo{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.foot .flinks a{color:var(--ink-2);text-decoration:none;font-size:14px}
+.foot .flinks a:hover{color:var(--gold)}
+.finfo li{overflow-wrap:anywhere}
+.finfo b{color:var(--ink);font-weight:600}
+.foot .finfo a{color:var(--ink-2);text-decoration:underline;text-decoration-color:rgba(19,32,42,.25);text-underline-offset:3px}
+.finfo .fnote{font-size:12px;color:#7a838b;padding-top:4px}
+.fbottom{max-width:1280px;margin:44px auto 0;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px 30px;flex-wrap:wrap;font-size:12.5px}
+.fwarn{color:var(--ink);font-weight:600}
+.fcopy{color:var(--muted)}
 .foot a{color:var(--teal)}
-.foot .links{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
-.foot .links a{color:var(--ink-2)}
+@media (max-width:1100px){ .foot{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+@media (max-width:640px){ .foot{grid-template-columns:minmax(0,1fr);gap:30px} .foot .flinks{grid-template-columns:1fr 1fr;column-gap:16px} footer.site{padding-top:48px} .fbottom{flex-direction:column;align-items:flex-start;margin-top:32px} }
 
 /* =====================================================================
    SHOP · CART · CHECKOUT
@@ -671,7 +684,6 @@ body.cart-open .cart{transform:none;visibility:visible}
   .h-actions .btn{display:none}
   .ritual{grid-template-columns:minmax(0,1fr)}
   .care{grid-template-columns:minmax(0,1fr)}
-  .foot{grid-template-columns:minmax(0,1fr)}
   .grid{grid-template-columns:minmax(0,1fr)}
   .toolbar .bar{flex-direction:column;align-items:stretch;border-radius:22px;padding:8px}
   .search{width:100%}
@@ -954,11 +966,6 @@ html.qv-open{overflow:hidden}
 .co-err{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(143,67,87,.08);color:var(--rose);font-size:13.5px}
 
 /* ===================== THƯƠNG HIỆU (logo) ===================== */
-.foot-logo{display:block;height:44px;width:auto;margin-bottom:8px}
-.foot h5[data-shop-name]{text-transform:none;letter-spacing:.02em;font-size:13px;font-weight:500}
-.foot .bct{display:inline-block;margin-top:18px;line-height:0}
-.foot .bct img{width:150px;height:auto}
-.foot-slogan{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-2);margin-bottom:18px}
 @media (max-width:640px){ .brand-logo{height:34px} }
 @media (max-width:360px){ .brand-logo{height:30px} }
 

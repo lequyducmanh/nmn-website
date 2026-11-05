@@ -1194,7 +1194,20 @@ window.ABOUT = (function(){
   $$("[data-price]").forEach(el => el.textContent = window.SHOP.priceOf(el.dataset.price));
   $$("[data-price-note]").forEach(el => el.textContent = C.priceNote);
   $$("[data-shop-name]").forEach(el => el.textContent = "© " + new Date().getFullYear() + " Bản quyền thuộc về " + ((C.company || {}).name || C.shopName || "Công ty Cổ phần Clastive Nhật Việt"));
-  $$("[data-slogan]").forEach(el => el.textContent = C.brandTagline || (window.NMN_DEFAULTS || {}).slogan || "");
+  const slogan = C.brandTagline && C.brandTagline !== "JAPAN WELLNESS" ? C.brandTagline : (window.NMN_DEFAULTS || {}).slogan || "";
+  $$("[data-slogan]").forEach(el => el.textContent = slogan);
+  $$("[data-foot-company]").forEach(el => {
+    const CO = C.company || {}, tel = String(CO.phone || "").replace(/[^\d+]/g, "");
+    const nice = tel.length === 10 ? tel.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3") : CO.phone;
+    const e = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    el.innerHTML = [
+      CO.name && `<li><b>${e(CO.name)}</b></li>`,
+      CO.taxCode && `<li>Mã số doanh nghiệp: ${e(CO.taxCode)}</li>`,
+      CO.address && `<li>${e(CO.address)}</li>`,
+      CO.phone && `<li>Điện thoại: <a href="tel:${e(tel)}">${e(nice)}</a></li>`,
+      CO.email && `<li>Email: <a href="mailto:${e(CO.email)}">${e(CO.email)}</a></li>`
+    ].filter(Boolean).join("");
+  });
   $$('[data-link="phone"]').forEach(el => el.href = "tel:" + C.phone.replace(/\s+/g, ""));
   $$('[data-link="zalo"]').forEach(el => { el.href = zaloUrl; el.target = "_blank"; el.rel = "noopener"; });
 
