@@ -35,7 +35,7 @@
 /** ① CÀI ĐẶT LẦN ĐẦU — chọn hàm "setup" ở thanh trên rồi bấm ▷ Chạy (hoặc menu NMN Website trên Google Sheet) */
 function setup(){ return setupSheet_(); }
 
-const VERSION = '2026.11.07b';
+const VERSION = '2026.11.07c';
 const DEFAULT_SITE_URL = 'https://clastive.vn/';
 const TZ = 'Asia/Ho_Chi_Minh';
 const CONTENT = ['site', 'products', 'posts', 'events'];
@@ -912,6 +912,7 @@ function onOpen(){
     .addItem('Gửi tin thử Telegram', 'testTelegram')
     .addItem('Bật / tắt thông báo Telegram', 'toggleTelegram')
     .addSeparator()
+    .addItem('Khôi phục Sản phẩm từ website (lỡ tay xoá)', 'restoreProducts')
     .addItem('Nhập lại nội dung từ website (ghi đè)', 'importFromWebsite')
     .addItem('Tạo khoá quản trị mới', 'resetAdminKey')
     .addToUi();
@@ -968,13 +969,14 @@ function installTriggers_(){
   const has = ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'syncPayments');
   if (!has) ScriptApp.newTrigger('syncPayments').timeBased().everyMinutes(1).create();
 }
-function importContent_(){
+function siteJson_(f){
   const base = (prop_('SITE_URL') || DEFAULT_SITE_URL).replace(/\/?$/, '/');
-  const get = f => {
-    const r = UrlFetchApp.fetch(base + 'content/' + f + '.json?t=' + Date.now(), { muteHttpExceptions: true });
-    if (r.getResponseCode() !== 200) throw new Error(base + 'content/' + f + '.json → HTTP ' + r.getResponseCode());
-    return JSON.parse(r.getContentText());
-  };
+  const r = UrlFetchApp.fetch(base + 'content/' + f + '.json?t=' + Date.now(), { muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) throw new Error(base + 'content/' + f + '.json → HTTP ' + r.getResponseCode());
+  return JSON.parse(r.getContentText());
+}
+function importContent_(){
+  const get = siteJson_;
   const d = {}; CONTENT.forEach(f => d[f] = get(f));
   const err = validate_(d); if (err) throw new Error(err);
   withLock_(() => { writeSettings_(d.site); ['products', 'posts', 'events'].forEach(f => writeTable_(f, d[f])); });
@@ -985,6 +987,19 @@ function importFromWebsite(){
   if (ui && ui.alert('Nhập lại nội dung từ website?', 'Các trang tính Cài đặt, Sản phẩm, Bài viết, Sự kiện sẽ bị GHI ĐÈ bằng nội dung trong thư mục content/ của website. Đơn hàng, thanh toán, lời nhắn giữ nguyên.', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
   importContent_();
   say_('Đã nhập xong', 'Nội dung website đã được chép vào Google Sheet.');
+}
+/** Lỡ tay xoá sản phẩm trên Sheet → ghi lại RIÊNG trang tính Sản phẩm từ bản gốc của website (content/products.json).
+    Cài đặt, Bài viết, Sự kiện, Đơn hàng, Lời nhắn giữ nguyên. */
+function restoreProducts(){
+  const ui = ui_();
+  if (ui && ui.alert('Khôi phục sản phẩm?', 'Trang tính "Sản phẩm" sẽ được ghi lại từ bản gốc trên website (content/products.json).\nCác trang tính khác giữ nguyên.\n\nLưu ý: chỉnh sửa sản phẩm làm trên CMS/Sheet sau lần nhập gốc sẽ không có trong bản này — khi cần, dùng Tệp → Nhật ký phiên bản.', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
+  const list = siteJson_('products');
+  const err = validate_({ products: list }); if (err) throw new Error(err);
+  if (!Array.isArray(list) || !list.length) throw new Error('Bản gốc trên website không có sản phẩm nào.');
+  withLock_(() => writeTable_('products', list));
+  bump_(['products']);
+  say_('Đã khôi phục ✓', 'Đã ghi lại ' + list.length + ' sản phẩm: ' + list.map(p => p.name).join(', ') + '.\nWebsite cập nhật trong giây lát.');
+  return list.length;
 }
 function refreshWebsite(){ bump_(CONTENT); say_('Đã làm mới', 'Website sẽ hiển thị nội dung mới nhất trên Sheet (khách đang mở trang sẽ thấy sau khi tải lại).'); }
 function syncNow(){
