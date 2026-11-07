@@ -77,6 +77,15 @@ tools/
 - Ô nhiều mục: *mỗi dòng một mục* (xuống dòng trong ô: **Ctrl/⌘ + Enter**); ô dạng cặp: `Tên | Giá trị` mỗi dòng.
 - **Sửa thẳng trên Sheet** (đổi giá, bỏ tích *Hiển thị* để ẩn sản phẩm…) → website nhận ngay. Nếu chưa thấy: **NMN Website → Làm mới website ngay**.
 - Mỗi đơn/lời nhắn mới gửi **email báo** tới tài khoản Google chủ Sheet (bật/tắt: **NMN Website → Bật / tắt email báo đơn mới**, hoặc Script property `NOTIFY_EMAIL`).
+- **Thông báo Telegram** (đơn hàng mới, lời nhắn Liên hệ, tiền chuyển khoản về khi bật SePay) — xem mục bên dưới.
+
+### Thông báo Telegram (~3 phút)
+1. Trên Telegram mở **@BotFather** → gửi `/newbot` → đặt tên (ví dụ *Clastive Thông báo*) và tên đăng nhập kết thúc bằng `bot` → BotFather gửi lại **mã bot** dạng `123456789:AAH…`. Giữ kín mã này.
+2. Tìm bot vừa tạo → bấm **Bắt đầu (Start)**. Muốn cả đội cùng nhận: thêm bot vào **nhóm** rồi gửi trong nhóm `/start@ten_bot`.
+3. Google Sheet → tải lại trang → **NMN Website → Kết nối Telegram** → dán mã bot → OK → làm bước 2 nếu chưa làm → OK. Nếu có nhiều nơi (cá nhân + nhóm) thì gõ số để chọn (nhận ở nhiều nơi: `1,2`). Telegram nhận ngay 1 tin “Đã kết nối”.
+- Thử lại bất cứ lúc nào: **Gửi tin thử Telegram**. Tạm dừng: **Bật / tắt thông báo Telegram**. Đổi nơi nhận: chạy lại **Kết nối Telegram** (để trống ô mã bot để giữ bot cũ).
+- Mã bot chỉ lưu trong *Script properties* (`TELEGRAM_TOKEN`, `TELEGRAM_CHAT`), không có trên website. Telegram lỗi/mất mạng không làm mất đơn — đơn vẫn lưu vào Sheet, lỗi gần nhất ghi ở `TELEGRAM_LAST_ERROR`.
+- Sau khi cập nhật code Apps Script: **Triển khai → Quản lý các bản triển khai → ✎ → Phiên bản mới** để đơn/lời nhắn từ website dùng code mới.
 - Lịch sử thay đổi: **Tệp → Nhật ký phiên bản** của Google Sheet (khôi phục được).
 
 ### Bảo mật

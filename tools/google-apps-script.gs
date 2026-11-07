@@ -27,14 +27,16 @@
  *    SEPAY_ACCOUNT  Số tài khoản nhận tiền (lọc đúng tài khoản)
  *    SITE_URL       Địa chỉ website để "Nhập nội dung từ website" (mặc định GitHub Pages bên dưới)
  *    NOTIFY_EMAIL   Email nhận thông báo đơn mới / lời nhắn mới ("off" = tắt)
+ *    TELEGRAM_TOKEN Mã bot Telegram (@BotFather) · TELEGRAM_CHAT: id người / nhóm nhận (nhiều id cách nhau dấu phẩy)
+ *                   → cài bằng menu NMN Website → "Kết nối Telegram", không cần gõ tay.
  *  ADMIN_KEY do script tự tạo — xem bằng menu "Thông tin kết nối". Không dán khoá này vào website.
  */
 
 /** ① CÀI ĐẶT LẦN ĐẦU — chọn hàm "setup" ở thanh trên rồi bấm ▷ Chạy (hoặc menu NMN Website trên Google Sheet) */
 function setup(){ return setupSheet_(); }
 
-const VERSION = '2026.11.05';
-const DEFAULT_SITE_URL = 'https://lequyducmanh.github.io/nmn-website/';
+const VERSION = '2026.11.07';
+const DEFAULT_SITE_URL = 'https://clastive.vn/';
 const TZ = 'Asia/Ho_Chi_Minh';
 const CONTENT = ['site', 'products', 'posts', 'events'];
 const SHEET = { site: 'Cài đặt', products: 'Sản phẩm', posts: 'Bài viết', events: 'Sự kiện', orders: 'Đơn hàng', payments: 'Thanh toán', contacts: 'Liên hệ', images: 'Ảnh' };
@@ -390,7 +392,7 @@ function revs_(){ const P = props_(); const r = {}; CONTENT.forEach(f => r[f] = 
 function gen_(){ return prop_('GEN') || '0'; }
 /** Đánh dấu nội dung đã đổi → bản đệm cũ bị bỏ qua */
 function bump_(files){
-  const P = props_(), now = String(Date.now()), o = { GEN: now };
+  const P = props_(), now = String(Math.max(Date.now(), Number(P.getProperty('GEN') || 0) + 1)), o = { GEN: now };   // luôn tăng
   files.forEach(f => o['REV_' + f] = now);
   P.setProperties(o);
   try { CacheService.getScriptCache().remove('content'); } catch (e) {}
@@ -502,7 +504,7 @@ function createOrder_(b){
     o.items.map(i => '- ' + i.name + ' × ' + i.qty + ' = ' + money_(i.lineTotal)).join('\n'), '',
     'Tạm tính: ' + money_(o.subtotal), 'Phí giao hàng: ' + (o.shipping == null ? 'báo sau' : money_(o.shipping)), 'Tổng: ' + money_(o.total),
     'Thanh toán: ' + (o.method === 'bank' ? 'Chuyển khoản · nội dung ' + payCode_(res.code) : 'COD'), o.note ? 'Ghi chú: ' + o.note : ''
-  ].join('\n'));
+  ].join('\n'), tgOrder_(o, res.code));
   return res;
 }
 const money_ = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + 'đ';
@@ -522,14 +524,122 @@ function createContact_(b){
     appendRow_('contacts', c);
     return { ok: true, id: c.id };
   });
-  if (res.ok && !res.duplicate) notify_('✉ Lời nhắn mới từ ' + name, ['Họ tên: ' + name, 'SĐT: ' + phone, email ? 'Email: ' + email : '', c.topic ? 'Chủ đề: ' + c.topic : '', c.product ? 'Sản phẩm: ' + c.product : '', '', message].join('\n'));
+  if (res.ok && !res.duplicate) notify_('✉ Lời nhắn mới từ ' + name, ['Họ tên: ' + name, 'SĐT: ' + phone, email ? 'Email: ' + email : '', c.topic ? 'Chủ đề: ' + c.topic : '', c.product ? 'Sản phẩm: ' + c.product : '', '', message].join('\n'), tgContact_(c));
   return res;
 }
 
-function notify_(subject, body){
+function notify_(subject, body, tg){
+  if (tg) try { telegram_(tg); } catch (e) { console.warn('telegram', e); }            // Telegram trước (tức thì), rồi email
   const to = prop_('NOTIFY_EMAIL');
   if (!to || to === 'off') return;
   try { MailApp.sendEmail({ to: to, subject: subject, body: body + '\n\n— Mở Google Sheet: ' + ss_().getUrl() }); } catch (e) { console.warn('notify', e); }
+}
+
+/* =====================================================================
+   THÔNG BÁO TELEGRAM — đơn hàng mới · lời nhắn mới · tiền chuyển khoản về
+   Cài bằng menu NMN Website → "Kết nối Telegram". Mã bot chỉ nằm trong Script properties (không lộ ra website).
+   ===================================================================== */
+const TG_API = 'https://api.telegram.org/bot';
+const h_ = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const site_ = () => (prop_('SITE_URL') || DEFAULT_SITE_URL).replace(/\/?$/, '/');
+const tgChats_ = () => String(prop_('TELEGRAM_CHAT')).split(',').map(x => x.trim()).filter(Boolean);
+const tgOn_ = () => !!prop_('TELEGRAM_TOKEN') && tgChats_().length > 0 && prop_('TELEGRAM_OFF') !== '1';
+function tgCall_(token, method, payload){
+  const r = UrlFetchApp.fetch(TG_API + token + '/' + method, { method: 'post', contentType: 'application/json', payload: JSON.stringify(payload || {}), muteHttpExceptions: true });
+  let j = {}; try { j = JSON.parse(r.getContentText()); } catch (e) {}
+  if (!j || !j.ok) j = Object.assign({ ok: false }, j, { http: r.getResponseCode() });
+  return j;
+}
+/** Gửi 1 tin tới mọi chat đã kết nối. msg = { html, buttons: [{text, url}] } */
+function telegram_(msg, force){
+  const P = props_(), token = P.getProperty('TELEGRAM_TOKEN'), chats = tgChats_();
+  if (!token || !chats.length || (!force && P.getProperty('TELEGRAM_OFF') === '1')) return { ok: false, off: true };
+  const html = String(msg.html || '').replace(/\n{3,}/g, '\n\n').trim();
+  let sent = 0, err = '';
+  chats.forEach((chat, i) => {
+    const body = { chat_id: chat, text: html, parse_mode: 'HTML', disable_web_page_preview: true };
+    if (msg.buttons && msg.buttons.length) body.reply_markup = { inline_keyboard: [msg.buttons] };
+    let j = tgCall_(token, 'sendMessage', body);
+    const mig = j.parameters && j.parameters.migrate_to_chat_id;               // nhóm thường được nâng thành siêu nhóm → id mới
+    if (!j.ok && mig){ chats[i] = String(mig); P.setProperty('TELEGRAM_CHAT', chats.join(',')); body.chat_id = mig; j = tgCall_(token, 'sendMessage', body); }
+    if (!j.ok && j.http === 400 && /parse|entit/i.test(j.description || '')){  // phòng hờ: gửi lại dạng chữ thường
+      body.text = html.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'); delete body.parse_mode; j = tgCall_(token, 'sendMessage', body);
+    }
+    if (j.ok) sent++; else err = chat + ': ' + (j.description || 'HTTP ' + j.http);
+  });
+  if (err) P.setProperty('TELEGRAM_LAST_ERROR', new Date().toISOString() + ' · ' + err); else P.deleteProperty('TELEGRAM_LAST_ERROR');
+  return { ok: sent > 0, sent: sent, error: err };
+}
+const tgButtons_ = () => [{ text: '📋 Quản lý đơn hàng', url: site_() + 'admin/orders.html' }, { text: '📊 Google Sheet', url: ss_().getUrl() }];
+function tgOrder_(o, code){
+  const bank = o.method === 'bank';
+  return { buttons: tgButtons_(), html: [
+    '🛒 <b>ĐƠN HÀNG MỚI</b> · <code>' + h_(code) + '</code>',
+    '💰 <b>' + money_(o.total) + '</b> · ' + (bank ? 'Chuyển khoản' : 'Thanh toán khi nhận hàng (COD)'),
+    bank ? '🏦 Nội dung chuyển khoản: <code>' + payCode_(code) + '</code>' : null,
+    '',
+    '👤 <b>' + h_(o.name) + '</b>',
+    '📞 ' + h_(o.phone),
+    o.email ? '📧 ' + h_(o.email) : null,
+    '📍 ' + h_(o.address),
+    '',
+    o.items.map(i => '• ' + h_(i.name) + ' × ' + i.qty + ' = ' + money_(i.lineTotal)).join('\n'),
+    'Tạm tính ' + money_(o.subtotal) + ' · Phí giao ' + (o.shipping == null ? 'báo sau' : o.shipping ? money_(o.shipping) : 'miễn phí'),
+    o.note ? '\n📝 <i>' + h_(o.note) + '</i>' : null,
+    o.clientTotal && o.clientTotal !== o.total ? '⚠️ Tổng tiền đã được tính lại theo bảng giá hiện tại' : null
+  ].filter(l => l !== null).join('\n') };
+}
+function tgContact_(c){
+  return { buttons: tgButtons_(), html: [
+    '✉️ <b>LỜI NHẮN MỚI</b> · <code>' + h_(c.id) + '</code>',
+    '',
+    '👤 <b>' + h_(c.name) + '</b>',
+    '📞 ' + h_(c.phone),
+    c.email ? '📧 ' + h_(c.email) : null,
+    c.topic ? '🏷 Chủ đề: ' + h_(c.topic) : null,
+    c.product ? '📦 Sản phẩm: ' + h_(c.product) : null,
+    '',
+    '💬 <blockquote>' + h_(c.message) + '</blockquote>'
+  ].filter(l => l !== null).join('\n') };
+}
+function tgPaid_(order, amount, tx){
+  const full = order.payState === PAY.paid;
+  return { buttons: tgButtons_(), html: [
+    (full ? '✅ <b>ĐÃ NHẬN ĐỦ TIỀN</b>' : '🟡 <b>NHẬN MỘT PHẦN TIỀN</b>') + ' · <code>' + h_(order.code) + '</code>',
+    '💵 +' + money_(amount) + ' · đã nhận ' + money_(order.paid) + ' / ' + money_(order.total),
+    full ? null : '⚠️ Còn thiếu ' + money_(Number(order.total) - Number(order.paid)),
+    '👤 ' + h_(order.name) + ' · 📞 ' + h_(order.phone),
+    tx.bank_brand_name ? '🏦 ' + h_(tx.bank_brand_name) : null
+  ].filter(l => l !== null).join('\n') };
+}
+function tgUnmatched_(amount, tx){
+  return { buttons: tgButtons_(), html: ['💸 <b>TIỀN VỀ CHƯA KHỚP ĐƠN</b> · +' + money_(amount), 'Nội dung: <code>' + h_(tx.transaction_content || '') + '</code>', 'Kiểm tra trang tính Thanh toán để gán cho đơn phù hợp.'].filter(l => l !== null).join('\n') };
+}
+/** Tìm các chat vừa nhắn bot / vừa thêm bot vào nhóm (dùng khi kết nối) */
+function tgFindChats_(token){
+  let j = tgCall_(token, 'getUpdates', { limit: 100, allowed_updates: ['message', 'my_chat_member', 'channel_post'] });
+  if (!j.ok && j.http === 409){ tgCall_(token, 'deleteWebhook', {}); j = tgCall_(token, 'getUpdates', { limit: 100 }); }   // bot đang gắn webhook khác
+  if (!j.ok) return { ok: false, error: j.description || 'HTTP ' + j.http };
+  const seen = {}, out = [];
+  (j.result || []).slice().reverse().forEach(u => {                         // mới nhất trước
+    const m = u.message || u.channel_post || u.my_chat_member, ch = m && m.chat;
+    if (!ch || seen[ch.id]) return;
+    seen[ch.id] = 1;
+    out.push({ id: String(ch.id), type: ch.type, name: ch.title || [ch.first_name, ch.last_name].filter(Boolean).join(' ') || ch.username || String(ch.id) });
+  });
+  return { ok: true, chats: out };
+}
+function tgCheckToken_(token){
+  token = String(token || '').trim();
+  if (!/^\d{5,15}:[\w-]{30,}$/.test(token)) return { ok: false, error: 'Mã bot không đúng dạng (ví dụ 123456789:AAH…). Hãy sao chép lại từ @BotFather.' };
+  const me = tgCall_(token, 'getMe');
+  if (!me.ok) return { ok: false, error: 'Telegram không nhận mã bot này (' + (me.description || 'HTTP ' + me.http) + ').' };
+  return { ok: true, token: token, bot: me.result.username, name: me.result.first_name };
+}
+function tgSave_(token, chats){
+  props_().setProperties({ TELEGRAM_TOKEN: token, TELEGRAM_CHAT: chats.join(',') });
+  props_().deleteProperty('TELEGRAM_OFF');
+  return telegram_({ html: '✅ <b>Đã kết nối thông báo website</b>\nTừ giờ, mỗi <b>đơn hàng mới</b>, <b>lời nhắn Liên hệ</b> và <b>tiền chuyển khoản về</b> trên ' + h_(site_().replace(/^https?:\/\//, '').replace(/\/$/, '')) + ' sẽ báo vào đây.', buttons: tgButtons_() }, true);
 }
 
 /* ---------- trạng thái thanh toán (trang xác nhận đơn hỏi mỗi vài giây) ---------- */
@@ -598,13 +708,14 @@ function syncPayments_(force){
       appendRow_('payments', { id: id, date: String(tx.transaction_date || ''), amount: amount, content: String(tx.transaction_content || ''), orderCode: hit ? hit.code : '',
         bank: String(tx.bank_brand_name || ''), account: String(tx.account_number || ''), ref: String(tx.reference_number || ''), createdAt: new Date() });
       seen[id] = 1; added++;
-      if (!hit) return;
+      if (!hit){ if (lastId && tgOn_()) try { telegram_(tgUnmatched_(amount, tx)); } catch (e) {} return; }   // lần đồng bộ đầu (3 ngày cũ) không báo
       matched++;
       hit.paid = (Number(hit.paid) || 0) + amount;
       hit.payState = hit.paid >= hit.total ? PAY.paid : PAY.partial;
       const patch = { paid: hit.paid, payState: hit.payState, updatedAt: new Date() };
       if (hit.payState === PAY.paid){ patch.paidAt = new Date(); orders.splice(orders.indexOf(hit), 1); }
       updateRow_('orders', hit._row, patch);
+      if (tgOn_()) try { telegram_(tgPaid_(hit, amount, tx)); } catch (e) {}
     });
     P.setProperty('LAST_TX_ID', String(maxId));
     return { ok: true, added: added, matched: matched };
@@ -622,7 +733,7 @@ function auth_(b){
   return 'Khoá quản trị không đúng.';
 }
 const ADMIN = {
-  ping: () => ({ ok: true, version: VERSION, sheetUrl: ss_().getUrl(), sheetName: ss_().getName(), revs: revs_(), sepay: !!prop_('SEPAY_TOKEN'), notify: prop_('NOTIFY_EMAIL') !== 'off' && !!prop_('NOTIFY_EMAIL') }),
+  ping: () => ({ ok: true, version: VERSION, sheetUrl: ss_().getUrl(), sheetName: ss_().getName(), revs: revs_(), sepay: !!prop_('SEPAY_TOKEN'), notify: prop_('NOTIFY_EMAIL') !== 'off' && !!prop_('NOTIFY_EMAIL'), telegram: tgOn_() }),
   content: () => {
     const data = readContent_();
     const empty = !data.products.length && !Object.keys(data.site).length;
@@ -766,6 +877,10 @@ function onOpen(){
     .addItem('Đồng bộ thanh toán SePay ngay', 'syncNow')
     .addItem('Bật / tắt email báo đơn mới', 'toggleNotify')
     .addSeparator()
+    .addItem('Kết nối Telegram (báo đơn hàng, lời nhắn)', 'connectTelegram')
+    .addItem('Gửi tin thử Telegram', 'testTelegram')
+    .addItem('Bật / tắt thông báo Telegram', 'toggleTelegram')
+    .addSeparator()
     .addItem('Nhập lại nội dung từ website (ghi đè)', 'importFromWebsite')
     .addItem('Tạo khoá quản trị mới', 'resetAdminKey')
     .addToUi();
@@ -852,6 +967,50 @@ function toggleNotify(){
   if (!me) return say_('Chưa bật được', 'Đặt Script property NOTIFY_EMAIL = email nhận thông báo.');
   P.setProperty('NOTIFY_EMAIL', me); say_('Đã bật', 'Email thông báo sẽ gửi tới ' + me + '.');
 }
+function connectTelegram(){
+  const ui = ui_(); if (!ui) return console.log('Hãy chạy từ menu NMN Website trên Google Sheet.');
+  const P = props_(), had = P.getProperty('TELEGRAM_TOKEN');
+  let token = had;
+  const r1 = ui.prompt('Kết nối Telegram · bước 1/2',
+    'Trên Telegram, mở @BotFather → gửi /newbot → đặt tên → BotFather gửi lại "mã bot" (token), dạng 123456789:AAH…\n\n' +
+    'Dán mã bot vào ô dưới rồi bấm OK.' + (had ? '\n(Để trống nếu muốn giữ bot đang dùng.)' : ''), ui.ButtonSet.OK_CANCEL);
+  if (r1.getSelectedButton() !== ui.Button.OK) return;
+  if (r1.getResponseText().trim()) token = r1.getResponseText().trim();
+  if (!token) return say_('Chưa có mã bot', 'Hãy tạo bot với @BotFather rồi chạy lại mục này.');
+  const chk = tgCheckToken_(token);
+  if (!chk.ok) return say_('Chưa kết nối được', chk.error);
+  if (ui.alert('Kết nối Telegram · bước 2/2',
+    'Bot của bạn: @' + chk.bot + '\n\n' +
+    '• Nhận thông báo riêng: mở Telegram, tìm @' + chk.bot + ' → bấm Bắt đầu (Start).\n' +
+    '• Nhận vào NHÓM: thêm @' + chk.bot + ' vào nhóm, rồi gửi trong nhóm: /start@' + chk.bot + '\n\n' +
+    'Làm xong thì bấm OK.', ui.ButtonSet.OK_CANCEL) !== ui.Button.OK) return;
+  const f = tgFindChats_(chk.token);
+  if (!f.ok) return say_('Chưa kết nối được', 'Telegram báo: ' + f.error);
+  if (!f.chats.length) return say_('Chưa thấy tin nhắn nào', 'Bot @' + chk.bot + ' chưa nhận được tin nào. Hãy bấm Start với bot (hoặc gửi /start@' + chk.bot + ' trong nhóm) rồi chạy lại "Kết nối Telegram".');
+  let pick = [f.chats[0]];
+  if (f.chats.length > 1){
+    const list = f.chats.map((c, i) => (i + 1) + '. ' + c.name + (c.type === 'private' ? ' (cá nhân)' : ' (nhóm)')).join('\n');
+    const r2 = ui.prompt('Chọn nơi nhận thông báo', list + '\n\nGõ số (ví dụ 1). Nhận ở nhiều nơi: gõ 1,2', ui.ButtonSet.OK_CANCEL);
+    if (r2.getSelectedButton() !== ui.Button.OK) return;
+    const idx = r2.getResponseText().split(/[,\s]+/).map(n => parseInt(n, 10) - 1).filter(i => f.chats[i]);
+    if (!idx.length) return say_('Chưa chọn', 'Chạy lại "Kết nối Telegram" và gõ số thứ tự.');
+    pick = idx.map(i => f.chats[i]);
+  }
+  const res = tgSave_(chk.token, pick.map(c => c.id));
+  if (!res.ok) return say_('Đã lưu nhưng chưa gửi được', 'Telegram báo: ' + res.error + '\nKiểm tra bot còn trong nhóm / chưa bị chặn, rồi dùng "Gửi tin thử Telegram".');
+  say_('Đã kết nối Telegram ✓', 'Thông báo sẽ gửi tới: ' + pick.map(c => c.name).join(', ') + '.\nTelegram vừa nhận 1 tin xác nhận.');
+}
+function testTelegram(){
+  if (!prop_('TELEGRAM_TOKEN') || !tgChats_().length) return say_('Chưa kết nối', 'Chạy "Kết nối Telegram" trước.');
+  const r = telegram_({ html: '🔔 <b>Tin thử</b> từ website ' + h_(site_()) + '\nThông báo Telegram đang hoạt động' + (prop_('TELEGRAM_OFF') === '1' ? ' (đang TẮT — bật lại bằng menu).' : '.'), buttons: tgButtons_() }, true);
+  say_(r.ok ? 'Đã gửi ✓' : 'Chưa gửi được', r.ok ? 'Mở Telegram để xem tin thử.' : 'Telegram báo: ' + r.error);
+}
+function toggleTelegram(){
+  const P = props_();
+  if (!P.getProperty('TELEGRAM_TOKEN')) return say_('Chưa kết nối', 'Chạy "Kết nối Telegram" trước.');
+  if (P.getProperty('TELEGRAM_OFF') === '1'){ P.deleteProperty('TELEGRAM_OFF'); say_('Đã bật', 'Telegram sẽ báo đơn hàng / lời nhắn mới.'); }
+  else { P.setProperty('TELEGRAM_OFF', '1'); say_('Đã tắt', 'Tạm dừng thông báo Telegram (vẫn giữ kết nối).'); }
+}
 function resetAdminKey(){
   const ui = ui_();
   if (ui && ui.alert('Tạo khoá quản trị mới?', 'Khoá cũ sẽ ngừng hoạt động ngay — mọi máy đang đăng nhập CMS phải nhập khoá mới.', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
@@ -870,8 +1029,10 @@ function showConnection(title){
     '<p style="margin-top:14px"><b>Link Web App</b>:</p>' +
     (deployed ? '<input readonly value="' + esc(url) + '" onclick="this.select()" style="width:100%;padding:8px;font:12px monospace">'
       : '<p style="color:#8f4357">Chưa triển khai. Trong Apps Script: <b>Triển khai → Tùy chọn triển khai mới → Ứng dụng web</b>, Thực thi với tư cách <b>Tôi</b>, Người có quyền truy cập <b>Bất kỳ ai</b> → Triển khai → sao chép URL kết thúc bằng <code>/exec</code>.</p>') +
+    '<p style="margin-top:14px"><b>Telegram</b>: ' + (tgOn_() ? '✅ đang báo tới ' + tgChats_().length + ' nơi' : prop_('TELEGRAM_TOKEN') ? (prop_('TELEGRAM_OFF') === '1' ? '⏸ đang tắt' : '⚠ chưa chọn nơi nhận') : 'chưa kết nối — menu <b>NMN Website → Kết nối Telegram</b>') +
+      (prop_('TELEGRAM_LAST_ERROR') ? '<br><span style="color:#8f4357">Lỗi gần nhất: ' + esc(prop_('TELEGRAM_LAST_ERROR')) + '</span>' : '') + '</p>' +
     '<p style="margin-top:14px;color:#555">Dán link Web App vào <code>assets/js/config.js</code> của website. SePay (tuỳ chọn): Project Settings → Script properties → <code>SEPAY_TOKEN</code>, <code>SEPAY_ACCOUNT</code>.</p></div>';
   const ui = ui_();
-  if (ui) ui.showModalDialog(HtmlService.createHtmlOutput(html).setWidth(520).setHeight(deployed ? 360 : 400), 'NMN Website · Kết nối');
+  if (ui) ui.showModalDialog(HtmlService.createHtmlOutput(html).setWidth(520).setHeight(deployed ? 410 : 450), 'NMN Website · Kết nối');
   else console.log('ADMIN_KEY: ' + key + '\nWeb App: ' + (url || '(chưa triển khai)'));
 }
