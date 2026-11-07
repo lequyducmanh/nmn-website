@@ -200,6 +200,7 @@ function renderDetail(id, open){
         <p class="od-addr">${esc(c.address)}</p>
         <button type="button" class="btn btn-line btn-sm" data-cp="${esc(`${c.name} · ${c.phone}\n${c.address}`)}" data-cpl="địa chỉ giao hàng">Sao chép địa chỉ</button>
         ${c.note ? `<p class="od-note"><b>Ghi chú của khách:</b> ${esc(c.note)}</p>` : ""}
+        ${o.entry || o.source ? `<p class="muted small od-src">${o.entry ? `📝 ${esc(o.entry)}<br>` : ""}${o.source ? `🌐 Nguồn khách: <b>${esc(o.source)}</b>` : ""}</p>` : ""}
       </section>
       <section><h3>Thanh toán</h3>
         <p>${p.method === "bank" ? "Chuyển khoản · VietQR" : "Thanh toán khi nhận hàng (COD)"}</p>
@@ -264,8 +265,9 @@ function renderContacts(){
     ${S.contacts.length ? `<div class="clist">${S.contacts.map(c => { const tel = String(c.phone || "").replace(/\D/g, ""); return `<article class="citem${c.handled ? " done" : ""}">
       <div class="ch"><b>${esc(c.name)}</b> <a href="tel:${esc(tel)}">${esc(c.phone)}</a> · <a href="https://zalo.me/${esc(tel)}" target="_blank" rel="noopener">Zalo</a>${c.email ? ` · <a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ""}
         <small title="${esc(dt(c.createdAt))}">${esc(ago(c.createdAt))}</small></div>
-      ${c.topic || c.product ? `<p class="muted small">${esc([c.topic, c.product].filter(Boolean).join(" · "))}</p>` : ""}
+      ${c.topic || c.product ? `<p class="muted small">${/hợp tác|đại lý|đối tác/i.test(c.topic || "") ? "🤝 " : ""}${esc([c.topic, c.product].filter(Boolean).join(" · "))}</p>` : ""}
       <p class="cmsg">${esc(c.message)}</p>
+      ${c.entry || c.source ? `<p class="muted small">${c.entry ? `📝 ${esc(c.entry)}` : ""}${c.entry && c.source ? " · " : ""}${c.source ? `🌐 ${esc(c.source)}` : ""}</p>` : ""}
       <button type="button" class="btn btn-sm ${c.handled ? "btn-line" : "btn-ink"}" data-handled="${esc(c.id)}" data-v="${c.handled ? 0 : 1}">${c.handled ? "Đánh dấu chưa xử lý" : "Đã xử lý ✓"}</button>
     </article>`; }).join("")}</div>` : `<div class="empty">${S.loadedAt ? "Chưa có lời nhắn nào từ trang Liên hệ." : "Đang tải…"}</div>`}
   </section>`;

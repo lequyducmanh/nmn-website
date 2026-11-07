@@ -12,6 +12,72 @@ window.nicePhone = s => {
   if (/^0\d{9}$/.test(d)) return d.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
   return s || "";
 };
+/* ---------- khách đến từ đâu? (ghi kèm đơn hàng / lời nhắn → Sheet + Telegram) ----------
+   • Nguồn khách: link quảng cáo có utm_source/utm_campaign, fbclid (Facebook), gclid (Google Ads), hoặc trang dẫn tới
+     (Google, Facebook, Zalo…). Lượt có nguồn rõ ràng gần nhất được nhớ 30 ngày; không có → "Truy cập trực tiếp".
+   • Hành trình: các trang đã xem trong lần truy cập này (Trang chủ → PURE NMN… → Thanh toán).
+   • Nút bấm: khách bấm nút / menu nào để mở trang Liên hệ. */
+window.NMN_TRACK = (function(){
+  const K = "nmn_src_v1", q = new URLSearchParams(location.search);
+  const get = (st, k) => { try { return JSON.parse(st.getItem(k) || "null"); } catch (_) { return null; } };
+  const put = (st, k, v) => { try { st.setItem(k, JSON.stringify(v)); } catch (_) {} };
+  let ref = "";
+  try { if (document.referrer){ const u = new URL(document.referrer); if (u.host !== location.host) ref = u.host.replace(/^(www|m|l|lm)\./, ""); } } catch (_) {}
+  const utm = k => String(q.get("utm_" + k) || "").trim().slice(0, 80);
+  const s = utm("source").toLowerCase(), m = utm("medium").toLowerCase(), h = ref.toLowerCase(), sh = s + " " + h;
+  let ch = "";
+  if (q.has("gclid") || q.has("gbraid") || q.has("wbraid") || (/google/.test(s) && /cpc|ppc|paid|ads/.test(m))) ch = "Google Ads";
+  else if (/instagram|^ig$/.test(s) || /instagram/.test(h)) ch = "Instagram";
+  else if (/messenger|m\.me/.test(sh)) ch = "Facebook Messenger";
+  else if (q.has("fbclid") || /facebook|^fb$|meta/.test(s) || /facebook|fb\.com|fb\.me/.test(h)) ch = "Facebook";
+  else if (/google/.test(sh)) ch = "Google tìm kiếm";
+  else if (/zalo/.test(sh)) ch = "Zalo";
+  else if (/tiktok/.test(sh)) ch = "TikTok";
+  else if (/youtube|youtu\.be/.test(sh)) ch = "YouTube";
+  else if (/coccoc|bing|yahoo|duckduckgo/.test(sh)) ch = "Tìm kiếm khác (" + (s || h) + ")";
+  else if (s) ch = utm("source");
+  else if (h) ch = "Website khác · " + h;
+  let src = get(localStorage, K);
+  if (ch || utm("campaign")){                                   // lượt có nguồn rõ → nhớ lại (ghi đè nguồn cũ)
+    src = { channel: ch || "Khác", campaign: utm("campaign"), medium: utm("medium"), content: utm("content"), t: Date.now() };
+    put(localStorage, K, src);
+  } else if (src && Date.now() - src.t > 30 * 864e5) src = null;
+  const brand = () => (window.CONFIG && window.CONFIG.brand) || "";
+  let current = "Trang chủ";
+  const LOAD = String(Math.round(performance.timeOrigin || Date.now()));   // mã của lần tải trang này
+  const pageName = () => current;
+  function visit(name){                                         // router gọi sau mỗi lần đổi trang (tiêu đề đã cập nhật)
+    if (!name){ const t = document.title || "", b = brand(); name = b && t.endsWith(" · " + b) ? t.slice(0, -(b.length + 3)) : t; }
+    current = String(name || "Trang chủ").slice(0, 60);
+    // vào trang Liên hệ mà không bấm nút nào (mở link / gõ địa chỉ) → không dùng nút bấm cũ
+    if (/^#lien-he/.test(location.hash)){
+      const e = get(sessionStorage, "nmn_entry"), nav = (performance.getEntriesByType && performance.getEntriesByType("navigation")[0] || {}).type;
+      if ((!e || e.load !== LOAD) && nav !== "reload") put(sessionStorage, "nmn_entry", { text: "Mở thẳng link trang Liên hệ", t: Date.now(), load: LOAD });
+    }
+    const path = get(sessionStorage, "nmn_path") || [];
+    if (path[path.length - 1] !== current){ path.push(current); put(sessionStorage, "nmn_path", path.slice(-8)); }
+  }
+  // khách bấm nút / menu nào để mở trang Liên hệ
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest('a[href^="#lien-he"]');
+    if (!a) return;
+    const area = a.closest("nav.main, #menu, .side") ? "Menu" : a.closest("footer") ? "Chân trang" : "Nút";
+    const label = (a.getAttribute("aria-label") || a.textContent || "").replace(/\s+/g, " ").replace(/[→›»]/g, "").trim().slice(0, 60);
+    put(sessionStorage, "nmn_entry", { text: area + " “" + label + "” · trang " + pageName(), t: Date.now(), load: LOAD });
+  }, true);
+  return {
+    visit,
+    /** thông tin nguồn gửi kèm form. kind: "order" | "contact" */
+    info(kind){
+      const path = (get(sessionStorage, "nmn_path") || []).slice(-5), e = get(sessionStorage, "nmn_entry");
+      const entry = kind === "contact"
+        ? (e && Date.now() - e.t < 2 * 3600e3 ? e.text : "Mở thẳng trang Liên hệ")
+        : path.join(" → ");
+      return { channel: src ? src.channel : "Truy cập trực tiếp", campaign: src ? src.campaign : "", medium: src ? src.medium : "", content: src ? src.content : "",
+        days: src ? Math.floor((Date.now() - src.t) / 864e5) : 0, entry, path: path.join(" → ") };
+    }
+  };
+})();
 /* ---------- kết nối Google Sheets (Apps Script Web App) ---------- */
 window.SHEETS = (function(){
   const url = String(window.NMN_API || "").trim();
@@ -735,7 +801,7 @@ window.SHOP = (function(){
       let j = null;
       try {
         j = await API.post({ action: "order", code, payment: order.payment, total: order.total, customer: order.customer, hp: d.hp || "",
-          items: cart.map(i => ({ slug: i.slug, qty: i.qty })) }, 25000);
+          items: cart.map(i => ({ slug: i.slug, qty: i.qty })), src: window.NMN_TRACK.info("order") }, 25000);
       } catch (_) {}
       if (j && j.ok){
         // giá / phí ship theo Google Sheet là chuẩn
@@ -1015,8 +1081,16 @@ window.CONTACT = (function(){
     </aside>`;
   }
 
+  // #lien-he/hop-tac · #lien-he/dai-ly · #lien-he/san-pham/<slug> → chọn sẵn chủ đề / sản phẩm
+  const intent = () => {
+    const sub = location.hash.replace(/^#lien-he\/?/, "").split("/");
+    if (sub[0] === "hop-tac" || sub[0] === "dai-ly" || sub[0] === "doi-tac") return { topic: /hợp tác|đại lý|đối tác/i };
+    if (sub[0] === "san-pham"){ const p = P.find(x => x.slug === sub[1]); return { topic: /tư vấn/i, product: p && p.name }; }
+    return {};
+  };
   function form(){
     const topics = K.topics.length ? K.topics : ["Tư vấn sản phẩm", "Khác"];
+    const it = intent(), pick = it.topic ? topics.find(t => it.topic.test(t)) : null;
     return `<form class="fs glass cform" id="ct-form" novalidate>
       <h3>Gửi lời nhắn</h3>
       <p class="co-sub">Để lại thông tin, chúng tôi sẽ liên hệ lại qua điện thoại hoặc Zalo.</p>
@@ -1024,8 +1098,8 @@ window.CONTACT = (function(){
         <div class="f"><label for="ct-name">Họ và tên <i>*</i></label><input id="ct-name" name="name" autocomplete="name" required maxlength="80"><span class="msg"></span></div>
         <div class="f"><label for="ct-phone">Số điện thoại <i>*</i></label><input id="ct-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="16" placeholder="09xx xxx xxx"><span class="msg"></span></div>
         <div class="f full"><label for="ct-email">Email <small>(không bắt buộc)</small></label><input id="ct-email" name="email" type="email" autocomplete="email" maxlength="120"><span class="msg"></span></div>
-        <div class="f"><label for="ct-topic">Chủ đề</label><select id="ct-topic" name="topic">${topics.map(t => `<option>${esc(t)}</option>`).join("")}</select></div>
-        <div class="f"><label for="ct-product">Sản phẩm quan tâm</label><select id="ct-product" name="product"><option value="">Chưa chọn</option>${P.map(p => `<option>${esc(p.name)}</option>`).join("")}</select></div>
+        <div class="f"><label for="ct-topic">Chủ đề</label><select id="ct-topic" name="topic">${topics.map(t => `<option${t === pick ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>
+        <div class="f"><label for="ct-product">Sản phẩm quan tâm</label><select id="ct-product" name="product"><option value="">Chưa chọn</option>${P.map(p => `<option${p.name === it.product ? " selected" : ""}>${esc(p.name)}</option>`).join("")}</select></div>
         <div class="f full"><label for="ct-msg">Nội dung <i>*</i></label><textarea id="ct-msg" name="message" required maxlength="1500" placeholder="Bạn cần hỗ trợ điều gì?"></textarea><span class="msg"></span></div>
         <div class="f full"><label class="consent"><input type="checkbox" name="consent" id="ct-consent"><span>${esc(K.consent || "Tôi đồng ý để Công ty sử dụng thông tin trên để liên hệ phản hồi yêu cầu này.")}</span></label><span class="msg"></span></div>
       </div>
@@ -1101,7 +1175,7 @@ window.CONTACT = (function(){
     };
     if (window.SHEETS.on){
       let j = null;
-      try { j = await window.SHEETS.post(Object.assign({ action: "contact", hp: d.hp || "" }, msg), 20000); } catch (_) {}
+      try { j = await window.SHEETS.post(Object.assign({ action: "contact", hp: d.hp || "", src: window.NMN_TRACK.info("contact") }, msg), 20000); } catch (_) {}
       if (j && j.ok) msg.sent = true;
       else if (j && j.error){
         sending = false; btn.disabled = false; btn.innerHTML = `Gửi lời nhắn ${arrow}`; toast(j.error); return;
@@ -1158,7 +1232,7 @@ window.CONTACT = (function(){
   });
 
   return {
-    match: h => h === "lien-he",
+    match: h => h === "lien-he" || h.startsWith("lien-he/"),
     render(){ render(); window.scrollTo({ top: 0, left: 0, behavior: "instant" }); }
   };
 })();
@@ -1200,7 +1274,7 @@ window.ABOUT = (function(){
             <h1 class="reveal">${emph(A.title || "")}</h1>
             ${A.lead ? `<p class="reveal">${esc(A.lead)}</p>` : ""}
             ${slogan ? `<p class="ab-slogan reveal">${esc(slogan)}</p>` : ""}
-            <div class="cta-row reveal"><a class="btn btn-ink" href="#cua-hang">Xem sản phẩm ${arrow}</a><a class="btn btn-line" href="#lien-he">Liên hệ hợp tác</a></div>
+            <div class="cta-row reveal"><a class="btn btn-ink" href="#cua-hang">Xem sản phẩm ${arrow}</a><a class="btn btn-line" href="#lien-he/hop-tac">Liên hệ hợp tác</a></div>
           </div>
           <div class="ab-emblem" aria-hidden="true"><img src="assets/brand/clastive-mark.svg" alt="" width="256" height="256"></div>
         </div>
@@ -1242,7 +1316,7 @@ window.ABOUT = (function(){
             <h2>“${esc(A.motto || "")}”</h2>
             ${A.closing ? `<p>${esc(A.closing)}</p>` : ""}
           </div>
-          <div class="btns"><a class="btn btn-gold" href="#lien-he">Trở thành đại lý ${arrow}</a><a class="btn btn-out" href="#cua-hang">Cửa hàng</a></div>
+          <div class="btns"><a class="btn btn-gold" href="#lien-he/dai-ly">Trở thành đại lý ${arrow}</a><a class="btn btn-out" href="#cua-hang">Cửa hàng</a></div>
         </section>
       </div>`;
     const CO = C.company || {};
@@ -1614,6 +1688,8 @@ window.ABOUT = (function(){
       }
     }
     ui();
+    const home = view === "home";
+    setTimeout(() => window.NMN_TRACK.visit(home ? "Trang chủ" : null), 0);
   }
   addEventListener("hashchange", route);
   addEventListener("popstate", route);

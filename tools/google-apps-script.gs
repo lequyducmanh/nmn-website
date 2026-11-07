@@ -90,7 +90,8 @@ const SCHEMA = {
     field_('adminNote', 'Ghi chú nội bộ', 'text', '', 200), field_('payCode', 'Nội dung CK', 'text', '', 140), field_('paidAt', 'Thời điểm thanh toán', 'datetime', '', 140),
     field_('subtotal', 'Tạm tính (đ)', 'number', 0, 110), field_('shipping', 'Phí ship (trống = báo sau)', 'number', null, 110), field_('province', 'Tỉnh/TP', 'text', '', 130),
     field_('ward', 'Phường/Xã', 'text', '', 130), field_('street', 'Số nhà, đường', 'text', '', 180), field_('items', 'Chi tiết (JSON)', 'json', [], 160),
-    field_('check', 'Kiểm tra', 'text', '', 200), field_('updatedAt', 'Cập nhật lúc', 'datetime', '', 140)
+    field_('check', 'Kiểm tra', 'text', '', 200), field_('updatedAt', 'Cập nhật lúc', 'datetime', '', 140),
+    field_('entry', 'Gửi từ (hành trình)', 'text', '', 260), field_('source', 'Nguồn khách', 'text', '', 200)
   ],
   payments: [
     field_('id', 'Mã giao dịch SePay', 'text', '', 120), field_('date', 'Thời gian giao dịch', 'text', '', 150), field_('amount', 'Số tiền (đ)', 'number', 0, 110),
@@ -100,7 +101,8 @@ const SCHEMA = {
   contacts: [
     field_('id', 'Mã', 'text', '', 130), field_('createdAt', 'Thời gian', 'datetime', '', 140), field_('handled', 'Đã xử lý', 'bool', false, 80),
     field_('name', 'Họ tên', 'text', '', 160), field_('phone', 'SĐT', 'text', '', 110), field_('email', 'Email', 'text', '', 170), field_('topic', 'Chủ đề', 'text', '', 150),
-    field_('product', 'Sản phẩm', 'text', '', 150), field_('message', 'Nội dung', 'text', '', 360), field_('page', 'Trang gửi', 'text', '', 200)
+    field_('product', 'Sản phẩm', 'text', '', 150), field_('message', 'Nội dung', 'text', '', 360), field_('page', 'Trang gửi', 'text', '', 200),
+    field_('entry', 'Gửi từ (nút bấm)', 'text', '', 240), field_('source', 'Nguồn khách', 'text', '', 200)
   ],
   images: [
     field_('id', 'Mã file Drive', 'text', '', 160), field_('url', 'Đường dẫn ảnh', 'text', '', 300), field_('name', 'Tên file', 'text', '', 200),
@@ -472,12 +474,31 @@ function limited_(key, max, sec){
   return false;
 }
 
+/* Khách đến từ đâu — trình duyệt gửi kèm src: { channel, campaign, medium, content, days, entry, path } */
+function src_(b){
+  const s = b && b.src && typeof b.src === 'object' ? b.src : {};
+  const channel = line_(s.channel, 60) || 'Không rõ', camp = line_(s.campaign, 80), med = line_(s.medium, 40), cont = line_(s.content, 60);
+  const days = Math.max(0, Math.min(99, Number(s.days) || 0));
+  const source = [channel, camp ? 'chiến dịch ' + camp : '', med ? med : '', cont ? 'mẫu ' + cont : '', days >= 1 && channel !== 'Truy cập trực tiếp' ? 'từ ' + days + ' ngày trước' : '']
+    .filter(Boolean).join(' · ');
+  return { source: source.slice(0, 200), entry: line_(s.entry, 200), path: line_(s.path, 200) };
+}
+/** Loại form theo chủ đề lời nhắn → [biểu tượng, nhãn] */
+function formKind_(topic){
+  const t = String(topic || '').trim();
+  if (/hợp tác|đại lý|đối tác|nhà phân phối/i.test(t)) return ['🤝', 'LIÊN HỆ · ' + t.toUpperCase()];
+  if (/đơn hàng|giao hàng|vận chuyển/i.test(t)) return ['📦', 'LIÊN HỆ · ' + t.toUpperCase()];
+  if (/góp ý|khiếu nại|phản hồi/i.test(t)) return ['💡', 'LIÊN HỆ · ' + t.toUpperCase()];
+  if (/tư vấn|sản phẩm/i.test(t)) return ['💬', 'LIÊN HỆ · ' + t.toUpperCase()];
+  return ['✉️', 'LIÊN HỆ' + (t ? ' · ' + t.toUpperCase() : ' MỚI')];
+}
 function createOrder_(b){
   if (b.hp) return { ok: true, code: newCode_(), ignored: true };                      // bẫy bot (ô ẩn)
   const C = contentData_();
   const r = buildOrder_(b, catalog_(C.products, C.site));
   if (r.error) return fail_(r.error);
-  const o = r.order;
+  const o = r.order, sr = src_(b);
+  o.entry = sr.entry || sr.path; o.source = sr.source;
   const res = withLock_(() => {
     if (o.code){
       const row = findRow_('orders', 'code', v => v === o.code);
@@ -495,7 +516,8 @@ function createOrder_(b){
       code: o.code, createdAt: now, status: FUL.new, payState: bank ? PAY.pending : PAY.cod, method: METHOD[o.method],
       total: o.total, paid: bank ? 0 : '', name: o.name, phone: o.phone, email: o.email, address: o.address,
       itemsText: o.items.map(i => i.name + ' × ' + i.qty).join(', '), note: o.note, adminNote: '', payCode: bank ? payCode_(o.code) : '', paidAt: '',
-      subtotal: o.subtotal, shipping: o.shipping, province: o.province, ward: o.ward, street: o.street, items: o.items, check: check, updatedAt: now
+      subtotal: o.subtotal, shipping: o.shipping, province: o.province, ward: o.ward, street: o.street, items: o.items, check: check, updatedAt: now,
+      entry: o.entry ? 'Form Đặt hàng · đi qua: ' + o.entry : 'Form Đặt hàng', source: o.source
     });
     return { ok: true, code: o.code, payCode: payCode_(o.code), subtotal: o.subtotal, shipping: o.shipping, total: o.total, items: o.items };
   });
@@ -503,7 +525,8 @@ function createOrder_(b){
     'Khách hàng: ' + o.name + ' · ' + o.phone + (o.email ? ' · ' + o.email : ''), 'Địa chỉ: ' + o.address, '',
     o.items.map(i => '- ' + i.name + ' × ' + i.qty + ' = ' + money_(i.lineTotal)).join('\n'), '',
     'Tạm tính: ' + money_(o.subtotal), 'Phí giao hàng: ' + (o.shipping == null ? 'báo sau' : money_(o.shipping)), 'Tổng: ' + money_(o.total),
-    'Thanh toán: ' + (o.method === 'bank' ? 'Chuyển khoản · nội dung ' + payCode_(res.code) : 'COD'), o.note ? 'Ghi chú: ' + o.note : ''
+    'Thanh toán: ' + (o.method === 'bank' ? 'Chuyển khoản · nội dung ' + payCode_(res.code) : 'COD'), o.note ? 'Ghi chú: ' + o.note : '', '',
+    'Form: Đặt hàng' + (o.entry ? ' · đi qua: ' + o.entry : ''), 'Nguồn khách: ' + (o.source || 'Không rõ')
   ].join('\n'), tgOrder_(o, res.code));
   return res;
 }
@@ -518,13 +541,16 @@ function createContact_(b){
   if (message.length < 5) return fail_('Thiếu nội dung.');
   const c = { id: /^LH-[A-Z0-9-]{4,24}$/.test(String(b.code || '')) ? String(b.code) : 'LH-' + Utilities.formatDate(new Date(), TZ, 'yyMMdd') + '-' + newCode_().slice(-5),
     createdAt: new Date(), handled: false, name: name, phone: phone, email: email, topic: line_(b.topic, 80), product: line_(b.product, 120), message: message, page: line_(b.page, 300) };
+  const sr = src_(b); c.entry = sr.entry || 'Trang Liên hệ'; c.source = sr.source;
   const res = withLock_(() => {
     if (findRow_('contacts', 'id', v => v === c.id)) return { ok: true, duplicate: true, id: c.id };
     if (limited_('c:' + phone, 5, 600) || limited_('c:*', 60, 600)) return fail_('Bạn đã gửi nhiều lời nhắn liên tiếp. Vui lòng thử lại sau ít phút.');
     appendRow_('contacts', c);
     return { ok: true, id: c.id };
   });
-  if (res.ok && !res.duplicate) notify_('✉ Lời nhắn mới từ ' + name, ['Họ tên: ' + name, 'SĐT: ' + phone, email ? 'Email: ' + email : '', c.topic ? 'Chủ đề: ' + c.topic : '', c.product ? 'Sản phẩm: ' + c.product : '', '', message].join('\n'), tgContact_(c));
+  const kind = formKind_(c.topic);
+  if (res.ok && !res.duplicate) notify_(kind[0] + ' ' + kind[1].charAt(0) + kind[1].slice(1).toLowerCase() + ' · ' + name, ['Form: Liên hệ · ' + c.entry, 'Nguồn khách: ' + (c.source || 'Không rõ'), '',
+    'Họ tên: ' + name, 'SĐT: ' + phone, email ? 'Email: ' + email : '', c.topic ? 'Chủ đề: ' + c.topic : '', c.product ? 'Sản phẩm: ' + c.product : '', '', message].join('\n'), tgContact_(c));
   return res;
 }
 
@@ -575,6 +601,9 @@ function tgOrder_(o, code){
   const bank = o.method === 'bank';
   return { buttons: tgButtons_(), html: [
     '🛒 <b>ĐƠN HÀNG MỚI</b> · <code>' + h_(code) + '</code>',
+    '📝 Form <b>Đặt hàng</b>' + (o.entry ? ' · đi qua: ' + h_(o.entry) : ''),
+    '🌐 Nguồn khách: <b>' + h_(o.source || 'Không rõ') + '</b>',
+    '',
     '💰 <b>' + money_(o.total) + '</b> · ' + (bank ? 'Chuyển khoản' : 'Thanh toán khi nhận hàng (COD)'),
     bank ? '🏦 Nội dung chuyển khoản: <code>' + payCode_(code) + '</code>' : null,
     '',
@@ -591,7 +620,9 @@ function tgOrder_(o, code){
 }
 function tgContact_(c){
   return { buttons: tgButtons_(), html: [
-    '✉️ <b>LỜI NHẮN MỚI</b> · <code>' + h_(c.id) + '</code>',
+    formKind_(c.topic)[0] + ' <b>' + h_(formKind_(c.topic)[1]) + '</b> · <code>' + h_(c.id) + '</code>',
+    '📝 Form <b>Liên hệ</b> · ' + h_(c.entry || 'trang Liên hệ'),
+    '🌐 Nguồn khách: <b>' + h_(c.source || 'Không rõ') + '</b>',
     '',
     '👤 <b>' + h_(c.name) + '</b>',
     '📞 ' + h_(c.phone),
@@ -804,7 +835,7 @@ function orderOut_(o){
     payment: { method: bank ? 'bank' : 'cod', state: bank ? (PAY_CODE[o.payState] || 'pending') : 'cod', paid: o.paid || 0, paidAt: o.paidAt, payCode: o.payCode, manual: /thủ công/.test(o.check || '') },
     customer: { name: o.name, phone: o.phone, email: o.email, address: o.address, province: o.province, ward: o.ward, street: o.street, note: o.note },
     items: Array.isArray(o.items) && o.items.length ? o.items : [{ name: o.itemsText, qty: '', price: 0, lineTotal: o.subtotal }],
-    subtotal: o.subtotal, shipping: o.shipping, total: o.total, adminNote: o.adminNote, check: o.check, row: o._row };
+    subtotal: o.subtotal, shipping: o.shipping, total: o.total, adminNote: o.adminNote, check: o.check, entry: o.entry || '', source: o.source || '', row: o._row };
 }
 function images_(){ return readTable_('images').map(clean_).reverse(); }
 function imageFolder_(){

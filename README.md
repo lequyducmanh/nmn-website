@@ -79,6 +79,15 @@ tools/
 - Mỗi đơn/lời nhắn mới gửi **email báo** tới tài khoản Google chủ Sheet (bật/tắt: **NMN Website → Bật / tắt email báo đơn mới**, hoặc Script property `NOTIFY_EMAIL`).
 - **Thông báo Telegram** (đơn hàng mới, lời nhắn Liên hệ, tiền chuyển khoản về khi bật SePay) — xem mục bên dưới.
 
+### Biết form đến từ đâu (Gửi từ · Nguồn khách)
+Mỗi đơn hàng / lời nhắn ghi thêm 2 cột trên Sheet (và trong tin Telegram, email, trang Quản lý đơn hàng):
+- **Gửi từ** — Đơn hàng: các trang khách đã đi qua (ví dụ `Trang chủ → PURE NMN 12,000mg+ → Đặt hàng`). Liên hệ: nút / menu khách bấm (ví dụ `Nút “Trở thành đại lý” · trang Về chúng tôi`) hoặc “Mở thẳng link trang Liên hệ”.
+- **Nguồn khách** — Facebook, Instagram, Google tìm kiếm, Google Ads, Zalo, TikTok, YouTube, website khác hoặc “Truy cập trực tiếp”; nhớ 30 ngày.
+- Tiêu đề tin báo theo **Chủ đề** lời nhắn: 🤝 Hợp tác / đại lý · 💬 Tư vấn sản phẩm · 📦 Đơn hàng & giao hàng · 💡 Góp ý.
+- Link mở form có chọn sẵn chủ đề: `https://clastive.vn/#lien-he/dai-ly` (hoặc `/hop-tac`), chọn sẵn sản phẩm: `https://clastive.vn/#lien-he/san-pham/nmn-regene`.
+- **Gắn tên chiến dịch** cho link quảng cáo / bài đăng để biết khách đến từ chiến dịch nào: thêm `?utm_source=…&utm_campaign=…` vào trước dấu `#`, ví dụ
+  `https://clastive.vn/?utm_source=facebook&utm_campaign=tham-tu-soi-nhan#lien-he/dai-ly` → Nguồn khách: *Facebook · chiến dịch tham-tu-soi-nhan*.
+
 ### Thông báo Telegram (~3 phút)
 1. Trên Telegram mở **@BotFather** → gửi `/newbot` → đặt tên (ví dụ *Clastive Thông báo*) và tên đăng nhập kết thúc bằng `bot` → BotFather gửi lại **mã bot** dạng `123456789:AAH…`. Giữ kín mã này.
 2. Tìm bot vừa tạo → bấm **Bắt đầu (Start)**. Muốn cả đội cùng nhận: thêm bot vào **nhóm** rồi gửi trong nhóm `/start@ten_bot`.
