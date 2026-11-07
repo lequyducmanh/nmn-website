@@ -35,7 +35,7 @@
 /** ① CÀI ĐẶT LẦN ĐẦU — chọn hàm "setup" ở thanh trên rồi bấm ▷ Chạy (hoặc menu NMN Website trên Google Sheet) */
 function setup(){ return setupSheet_(); }
 
-const VERSION = '2026.11.07';
+const VERSION = '2026.11.07b';
 const DEFAULT_SITE_URL = 'https://clastive.vn/';
 const TZ = 'Asia/Ho_Chi_Minh';
 const CONTENT = ['site', 'products', 'posts', 'events'];
