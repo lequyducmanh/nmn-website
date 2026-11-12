@@ -114,7 +114,7 @@ const CHOICES = { orders: { status: Object.keys(FUL).map(k => FUL[k]), payState:
 /* Trang tính "Cài đặt": Khoá | Giá trị | Kiểu | Mô tả */
 const SETTING_TYPES = { shippingFee: 'number', freeShippingFrom: 'number', postsPerPage: 'number', 'upsell.max': 'number', perks: 'lines', 'home.heroMeta': 'pairs', 'home.marquee': 'lines', 'contact.topics': 'lines', 'contact.faq': 'pairs' };
 const SETTING_LABELS = {
-  brand: 'Tên thương hiệu (logo)', brandTagline: 'Dòng chữ nhỏ dưới logo', shopName: 'Tên cửa hàng / công ty', phone: 'Hotline', zalo: 'Số Zalo', email: 'Email', address: 'Địa chỉ',
+  brand: 'Tên thương hiệu (logo)', brandTagline: 'Dòng chữ nhỏ dưới logo', shopName: 'Tên cửa hàng / công ty', phone: 'Hotline', zalo: 'Số Zalo', facebook: 'Fanpage Facebook (nút “Gửi xác nhận qua Facebook”)', email: 'Email', address: 'Địa chỉ',
   priceNote: 'Ghi chú dưới giá', postsPerPage: 'Số bài mỗi lần tải ở trang Tin tức', shippingFee: 'Phí giao hàng (trống = báo khi xác nhận đơn)', freeShippingFrom: 'Miễn phí giao hàng từ (trống = không áp dụng)',
   'bank.code': 'Mã ngân hàng VietQR (VCB, MB, ACB…)', 'bank.account': 'Số tài khoản', 'bank.owner': 'Chủ tài khoản', 'bank.name': 'Tên ngân hàng hiển thị', 'bank.autoConfirm': 'Tự động xác nhận chuyển khoản (SePay)',
   perks: 'Cam kết hiển thị ở cửa hàng (mỗi dòng 1 ý)', 'seo.title': 'Tiêu đề trang chủ (Google)', 'seo.description': 'Mô tả ngắn (Google)',

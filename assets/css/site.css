@@ -791,6 +791,23 @@ body.cart-open .cart{transform:none;visibility:visible}
 .chan b.addr,.chan b.mail{font-family:var(--sans);font-size:15px;font-weight:500;line-height:1.5}
 .chan .go{margin-top:auto;padding-top:10px;font-size:13px;font-weight:500;color:var(--teal);display:inline-flex;align-items:center;gap:6px}
 .chan .go svg{width:14px;height:14px}
+/* thẻ Văn phòng trải hết hàng cuối (tránh 1 thẻ lẻ khi có 5 kênh: Hotline · Zalo · Facebook · Email · Văn phòng) */
+.chan:has(b.addr){grid-column:1/-1}
+@media (min-width:901px){
+  .chan:has(b.addr){flex-direction:row;align-items:center;gap:18px;padding:18px 22px}
+  .chan:has(b.addr) .ic{margin-bottom:0;flex:none}
+  .chan:has(b.addr) .lb{flex:none;width:96px}
+  .chan:has(b.addr) b.addr{flex:1;min-width:0}
+  .chan:has(b.addr) .go{margin:0 0 0 auto;padding-top:0;flex:none}
+}
+/* đủ 5 kênh: máy tính bảng 3 thẻ ngắn + Email + Văn phòng; điện thoại Hotline · (Zalo | Facebook) · Email · Văn phòng */
+@media (min-width:761px) and (max-width:1100px){
+  .chans:has(> .chan:nth-child(5)){grid-template-columns:repeat(3,minmax(0,1fr))}
+  .chans:has(> .chan:nth-child(5)) .chan:has(b.mail){grid-column:1/-1}
+}
+@media (max-width:760px){
+  .chans:has(> .chan:nth-child(5)) .chan[href^="tel:"],.chans:has(> .chan:nth-child(5)) .chan:has(b.mail){grid-column:1/-1}
+}
 .cgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:clamp(18px,2.6vw,32px);align-items:start}
 .cgrid.is-done{grid-template-columns:minmax(0,1fr)}
 .cform .btn{margin-top:18px;width:100%}

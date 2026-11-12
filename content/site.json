@@ -4,6 +4,7 @@
   "shopName": "Công ty Cổ phần Clastive Nhật Việt",
   "phone": "02438515515",
   "zalo": "02438515515",
+  "facebook": "https://www.facebook.com/Clastive.Vietnam",
   "email": "clastivevietnam@gmail.com",
   "address": "Số nhà 21, ngách 218/8 đường Đê La Thành, phường Thổ Quan, quận Đống Đa, Hà Nội",
   "priceNote": "Giá có thể thay đổi theo thời điểm",
@@ -11,10 +12,10 @@
   "shippingFee": null,
   "freeShippingFrom": null,
   "bank": {
-    "code": "MB",
-    "account": "0985233655",
-    "owner": "LE QUY DUC MANH",
-    "name": "MB Bank",
+    "code": "VCB",
+    "account": "1056830164",
+    "owner": "Công ty Cổ phần Clastive Nhật Việt",
+    "name": "Vietcombank – Ngân hàng TMCP Ngoại Thương Việt Nam",
     "autoConfirm": false
   },
   "perks": [

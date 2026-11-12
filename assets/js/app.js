@@ -12,6 +12,14 @@ window.nicePhone = s => {
   if (/^0\d{9}$/.test(d)) return d.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
   return s || "";
 };
+/* Fanpage Facebook → link mở Messenger của trang (m.me/<tên trang>) */
+window.fbChat = function(url){
+  const u = String(url || "").trim(); if (!u) return "";
+  const id = (u.match(/[?&]id=(\d+)/) || [])[1];
+  if (id) return "https://m.me/" + id;
+  const m = u.match(/(?:facebook\.com|fb\.com|m\.me)\/(?:pg\/)?([A-Za-z0-9.\-]+)/i);
+  return m ? "https://m.me/" + m[1] : u;
+};
 /* ---------- khách đến từ đâu? (ghi kèm đơn hàng / lời nhắn → Sheet + Telegram) ----------
    • Nguồn khách: link quảng cáo có utm_source/utm_campaign, fbclid (Facebook), gclid (Google Ads), hoặc trang dẫn tới
      (Google, Facebook, Zalo…). Lượt có nguồn rõ ràng gần nhất được nhớ 30 ngày; không có → "Truy cập trực tiếp".
@@ -365,6 +373,8 @@ window.SHOP = (function(){
   const fmt = n => new Intl.NumberFormat("vi-VN").format(Math.round(n)) + "đ";
   const bySlug = s => P.find(p => p.slug === s);
   const zaloUrl = "https://zalo.me/" + encodeURIComponent(C.zalo);
+  // kênh khách gửi xác nhận / gửi đơn: Messenger của Fanpage (nếu có), không thì Zalo
+  const chatUrl = C.facebook ? window.fbChat(C.facebook) : zaloUrl, chatName = C.facebook ? "Facebook" : "Zalo";
   const hasBank = !!(C.bank && C.bank.account && C.bank.code);
   // đơn hàng + xác nhận chuyển khoản tự động đi qua Google Sheets (Apps Script + SePay)
   const API = window.SHEETS;
@@ -854,13 +864,13 @@ window.SHOP = (function(){
       ? `<h1>Đã nhận đơn — <em>mời bạn thanh toán</em></h1><p>Quét mã QR bên dưới bằng app ngân hàng. ${auto ? "Trang sẽ tự cập nhật ngay khi chúng tôi nhận được tiền." : "Sau khi chuyển khoản, chúng tôi sẽ kiểm tra và liên hệ xác nhận."}</p>`
       : o.sent
       ? `<h1>Cảm ơn bạn đã <em>đặt hàng!</em></h1><p>Chúng tôi đã nhận được đơn và sẽ liên hệ qua số ${esc(o.customer.phone)} để xác nhận trước khi giao.</p>`
-      : `<h1>Còn một bước để <em>hoàn tất đơn</em></h1><p>Vui lòng gửi thông tin đơn hàng cho chúng tôi qua Zalo (nội dung đã được soạn sẵn bên dưới) hoặc gọi hotline để xác nhận.</p>`;
+      : `<h1>Còn một bước để <em>hoàn tất đơn</em></h1><p>Vui lòng gửi thông tin đơn hàng cho chúng tôi qua ${chatName} (nội dung đã được soạn sẵn bên dưới) hoặc gọi hotline để xác nhận.</p>`;
     root.innerHTML = `
       <div class="done">
         <div class="ok">${check}</div>
         ${head}
         <div class="code">${esc(o.code)}</div>
-        ${o.sent ? "" : `<div class="cta-row"><button class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi đơn qua Zalo ${arrow}</button><a class="btn btn-line" href="tel:${esc(C.phone.replace(/\s+/g, ""))}">Gọi ${esc(window.nicePhone(C.phone))}</a></div>`}
+        ${o.sent ? "" : `<div class="cta-row"><button class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi đơn qua ${chatName} ${arrow}</button><a class="btn btn-line" href="tel:${esc(C.phone.replace(/\s+/g, ""))}">Gọi ${esc(window.nicePhone(C.phone))}</a></div>`}
         ${bank ? `<div class="box glass pay-box" id="pay-box">${payBox(o, auto)}</div>` : ""}
         <div class="box glass">
           <h3>Nội dung đơn hàng</h3>
@@ -872,7 +882,7 @@ window.SHOP = (function(){
   }
 
   /* ---------- chuyển khoản: QR + thông tin + trạng thái realtime ---------- */
-  const qrUrl = (amount, info) => `https://img.vietqr.io/image/${encodeURIComponent(C.bank.code)}-${encodeURIComponent(C.bank.account)}-compact2.png?amount=${Math.max(0, Math.round(amount))}&addInfo=${encodeURIComponent(info)}&accountName=${encodeURIComponent(C.bank.owner || "")}`;
+  const qrUrl = (amount, info) => `https://img.vietqr.io/image/${encodeURIComponent(C.bank.code)}-${encodeURIComponent(C.bank.account)}-compact2.png?amount=${Math.max(0, Math.round(amount))}&addInfo=${encodeURIComponent(info)}&accountName=${encodeURIComponent(String(C.bank.owner || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toUpperCase())}`;
   const copyIco = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>';
   const cp = (val, label) => `<button type="button" class="cp" data-copy-val="${esc(val)}" data-copy-label="${esc(label)}" aria-label="Sao chép ${esc(label)}">${copyIco}<span>Sao chép</span></button>`;
   function payBox(o, auto){
@@ -895,9 +905,9 @@ window.SHOP = (function(){
       <ol class="pay-steps">
         <li>Mở app ngân hàng → <b>Quét mã QR</b> (hoặc chuyển thủ công theo thông tin trên).</li>
         <li>Giữ đúng nội dung <b>${esc(pc)}</b> để đơn được nhận diện.</li>
-        <li>${auto ? "Giữ trang này mở — trạng thái tự chuyển sang <b>Đã thanh toán</b> sau vài giây." : "Sau khi chuyển, bấm “Gửi xác nhận qua Zalo” để chúng tôi kiểm tra nhanh hơn."}</li>
+        <li>${auto ? "Giữ trang này mở — trạng thái tự chuyển sang <b>Đã thanh toán</b> sau vài giây." : `Sau khi chuyển, bấm “Gửi xác nhận qua ${chatName}” để chúng tôi kiểm tra nhanh hơn.`}</li>
       </ol>
-      <div class="pay-act">${auto ? `<button type="button" class="btn btn-line" data-pay-check>Tôi đã chuyển khoản — kiểm tra ngay</button>` : `<button type="button" class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi xác nhận qua Zalo ${arrow}</button>`}</div>
+      <div class="pay-act">${auto ? `<button type="button" class="btn btn-line" data-pay-check>Tôi đã chuyển khoản — kiểm tra ngay</button>` : `<button type="button" class="btn btn-ink" data-zalo-order="${esc(o.code)}">Gửi xác nhận qua ${chatName} ${arrow}</button>`}</div>
       ${o.shipping == null ? `<p class="fine">Số tiền trên chưa gồm phí giao hàng; phí giao hàng (nếu có) sẽ được báo khi xác nhận đơn.</p>` : ""}`;
   }
   function saveOrder(o){ const list = store.get(ORDERS, []); const i = list.findIndex(x => x.code === o.code); if (i >= 0){ list[i] = o; store.set(ORDERS, list); } }
@@ -999,8 +1009,8 @@ window.SHOP = (function(){
     const zo = t.closest("[data-zalo-order]");
     if (zo){
       const ok = await copy($("#order-text").value);
-      toast(ok ? "Đã sao chép đơn hàng — dán vào khung chat Zalo" : "Hãy sao chép nội dung đơn hàng rồi dán vào Zalo");
-      window.open(zaloUrl, "_blank", "noopener");
+      toast(ok ? `Đã sao chép đơn hàng — dán vào khung chat ${C.facebook ? "Messenger" : "Zalo"}` : `Hãy sao chép nội dung đơn hàng rồi dán vào ${C.facebook ? "Messenger" : "Zalo"}`);
+      window.open(chatUrl, "_blank", "noopener");
     }
   });
   document.addEventListener("change", e => {
@@ -1051,6 +1061,7 @@ window.CONTACT = (function(){
   const I = {
     phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4.1-2 1.4a12 12 0 0 0 6.4 6.4l1.4-2 4.1 1.4v2.6A2 2 0 0 1 18.4 19.5 15.9 15.9 0 0 1 4.5 5.6a2 2 0 0 1 2.1-2.1z"/></svg>',
     chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10.5H9.5L5 19.5V16H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>',
+    fb: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.8 0-8.5 3.5-8.5 8 0 2.5 1.2 4.7 3.1 6.2v3l2.8-1.6c.8.2 1.7.4 2.6.4 4.8 0 8.5-3.5 8.5-8s-3.7-8-8.5-8z"/><path d="m7.5 13.5 3-3.2 2.2 2 3.8-2.8-3 3.3-2.2-2z"/></svg>',
     mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg>',
     pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
     clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
@@ -1062,6 +1073,8 @@ window.CONTACT = (function(){
     const out = [];
     if (C.phone) out.push(`<a class="chan glass" href="tel:${esc(tel(C.phone))}"><span class="ic">${I.phone}</span><span class="lb">Hotline</span><b>${esc(nicePhone(C.phone))}</b><span class="go">Gọi ngay ${arrow}</span></a>`);
     if (C.zalo) out.push(`<a class="chan glass" href="${esc(zaloUrl)}" target="_blank" rel="noopener"><span class="ic">${I.chat}</span><span class="lb">Zalo</span><b>${esc(nicePhone(C.zalo))}</b><span class="go">Nhắn tin ${arrow}</span></a>`);
+    if (C.facebook){ const fb = window.fbChat(C.facebook), name = (fb.match(/m\.me\/(.+)$/) || [])[1] || "Fanpage";
+      out.push(`<a class="chan glass" href="${esc(fb)}" target="_blank" rel="noopener"><span class="ic">${I.fb}</span><span class="lb">Facebook</span><b>${esc(name)}</b><span class="go">Nhắn tin ${arrow}</span></a>`); }
     if (email) out.push(`<a class="chan glass" href="mailto:${esc(email)}"><span class="ic">${I.mail}</span><span class="lb">Email</span><b class="mail">${esc(email)}</b><span class="go">Gửi email ${arrow}</span></a>`);
     if (address) out.push(`<a class="chan glass" href="${esc(mapsUrl(K.mapQuery || address))}" target="_blank" rel="noopener"><span class="ic">${I.pin}</span><span class="lb">Văn phòng</span><b class="addr">${esc(address)}</b><span class="go">Chỉ đường ${arrow}</span></a>`);
     return out.join("");

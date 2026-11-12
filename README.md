@@ -79,6 +79,11 @@ tools/
 - Mỗi đơn/lời nhắn mới gửi **email báo** tới tài khoản Google chủ Sheet (bật/tắt: **NMN Website → Bật / tắt email báo đơn mới**, hoặc Script property `NOTIFY_EMAIL`).
 - **Thông báo Telegram** (đơn hàng mới, lời nhắn Liên hệ, tiền chuyển khoản về khi bật SePay) — xem mục bên dưới.
 
+### Chuyển khoản & xác nhận
+- Thông tin chuyển khoản (Cài đặt → `bank.code` VietQR, `bank.account`, `bank.owner`, `bank.name`): hiện tại **Vietcombank (VCB) · 1056830164 · Công ty Cổ phần Clastive Nhật Việt**. Mã QR VietQR tự điền số tiền + nội dung; tên chủ tài khoản trong QR tự chuyển thành chữ in hoa không dấu.
+- Nút **“Gửi xác nhận qua Facebook”** (sau khi chuyển khoản, và khi đơn chưa gửi được) mở Messenger của Fanpage trong Cài đặt `facebook` (`https://www.facebook.com/Clastive.Vietnam` → `m.me/Clastive.Vietnam`), nội dung đơn được sao chép sẵn để dán. Để trống `facebook` thì nút dùng Zalo. Trang Liên hệ có thêm thẻ Facebook.
+- Khi bật SePay sau này: `SEPAY_ACCOUNT` = 1056830164.
+
 ### Biết form đến từ đâu (Gửi từ · Nguồn khách)
 Mỗi đơn hàng / lời nhắn ghi thêm 2 cột trên Sheet (và trong tin Telegram, email, trang Quản lý đơn hàng):
 - **Gửi từ** — Đơn hàng: các trang khách đã đi qua (ví dụ `Trang chủ → PURE NMN 12,000mg+ → Đặt hàng`). Liên hệ: nút / menu khách bấm (ví dụ `Nút “Trở thành đại lý” · trang Về chúng tôi`) hoặc “Mở thẳng link trang Liên hệ”.

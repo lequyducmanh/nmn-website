@@ -551,6 +551,7 @@ const SETTINGS_SECTIONS = [
     { k: "shopName", t: "text", l: "Tên cửa hàng / công ty", req: 1, full: 1 },
     { k: "phone", t: "tel", l: "Hotline", req: 1, ph: "0912 345 678" },
     { k: "zalo", t: "tel", l: "Số Zalo", req: 1, ph: "0912345678" },
+    { k: "facebook", t: "text", l: "Fanpage Facebook", ph: "https://www.facebook.com/Clastive.Vietnam", hint: "nút “Gửi xác nhận qua Facebook” sau khi chuyển khoản mở Messenger của Fanpage này (trống = dùng Zalo)" },
     { k: "email", t: "email", l: "Email" },
     { k: "address", t: "text", l: "Địa chỉ" } ] },
   { h: "Bán hàng & giao hàng", f: [
